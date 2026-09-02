@@ -1,0 +1,84 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://deposit-dollarization-collector/dollarization-pipeline/config/targets.schema.json",
+  "title": "TargetsSchema",
+  "description": "국가별 외화예금 데이터 수집 대상 메타데이터. adapter 필드는 src/collectors 내 실제 구현 여부를 추적한다.",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "required": ["country_code", "country_name", "data_type", "adapter"],
+    "properties": {
+      "country_code": { "type": "string", "pattern": "^[A-Z]{3}$" },
+      "country_name": { "type": "string" },
+      "data_type": {
+        "type": "string",
+        "enum": [
+          "Direct Excel",
+          "PDF Bulletin",
+          "PDF/Document",
+          "Interactive Web",
+          "API",
+          "No Standalone Source"
+        ]
+      },
+      "source_url": { "type": ["string", "null"], "format": "uri" },
+      "update_frequency": { "type": ["string", "null"] },
+      "requires_js": { "type": ["boolean", "null"] },
+      "notes": { "type": ["string", "null"] },
+      "pending_parsers": {
+        "type": "array",
+        "description": "현재 adapter 외에 추후 구현할 보조 파서/소스 목록. status=todo 이면 아직 코드 없음.",
+        "items": {
+          "type": "object",
+          "required": ["kind", "source", "status"],
+          "properties": {
+            "kind": {
+              "type": "string",
+              "description": "소스 형식 (예: PDF, API, Interactive Web)"
+            },
+            "source": {
+              "type": "string",
+              "description": "발행물/엔드포인트 이름"
+            },
+            "status": {
+              "type": "string",
+              "enum": ["todo", "in_progress", "done"],
+              "description": "todo=미구현, in_progress=작업 중, done=구현 완료 후 pending에서 제거하거나 done 유지"
+            },
+            "notes": {
+              "type": ["string", "null"],
+              "description": "커버 기간, 단위, 구현 시 참고 사항"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "adapter": {
+        "type": "object",
+        "description": "src/collectors에 실제 국가별 파서가 구현되어 있는지 추적하는 필드",
+        "required": ["status", "strategy_class", "implemented"],
+        "properties": {
+          "implemented": {
+            "type": "boolean",
+            "description": "country_code에 대한 실제 파싱 로직이 구현되어 main.py 실행 시 값이 나오는지 여부"
+          },
+          "strategy_class": {
+            "type": ["string", "null"],
+            "description": "이 국가를 처리하는 src/collectors 내 Strategy 클래스명 (registry.py 기준)"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["success", "failed", "needs_research", "todo", "not_applicable"],
+            "description": "success=구현+동작 확인됨, failed=파일은 받았으나 대상 지표 없음, needs_research=소스 자체를 특정하지 못해 재조사 필요, todo=아직 시도 안 함, not_applicable=data_type='No Standalone Source' 등 애초에 시도 대상이 아님"
+          },
+          "notes": {
+            "type": ["string", "null"],
+            "description": "blocked 사유나 구현 시 참고한 셀/시트 위치 등"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "additionalProperties": false
+  }
+}

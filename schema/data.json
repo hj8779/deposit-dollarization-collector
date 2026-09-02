@@ -1,0 +1,4363 @@
+[
+  {
+    "country_name": "Aruba",
+    "alpha2_code": "AW",
+    "alpha3_code": "ABW",
+    "numeric_code": 533,
+    "source": {
+      "source_url": "https://www.cbaruba.org/monthly-tables/",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "PDF Bulletin",
+      "direct_download_url": "https://www.cbaruba.org/document/monthly-tables-2026/",
+      "update_frequency": "Monthly",
+      "requires_js": true,
+      "notes": "Requires PDF parsing via pdfplumber. Target document: Monthly Tables (under [https://www.cbaruba.org/document/monthly-tables-YYYY](https://www.cbaruba.org/document/monthly-tables-YYYY)). Target table: 'TABLE 2: COMPONENTS OF BROAD MONEY' (page 4). FCD is calculated as Col(5) [Demand deposits - Foreign currency] + Col(9) [Other deposits - Savings - Foreign currency] + Col(11) [Other deposits - Time - Foreign currency]. Total Deposits (TD) is calculated as Col(6) [Demand deposits - Total] + Col(12) [Other deposits - Total]. Header Forward Fill (ffill) is required due to merged header cells."
+    }
+  },
+  {
+    "country_name": "Afghanistan",
+    "alpha2_code": "AF",
+    "alpha3_code": "AFG",
+    "numeric_code": 4,
+    "source": {
+      "source_url": "https://dab.gov.af/Annual-Economic-and-Statistical-Bulletins",
+      "source_url_2": null,
+      "notes": "Annuel Economic Bulletin -> Table 2.1 Monetary aggregate -> 3- Broad Money(M2) -> Other Deposits (Quasi Money) -> In Foreign currency"
+    },
+    "target": {
+      "data_type": "PDF Bulletin",
+      "direct_download_url": "https://dab.gov.af/quarterly-economic-and-statistical-bulletins",
+      "update_frequency": "Quarterly",
+      "requires_js": false,
+      "notes": "Requires Playwright to crawl bulletin links and fetch PDFs. Parse Table 2.1 (Monetary Aggregates). FCD = 'In Foreign Currency' under Other Deposits. TD = Demand Deposits + Other Deposits."    }
+  },
+  {
+    "country_name": "Angola",
+    "alpha2_code": "AO",
+    "alpha3_code": "AGO",
+    "numeric_code": 24,
+    "source": {
+      "source_url": "https://www.bna.ao/Conteudos/Temas/lista_temas.aspx?idc=311&idsc=14121&idl=1",
+      "source_url_2": "https://www.bna.ao/Conteudos/All/lista.aspx?idc=15650&idsc=15651&idl=1",
+      "notes": null
+    },
+    "target": {
+      "data_type": "Direct Excel",
+      "direct_download_url": "https://www.bna.ao/",
+      "update_frequency": "Monthly",
+      "requires_js": true,
+      "notes": "사이트 인증서 오류로 자동접근 불가. 검색결과에 따르면 '통계>Estatisticas Monetarias e Financeiras' 메뉴에서 EMF Nova Serie 엑셀파일 제공 확인(bancobai 자료 인용)"
+    }
+  },
+  {
+    "country_name": "Anguilla",
+    "alpha2_code": "AI",
+    "alpha3_code": "AIA",
+    "numeric_code": 660,
+    "source": {
+      "source_url": "https://www.eccb-centralbank.org/n/selected-monetary-and-financial-statistics",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://www.eccb-centralbank.org/statistics-category/monetary-and-financial-statistics/summarized-monetary-survey",
+      "update_frequency": "Annual/Quarterly",
+      "requires_js": true,
+      "notes": "Statistics>Monetary and Financial Sector>Summarized Monetary Survey, Country=Anguilla 선택 후 Foreign Currency Deposits 항목 확인, Download 버튼으로 Excel 추출 가능"
+    }
+  },
+  {
+    "country_name": "Åland Islands",
+    "alpha2_code": "AX",
+    "alpha3_code": "ALA",
+    "numeric_code": 248,
+    "source": {
+      "source_url": null,
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": null,
+      "direct_download_url": null,
+      "update_frequency": null,
+      "requires_js": null,
+      "notes": "해당 지역(올란드 제도)은 독립 중앙은행이 없으며 핀란드/ECB 통계에 포함됨. Source URL 없음"
+    }
+  },
+  {
+    "country_name": "Albania",
+    "alpha2_code": "AL",
+    "alpha3_code": "ALB",
+    "numeric_code": 8,
+    "source": {
+      "source_url": "https://www.bankofalbania.org/Statistics/Monetary_Financial_and_Banking_statistics/Deposits.html?evb=agregate&evn=agregate_detaje&cregtab_id=639&periudha_id=1",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://www.bankofalbania.org/Statistics/Monetary_Financial_and_Banking_statistics/Deposits.html?evb=agregate&evn=agregate_detaje&cregtab_id=741&periudha_id=1",
+      "update_frequency": "Monthly",
+      "requires_js": true,
+      "notes": "Monetary,Financial and Banking statistics>Deposits>\"Foreign currency deposits converted in ALL by sector and maturity\"(cregtab_id=741) 클릭 후 Show values로 테이블 조회, 별도 엑셀다운로드 버튼 없음(웹 테이블만 제공)"
+    }
+  },
+  {
+    "country_name": "Andorra",
+    "alpha2_code": "AD",
+    "alpha3_code": "AND",
+    "numeric_code": 20,
+    "source": {
+      "source_url": null,
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": null,
+      "direct_download_url": null,
+      "update_frequency": null,
+      "requires_js": null,
+      "notes": "안도라는 자체 중앙은행 없음(INAF가 유사기능). 공개된 시계열 통계 페이지 확인 안됨, Source URL 없음"
+    }
+  },
+  {
+    "country_name": "United Arab Emirates (the)",
+    "alpha2_code": "AE",
+    "alpha3_code": "ARE",
+    "numeric_code": 784,
+    "source": {
+      "source_url": "https://www.centralbank.ae/en/statistics/monthly-statistics",
+      "source_url_2": "https://www.centralbank.ae/en/publications",
+      "notes": null
+    },
+    "target": {
+      "data_type": "PDF Bulletin",
+      "direct_download_url": "https://www.centralbank.ae/media/r0mirede/statistical-bulletin-may-2026.pdf",
+      "update_frequency": "Monthly",
+      "requires_js": true,
+      "notes": "Research and Statistics>Statistics by Theme>\"Statistical Bulletin-Banking & Monetary Statistics\">월별 항목 클릭 후 상세페이지에서 PDF Download"
+    }
+  },
+  {
+    "country_name": "Argentina",
+    "alpha2_code": "AR",
+    "alpha3_code": "ARG",
+    "numeric_code": 32,
+    "source": {
+      "source_url": "https://www.bcra.gob.ar/PublicacionesEstadisticas/Cuadros_estandarizados_series_estadisticas_i.asp?prevPage=stat",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "PDF Bulletin",
+      "direct_download_url": "https://www.bcra.gob.ar/listado-boletin-estadistico/",
+      "update_frequency": "Monthly",
+      "requires_js": false,
+      "notes": "Boletín Estadístico(월간) 목록에서 최신월 클릭 시 PDF 내 Excel(.xls) 시리즈 링크 포함, 예: dep....xls 형태로 개별 시리즈 다운 가능"
+    }
+  },
+  {
+    "country_name": "Armenia",
+    "alpha2_code": "AM",
+    "alpha3_code": "ARM",
+    "numeric_code": 51,
+    "source": {
+      "source_url": "https://databank.cba.am/",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://www.cba.am/en/statistics/commercial-banks-loans-by-sectors/152",
+      "update_frequency": "Monthly",
+      "requires_js": true,
+      "notes": "Statistics>Deposits>Commercial banks deposits by sectors; interactive filterable table by sector/currency, no direct file download"
+    }
+  },
+  {
+    "country_name": "American Samoa",
+    "alpha2_code": "AS",
+    "alpha3_code": "ASM",
+    "numeric_code": 16,
+    "source": {
+      "source_url": null,
+      "source_url_2": "https://www.cba.am/en/SitePages/statmonetaryfinancial.aspx",
+      "notes": null
+    },
+    "target": {
+      "data_type": null,
+      "direct_download_url": null,
+      "update_frequency": null,
+      "requires_js": null,
+      "notes": "No central bank; uses US Federal Reserve System. No standalone monetary statistics source found for American Samoa"
+    }
+  },
+  {
+    "country_name": "Antarctica",
+    "alpha2_code": "AQ",
+    "alpha3_code": "ATA",
+    "numeric_code": 10,
+    "source": {
+      "source_url": null,
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": null,
+      "direct_download_url": null,
+      "update_frequency": null,
+      "requires_js": null,
+      "notes": "No central bank; Antarctica has no permanent population or banking system"
+    }
+  },
+  {
+    "country_name": "French Southern Territories (the)",
+    "alpha2_code": "TF",
+    "alpha3_code": "ATF",
+    "numeric_code": 260,
+    "source": {
+      "source_url": null,
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": null,
+      "direct_download_url": null,
+      "update_frequency": null,
+      "requires_js": null,
+      "notes": "No central bank; French Southern Territories administered by France, uses French/EU statistics"
+    }
+  },
+  {
+    "country_name": "Antigua and Barbuda",
+    "alpha2_code": "AG",
+    "alpha3_code": "ATG",
+    "numeric_code": 28,
+    "source": {
+      "source_url": "https://www.eccb-centralbank.org/n/selected-monetary-and-financial-statistics",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://www.eccb-centralbank.org/statistics-category/monetary-and-financial-statistics/summarized-monetary-survey",
+      "update_frequency": "Monthly",
+      "requires_js": true,
+      "notes": "ECCB regional central bank covers Antigua and Barbuda; Statistics>Monetary and Financial Statistics>Summarized Monetary Survey; interactive table"
+    }
+  },
+  {
+    "country_name": "Australia",
+    "alpha2_code": "AU",
+    "alpha3_code": "AUS",
+    "numeric_code": 36,
+    "source": {
+      "source_url": "https://www.rba.gov.au/statistics/tables/#money-and-credit",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Direct Excel",
+      "direct_download_url": "https://www.rba.gov.au/statistics/tables/xls/d03hist.xlsx?v=2026-08-10-12-51-18",
+      "update_frequency": "Monthly",
+      "requires_js": false,
+      "notes": "Statistics>Statistical Tables>Money and Credit>Monetary Aggregates D3 XLSX; direct downloadable Excel with historical monetary aggregates incl. deposits"
+    }
+  },
+  {
+    "country_name": "Austria",
+    "alpha2_code": "AT",
+    "alpha3_code": "AUT",
+    "numeric_code": 40,
+    "source": {
+      "source_url": "https://www.oenb.at/en/Statistics/Standardized-Tables/OeNB--Eurosystem-and-Monetary-Indicators-/deposits-of-mfis.html",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://www.oenb.at/isawebstat/stabfrage/createReport?lang=EN&report=1.7.10",
+      "update_frequency": "Monthly",
+      "requires_js": true,
+      "notes": "Statistics>Standardized Tables>OeNB Eurosystem and Monetary Indicators>Deposits of MFIs>Deposits with Austrian MFIs; breaks down EUR vs Foreign currencies; has Excel/CSV export icon"
+    }
+  },
+  {
+    "country_name": "Azerbaijan",
+    "alpha2_code": "AZ",
+    "alpha3_code": "AZE",
+    "numeric_code": 31,
+    "source": {
+      "source_url": "https://www.cbar.az/page-649/en",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "PDF Bulletin",
+      "direct_download_url": "https://www.cbar.az/page-42/monetary-indicators?language=en",
+      "update_frequency": "Monthly",
+      "requires_js": false,
+      "notes": "Statistics>Monetary Indicators; lists downloadable files e.g. \"Structure of deposits by currencies\" as PDF/XLS attachments"
+    }
+  },
+  {
+    "country_name": "Burundi",
+    "alpha2_code": "BI",
+    "alpha3_code": "BDI",
+    "numeric_code": 108,
+    "source": {
+      "source_url": "https://www.brb.bi/fr/content/monnaie-et-cr%C3%A9dit",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Direct Excel",
+      "direct_download_url": "https://www.brb.bi/sites/default/files/2026-07/II3_2%20Passif%20Banques%20commerciales..xlsx",
+      "update_frequency": "Monthly",
+      "requires_js": false,
+      "notes": "Statistiques>Monnaie et Credit>Situation agrégée des Banques Commerciales>Passif; direct xlsx download with deposit liabilities"
+    }
+  },
+  {
+    "country_name": "Belgium",
+    "alpha2_code": "BE",
+    "alpha3_code": "BEL",
+    "numeric_code": 56,
+    "source": {
+      "source_url": "http://stat.nbb.be/?lang=en",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://www.nbb.be/en/statistics/topics/financial-institutions/banks/loans-and-deposits",
+      "update_frequency": "Monthly",
+      "requires_js": true,
+      "notes": "Statistics>Financial institutions>Banks>Loans and deposits; links to NBB.Stat dataexplorer (dataexplorer.nbb.be) interactive database"
+    }
+  },
+  {
+    "country_name": "Benin",
+    "alpha2_code": "BJ",
+    "alpha3_code": "BEN",
+    "numeric_code": 204,
+    "source": {
+      "source_url": null,
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": null,
+      "direct_download_url": null,
+      "update_frequency": null,
+      "requires_js": null,
+      "notes": "No Source URL provided; BCEAO (regional central bank for WAEMU incl. Benin) not listed in Source tab"
+    }
+  },
+  {
+    "country_name": "Bonaire, Sint Eustatius and Saba",
+    "alpha2_code": "BQ",
+    "alpha3_code": "BES",
+    "numeric_code": 535,
+    "source": {
+      "source_url": null,
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": null,
+      "direct_download_url": null,
+      "update_frequency": null,
+      "requires_js": null,
+      "notes": "No Source URL provided; part of Netherlands, uses Dutch/ECB statistics, no standalone central bank"
+    }
+  },
+  {
+    "country_name": "Burkina Faso",
+    "alpha2_code": "BF",
+    "alpha3_code": "BFA",
+    "numeric_code": 854,
+    "source": {
+      "source_url": null,
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": null,
+      "direct_download_url": null,
+      "update_frequency": null,
+      "requires_js": null,
+      "notes": "No Source URL provided; BCEAO (regional central bank for WAEMU incl. Burkina Faso) not listed in Source tab"
+    }
+  },
+  {
+    "country_name": "Bangladesh",
+    "alpha2_code": "BD",
+    "alpha3_code": "BGD",
+    "numeric_code": 50,
+    "source": {
+      "source_url": "https://www.bb.org.bd/en/index.php/econdata/bankdeposit",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://www.bb.org.bd/en/index.php/econdata/bankdeposit",
+      "update_frequency": "Monthly",
+      "requires_js": true,
+      "notes": "Economic Data>Economic Statistics>Bank Deposit and Credit; searchable table by month/year, no direct file download visible"
+    }
+  },
+  {
+    "country_name": "Bulgaria",
+    "alpha2_code": "BG",
+    "alpha3_code": "BGR",
+    "numeric_code": 100,
+    "source": {
+      "source_url": "https://www.bnb.bg/Statistics/index.htm",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "PDF Bulletin",
+      "direct_download_url": "https://www.bnb.bg/Statistics/SDDSPlus/SDDSPlusNationalPage/index.htm",
+      "update_frequency": "Monthly",
+      "requires_js": false,
+      "notes": "Original Source URL (StMonetarySurvey) broken/404; found via search - Statistics>SDDS Plus National Summary Data Page>Central Bank Survey/Depository Corporations Survey; also has SDMX-ML machine-readable data"
+    }
+  },
+  {
+    "country_name": "Bahrain",
+    "alpha2_code": "BH",
+    "alpha3_code": "BHR",
+    "numeric_code": 48,
+    "source": {
+      "source_url": "https://www.cbb.gov.bh/publications/",
+      "source_url_2": null,
+      "notes": "Domestic Deposits at Commercial Banks -> Retail Banks - Aggregated Balance Sheet"
+    },
+    "target": {
+      "data_type": "PDF Bulletin",
+      "direct_download_url": "https://www.cbb.gov.bh/publications/",
+      "update_frequency": "Monthly",
+      "requires_js": false,
+      "notes": "Publications>Statistical Bulletin (monthly PDF); also Central Bank Survey monthly PDF with monetary/deposit data"
+    }
+  },
+  {
+    "country_name": "Bahamas (the)",
+    "alpha2_code": "BS",
+    "alpha3_code": "BHS",
+    "numeric_code": 44,
+    "source": {
+      "source_url": "https://www.centralbankbahamas.com/publications/qsd",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "PDF Bulletin",
+      "direct_download_url": "https://www.centralbankbahamas.com/publications/qsd",
+      "update_frequency": "Quarterly",
+      "requires_js": false,
+      "notes": "Publications>Quarterly Statistical Digest; PDF contains Monetary Survey table with Foreign Currency Deposits breakdown"
+    }
+  },
+  {
+    "country_name": "Bosnia and Herzegovina",
+    "alpha2_code": "BA",
+    "alpha3_code": "BIH",
+    "numeric_code": 70,
+    "source": {
+      "source_url": "https://www.cbbh.ba/content/read/1122",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Direct Excel",
+      "direct_download_url": "https://www.cbbh.ba/content/DownloadAttachment/?id=53a74b79-f1c9-49d3-8de7-1df1f86e1f53&langTag=en",
+      "update_frequency": "Monthly",
+      "requires_js": false,
+      "notes": "Statistics>Statistical Appendix>Monetary and Financial Sector Statistics>Attachment 10a - Analytical Review of Deposits at Commercial Banks; direct file download"
+    }
+  },
+  {
+    "country_name": "Saint Barthélemy",
+    "alpha2_code": "BL",
+    "alpha3_code": "BLM",
+    "numeric_code": 652,
+    "source": {
+      "source_url": null,
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": null,
+      "direct_download_url": null,
+      "update_frequency": null,
+      "requires_js": null,
+      "notes": "No Source URL provided; part of France (Saint Barthélemy), uses French/ECB statistics, no standalone central bank"
+    }
+  },
+  {
+    "country_name": "Belarus",
+    "alpha2_code": "BY",
+    "alpha3_code": "BLR",
+    "numeric_code": 112,
+    "source": {
+      "source_url": "https://www.nbrb.by/engl/statistics/monetarystat/broadmoney",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://www.nbrb.by/engl/statistics/MonetaryStat/BroadMoney/",
+      "update_frequency": "Monthly",
+      "requires_js": true,
+      "notes": "Statistics>Monetary Statistics>Broad Money Supply; page directly displays \"Deposits in foreign currency, USD m\" line items by sector"
+    }
+  },
+  {
+    "country_name": "Belize",
+    "alpha2_code": "BZ",
+    "alpha3_code": "BLZ",
+    "numeric_code": 84,
+    "source": {
+      "source_url": "https://www.centralbank.org.bz/publications-research/economic-publications/statistical-digest",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://www.centralbank.org.bz/home/statistics/banking-system/monetary-survey",
+      "update_frequency": "Monthly",
+      "requires_js": false,
+      "notes": "Statistics>Banking System>Monetary Survey; page has direct 'Download full data set in Excel' button linking to xlsx, no JS needed"
+    }
+  },
+  {
+    "country_name": "Bermuda",
+    "alpha2_code": "BM",
+    "alpha3_code": "BMU",
+    "numeric_code": 60,
+    "source": {
+      "source_url": "https://www.bma.bm/publications/annual-reports",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "PDF/Document",
+      "direct_download_url": "https://www.bma.bm/documents-centre/document-annual-reports/general-all-sectors",
+      "update_frequency": "Annual",
+      "requires_js": false,
+      "notes": "Document Centre>Filter by Category>Annual Reports; no direct monetary survey table, mainly annual report PDFs"
+    }
+  },
+  {
+    "country_name": "Bolivia (Plurinational State of)",
+    "alpha2_code": "BO",
+    "alpha3_code": "BOL",
+    "numeric_code": 68,
+    "source": {
+      "source_url": "https://www.bcb.gob.bo/?q=pub_boletin-mensual",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://www.bcb.gob.bo/?q=pub_boletin-mensual",
+      "update_frequency": "Monthly",
+      "requires_js": true,
+      "notes": "Boletín Mensual>Índice; select cuadro to open Excel file; site requires JS for menu navigation"
+    }
+  },
+  {
+    "country_name": "Brazil",
+    "alpha2_code": "BR",
+    "alpha3_code": "BRA",
+    "numeric_code": 76,
+    "source": {
+      "source_url": null,
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries",
+      "update_frequency": "Daily/Monthly",
+      "requires_js": true,
+      "notes": "Time Series Management System (SGS)>Monetary statistics; search by subject/code then export; requires JS"
+    }
+  },
+  {
+    "country_name": "Barbados",
+    "alpha2_code": "BB",
+    "alpha3_code": "BRB",
+    "numeric_code": 52,
+    "source": {
+      "source_url": "https://www.centralbank.org.bb/news/deposit-taking-financial-system",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://www.centralbank.org.bb/news/deposit-taking-financial-system",
+      "update_frequency": "Monthly",
+      "requires_js": true,
+      "notes": "Research & Publications>Statistics>Deposit Taking Financial System; data from 2012 onward in new IMF SRF format; requires JS for site navigation"
+    }
+  },
+  {
+    "country_name": "Brunei Darussalam",
+    "alpha2_code": "BN",
+    "alpha3_code": "BRN",
+    "numeric_code": 96,
+    "source": {
+      "source_url": "https://www.bdcb.gov.bn/statistics/monetary-and-financial-statistics",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "PDF Bulletin",
+      "direct_download_url": "https://www.bdcb.gov.bn/statistics/monetary-and-financial-statistics",
+      "update_frequency": "Monthly",
+      "requires_js": false,
+      "notes": "Statistics>Monetary and Financial Statistics; PDF/Excel tables listed directly"
+    }
+  },
+  {
+    "country_name": "Bhutan",
+    "alpha2_code": "BT",
+    "alpha3_code": "BTN",
+    "numeric_code": 64,
+    "source": {
+      "source_url": "https://www.rma.org.bt/publication.jsp?id=2",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "PDF Bulletin",
+      "direct_download_url": "https://www.rma.org.bt/publication.jsp?id=2",
+      "update_frequency": "Monthly",
+      "requires_js": false,
+      "notes": "Publications>Statistical bulletins; PDF download links listed"
+    }
+  },
+  {
+    "country_name": "Bouvet Island",
+    "alpha2_code": "BV",
+    "alpha3_code": "BVT",
+    "numeric_code": 74,
+    "source": {
+      "source_url": null,
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": null,
+      "direct_download_url": null,
+      "update_frequency": null,
+      "requires_js": null,
+      "notes": "No central bank; Bouvet Island is an uninhabited Norwegian dependency, no financial data"
+    }
+  },
+  {
+    "country_name": "Botswana",
+    "alpha2_code": "BW",
+    "alpha3_code": "BWA",
+    "numeric_code": 72,
+    "source": {
+      "source_url": "https://www.bankofbotswana.bw/index.php/annual-reports",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://www.bankofbotswana.bw/index.php/annual-reports",
+      "update_frequency": "Annual",
+      "requires_js": false,
+      "notes": "Publications>Annual Reports; also has separate Statistics section with monetary data tables"
+    }
+  },
+  {
+    "country_name": "Central African Republic (the)",
+    "alpha2_code": "CF",
+    "alpha3_code": "CAF",
+    "numeric_code": 140,
+    "source": {
+      "source_url": null,
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://www.beac.int/economie-stats/base-de-donnees-economiques-monetaires-financieres/",
+      "update_frequency": "Monthly",
+      "requires_js": true,
+      "notes": "BEAC (regional central bank for CEMAC, covers Central African Republic)>Base de Données Économiques, Monétaires et Financières (BDEMF); login: public/public; exportable PDF/HTML/XLSX/XLS"
+    }
+  },
+  {
+    "country_name": "Canada",
+    "alpha2_code": "CA",
+    "alpha3_code": "CAN",
+    "numeric_code": 124,
+    "source": {
+      "source_url": "https://www.bankofcanada.ca/rates/banking-and-financial-statistics/selected-monetary-aggregates-and-their-components-formerly-e1/",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://www.bankofcanada.ca/rates/banking-and-financial-statistics/selected-monetary-aggregates-and-their-components-formerly-e1/",
+      "update_frequency": "Monthly",
+      "requires_js": true,
+      "notes": "Rates>Banking and Financial Statistics>Selected Monetary Aggregates and Their Components; interactive charts/tables, CSV download"
+    }
+  },
+  {
+    "country_name": "Cocos (Keeling) Islands (the)",
+    "alpha2_code": "CC",
+    "alpha3_code": "CCK",
+    "numeric_code": 166,
+    "source": {
+      "source_url": null,
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://stats.gov.ck/banking-statistics/",
+      "update_frequency": "Quarterly",
+      "requires_js": false,
+      "notes": "Banking Statistics; Cook Islands stats site also covers Cocos-adjacent Pacific format but note: Cocos (Keeling) Islands uses AUD, monetary policy via Reserve Bank of Australia (RBA), no separate territory-level banking survey published"
+    }
+  },
+  {
+    "country_name": "Switzerland",
+    "alpha2_code": "CH",
+    "alpha3_code": "CHE",
+    "numeric_code": 756,
+    "source": {
+      "source_url": "https://data.snb.ch/en/topics/banken",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://data.snb.ch/en/topics/banken",
+      "update_frequency": "Monthly",
+      "requires_js": true,
+      "notes": "SNB Data Portal>Banks; interactive data portal, banks' balance sheet and deposit statistics, requires JS"
+    }
+  },
+  {
+    "country_name": "Chile",
+    "alpha2_code": "CL",
+    "alpha3_code": "CHL",
+    "numeric_code": 152,
+    "source": {
+      "source_url": "https://www.bcentral.cl/areas/estadisticas",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://www.bcentral.cl/areas/estadisticas",
+      "update_frequency": "Monthly",
+      "requires_js": true,
+      "notes": "Estadísticas>Monetaria y financiera; interactive statistics hub, requires JS for navigation"
+    }
+  },
+  {
+    "country_name": "China",
+    "alpha2_code": "CN",
+    "alpha3_code": "CHN",
+    "numeric_code": 156,
+    "source": {
+      "source_url": "https://www.ceicdata.com/en/china/deposit-foreign-currency",
+      "source_url_2": "https://www.ceicdata.com/en/indicator/china/total-deposits#:~:text=China%27s%20Total%20Deposits%20was%20reported,Sep%202020%2C%20with%20285%20observations.",
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://www.ceicdata.com/en/china/deposit-foreign-currency",
+      "update_frequency": "Monthly",
+      "requires_js": true,
+      "notes": "CEIC Data>China Deposits (third-party aggregator, PBOC does not publish free direct deposit series); requires subscription/JS"
+    }
+  },
+  {
+    "country_name": "Côte d'Ivoire",
+    "alpha2_code": "CI",
+    "alpha3_code": "CIV",
+    "numeric_code": 384,
+    "source": {
+      "source_url": null,
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": null,
+      "direct_download_url": null,
+      "update_frequency": null,
+      "requires_js": null,
+      "notes": "No Source URL provided; BCEAO (regional central bank for WAEMU) covers Côte d'Ivoire"
+    }
+  },
+  {
+    "country_name": "Cameroon",
+    "alpha2_code": "CM",
+    "alpha3_code": "CMR",
+    "numeric_code": 120,
+    "source": {
+      "source_url": null,
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": null,
+      "direct_download_url": null,
+      "update_frequency": null,
+      "requires_js": null,
+      "notes": "No Source URL provided; BEAC (regional central bank for CEMAC) covers Cameroon"
+    }
+  },
+  {
+    "country_name": "Congo (the Democratic Republic of the)",
+    "alpha2_code": "CD",
+    "alpha3_code": "COD",
+    "numeric_code": 180,
+    "source": {
+      "source_url": "http://www.bcc.cd/index.php?option=com_content&view=article&id=159&Itemid=87",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://www.bcc.cd/statistiques",
+      "update_frequency": "Monthly",
+      "requires_js": false,
+      "notes": "Statistiques>Monnaie et crédit; monthly interest rate series, PDF/table links listed directly"
+    }
+  },
+  {
+    "country_name": "Congo (the)",
+    "alpha2_code": "CG",
+    "alpha3_code": "COG",
+    "numeric_code": 178,
+    "source": {
+      "source_url": null,
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": null,
+      "direct_download_url": null,
+      "update_frequency": null,
+      "requires_js": null,
+      "notes": "No Source URL provided; BEAC (regional central bank for CEMAC) covers Republic of Congo"
+    }
+  },
+  {
+    "country_name": "Cook Islands (the)",
+    "alpha2_code": "CK",
+    "alpha3_code": "COK",
+    "numeric_code": 184,
+    "source": {
+      "source_url": null,
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://stats.gov.ck/banking-statistics/",
+      "update_frequency": "Quarterly",
+      "requires_js": false,
+      "notes": "Banking Statistics; Cook Islands has no central bank, uses NZD; quarterly banking survey covering 4 commercial banks, M1/M2 money supply data"
+    }
+  },
+  {
+    "country_name": "Colombia",
+    "alpha2_code": "CO",
+    "alpha3_code": "COL",
+    "numeric_code": 170,
+    "source": {
+      "source_url": "https://www.banrep.gov.co/es/el-banco/estados-financieros-anuales",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://www.banrep.gov.co/es/el-banco/estados-financieros-anuales",
+      "update_frequency": "Annual",
+      "requires_js": false,
+      "notes": "El Banco>Estados Financieros Anuales; Banco de la República also has separate monthly monetary statistics section (Estadisticas>Agregados Monetarios y Crediticios)"
+    }
+  },
+  {
+    "country_name": "Comoros (the)",
+    "alpha2_code": "KM",
+    "alpha3_code": "COM",
+    "numeric_code": 174,
+    "source": {
+      "source_url": null,
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": null,
+      "direct_download_url": null,
+      "update_frequency": null,
+      "requires_js": null,
+      "notes": "No Source URL provided; Banque Centrale des Comores (BCC) at banque-comores.km, limited online statistics availability"
+    }
+  },
+  {
+    "country_name": "Cabo Verde",
+    "alpha2_code": "CV",
+    "alpha3_code": "CPV",
+    "numeric_code": 132,
+    "source": {
+      "source_url": "https://www.bcv.cv/pt/Estatisticas/Quadros%20Estatisticos/AnaliseEstatica/sectorbancario2/Paginas/SectorBanc%C3%A1rio.aspx",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://www.bcv.cv/pt/Estatisticas/Quadros%20Estatisticos/AnaliseEstatica/sectorbancario2/Paginas/SectorBanc%C3%A1rio.aspx",
+      "update_frequency": "Monthly",
+      "requires_js": true,
+      "notes": "Estatísticas>Quadros Estatísticos>Análise Estática>Sector Bancário; interactive tables, requires JS"
+    }
+  },
+  {
+    "country_name": "Costa Rica",
+    "alpha2_code": "CR",
+    "alpha3_code": "CRI",
+    "numeric_code": 188,
+    "source": {
+      "source_url": "https://www.bccr.fi.cr/seccion-indicadores-economicos/monetario-y-financiero",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://www.bccr.fi.cr/seccion-indicadores-economicos/monetario-y-financiero",
+      "update_frequency": "Monthly",
+      "requires_js": true,
+      "notes": "Indicadores Económicos>Monetario y Financiero; interactive statistics section, requires JS for data retrieval"
+    }
+  },
+  {
+    "country_name": "Cuba",
+    "alpha2_code": "CU",
+    "alpha3_code": "CUB",
+    "numeric_code": 192,
+    "source": {
+      "source_url": null,
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": null,
+      "direct_download_url": null,
+      "update_frequency": null,
+      "requires_js": null,
+      "notes": "No Source URL provided; Banco Central de Cuba does not publish detailed public monetary statistics online (US embargo/data restrictions)"
+    }
+  },
+  {
+    "country_name": "Curaçao",
+    "alpha2_code": "CW",
+    "alpha3_code": "CUW",
+    "numeric_code": 531,
+    "source": {
+      "source_url": "https://www.centralbank.cw/publications/annual-reports-quarterly-bulletins",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "PDF Bulletin",
+      "direct_download_url": "https://www.centralbank.cw/publications/annual-reports-quarterly-bulletins",
+      "update_frequency": "Quarterly",
+      "requires_js": false,
+      "notes": "Publications>Annual Reports & Quarterly Bulletins; PDF bulletins listed directly, covers Curaçao and Sint Maarten (CBCS)"
+    }
+  },
+  {
+    "country_name": "Christmas Island",
+    "alpha2_code": "CX",
+    "alpha3_code": "CXR",
+    "numeric_code": 162,
+    "source": {
+      "source_url": null,
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": null,
+      "direct_download_url": null,
+      "update_frequency": null,
+      "requires_js": null,
+      "notes": "No central bank; Christmas Island is an Australian external territory, uses AUD, no separate banking statistics published"
+    }
+  },
+  {
+    "country_name": "Cayman Islands (the)",
+    "alpha2_code": "KY",
+    "alpha3_code": "CYM",
+    "numeric_code": 136,
+    "source": {
+      "source_url": null,
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://www.centralbank.ky/en/publications/monetary-and-financial-statistics",
+      "update_frequency": "Monthly",
+      "requires_js": false,
+      "notes": "Publications>Monetary and Financial Statistics; direct PDF/Excel table links"
+    }
+  },
+  {
+    "country_name": "Cyprus",
+    "alpha2_code": "CY",
+    "alpha3_code": "CYP",
+    "numeric_code": 196,
+    "source": {
+      "source_url": "https://www.centralbank.cy/en/publications/monetary-and-financial-statistics",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": null,
+      "direct_download_url": null,
+      "update_frequency": null,
+      "requires_js": null,
+      "notes": "No Source URL provided; Cyprus uses Euro, monetary statistics compiled via Central Bank of Cyprus/ECB framework"
+    }
+  },
+  {
+    "country_name": "Czechia",
+    "alpha2_code": "CZ",
+    "alpha3_code": "CZE",
+    "numeric_code": 203,
+    "source": {
+      "source_url": "https://www.cnb.cz/en/statistics/money-and-banking-stat/",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://www.cnb.cz/en/statistics/money-and-banking-stat/",
+      "update_frequency": "Monthly",
+      "requires_js": true,
+      "notes": "Statistics>Money and Banking Statistics; interactive ARAD database, requires JS for table generation"
+    }
+  },
+  {
+    "country_name": "Germany",
+    "alpha2_code": "DE",
+    "alpha3_code": "DEU",
+    "numeric_code": 276,
+    "source": {
+      "source_url": "https://www.bundesbank.de/dynamic/action/en/statistics/time-series-databases/time-series-databases/745582/745582?tsId=BBBEK1.M.RU6783&statisticType=BBK_ITS&tsTab=0&dateSelect=2026",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://www.bundesbank.de/dynamic/action/en/statistics/time-series-databases/time-series-databases/745582/745582?tsId=BBBEK1.M.",
+      "update_frequency": "Monthly",
+      "requires_js": true,
+      "notes": "Statistics>Time Series Databases; Bundesbank interactive database, requires JS for query/export"
+    }
+  },
+  {
+    "country_name": "Djibouti",
+    "alpha2_code": "DJ",
+    "alpha3_code": "DJI",
+    "numeric_code": 262,
+    "source": {
+      "source_url": "https://banque-centrale.dj/index.php/indicateurs-monetaires/",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Direct Excel",
+      "direct_download_url": "https://banque-centrale.dj/index.php/indicateurs-monetaires/",
+      "update_frequency": "Monthly",
+      "requires_js": false,
+      "notes": "Indicateurs Monétaires; direct Excel/PDF table links listed"
+    }
+  },
+  {
+    "country_name": "Dominica",
+    "alpha2_code": "DM",
+    "alpha3_code": "DMA",
+    "numeric_code": 212,
+    "source": {
+      "source_url": null,
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": null,
+      "direct_download_url": null,
+      "update_frequency": null,
+      "requires_js": null,
+      "notes": "No Source URL provided; ECCB regional central bank covers Dominica; see ECCB (row ATG)"
+    }
+  },
+  {
+    "country_name": "Denmark",
+    "alpha2_code": "DK",
+    "alpha3_code": "DNK",
+    "numeric_code": 208,
+    "source": {
+      "source_url": "https://nationalbanken.statbank.dk/statbank5a/default.asp?w=1843",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://nationalbanken.statbank.dk/statbank5a/default.asp?w=1843",
+      "update_frequency": "Monthly",
+      "requires_js": true,
+      "notes": "StatBank Denmark>Monetary and financial statistics; interactive StatBank platform, requires JS"
+    }
+  },
+  {
+    "country_name": "Dominican Republic (the)",
+    "alpha2_code": "DO",
+    "alpha3_code": "DOM",
+    "numeric_code": 214,
+    "source": {
+      "source_url": "https://www.bancentral.gov.do/a/d/2536-sector-monetario-y-financiero",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://www.bancentral.gov.do/a/d/2536-sector-monetario-y-financiero",
+      "update_frequency": "Monthly",
+      "requires_js": true,
+      "notes": "Sector Monetario y Financiero; interactive tables, requires JS"
+    }
+  },
+  {
+    "country_name": "Algeria",
+    "alpha2_code": "DZ",
+    "alpha3_code": "DZA",
+    "numeric_code": 12,
+    "source": {
+      "source_url": "https://www.bank-of-algeria.dz/statistiques-associees/",
+      "source_url_2": null,
+      "notes": "Bulletins statistiques trimestriels -> 3.4 Structure des dépôts -> Depôts à terme -> Dépôts en devises"
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://www.bank-of-algeria.dz/statistiques-associees/",
+      "update_frequency": "Monthly",
+      "requires_js": false,
+      "notes": "Statistiques Associées; direct table/PDF links listed"
+    }
+  },
+  {
+    "country_name": "Ecuador",
+    "alpha2_code": "EC",
+    "alpha3_code": "ECU",
+    "numeric_code": 218,
+    "source": {
+      "source_url": null,
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": null,
+      "direct_download_url": null,
+      "update_frequency": null,
+      "requires_js": null,
+      "notes": "No Source URL provided; Ecuador is dollarized (uses USD), Banco Central del Ecuador publishes monetary statistics separately"
+    }
+  },
+  {
+    "country_name": "Egypt",
+    "alpha2_code": "EG",
+    "alpha3_code": "EGY",
+    "numeric_code": 818,
+    "source": {
+      "source_url": "https://www.cbe.org.eg/en/MonetaryPolicy/Pages/MonetaryPolicyReport.aspx",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://www.cbe.org.eg/en/MonetaryPolicy/Pages/MonetaryPolicyReport.aspx",
+      "update_frequency": "Quarterly",
+      "requires_js": true,
+      "notes": "Monetary Policy>Monetary Policy Report; also has separate Economic Research>Statistics section with monthly monetary survey"
+    }
+  },
+  {
+    "country_name": "Eritrea",
+    "alpha2_code": "ER",
+    "alpha3_code": "ERI",
+    "numeric_code": 232,
+    "source": {
+      "source_url": null,
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": null,
+      "direct_download_url": null,
+      "update_frequency": null,
+      "requires_js": null,
+      "notes": "No Source URL provided; Bank of Eritrea publishes limited public statistics online"
+    }
+  },
+  {
+    "country_name": "Western Sahara",
+    "alpha2_code": "EH",
+    "alpha3_code": "ESH",
+    "numeric_code": 732,
+    "source": {
+      "source_url": null,
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": null,
+      "direct_download_url": null,
+      "update_frequency": null,
+      "requires_js": null,
+      "notes": "No central bank; Western Sahara disputed territory, no independent monetary authority"
+    }
+  },
+  {
+    "country_name": "Spain",
+    "alpha2_code": "ES",
+    "alpha3_code": "ESP",
+    "numeric_code": 724,
+    "source": {
+      "source_url": "https://www.bde.es/webbde/en/estadis/infoest/temas/sb_ifiescbs.html",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://www.bde.es/webbde/en/estadis/infoest/temas/sb_ifiescbs.html",
+      "update_frequency": "Monthly",
+      "requires_js": false,
+      "notes": "Estadísticas>Información estadística>IFM y ECB; direct table links, Bank of Spain"
+    }
+  },
+  {
+    "country_name": "Estonia",
+    "alpha2_code": "EE",
+    "alpha3_code": "EST",
+    "numeric_code": 233,
+    "source": {
+      "source_url": "https://statistika.eestipank.ee/#/en/p/1009/r/1015",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://statistika.eestipank.ee/#/en/p/1009/r/1015",
+      "update_frequency": "Monthly",
+      "requires_js": true,
+      "notes": "Eesti Pank statistics portal; interactive query builder, requires JS"
+    }
+  },
+  {
+    "country_name": "Ethiopia",
+    "alpha2_code": "ET",
+    "alpha3_code": "ETH",
+    "numeric_code": 231,
+    "source": {
+      "source_url": null,
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": null,
+      "direct_download_url": null,
+      "update_frequency": null,
+      "requires_js": null,
+      "notes": "No Source URL provided; National Bank of Ethiopia has limited public online statistics"
+    }
+  },
+  {
+    "country_name": "Finland",
+    "alpha2_code": "FI",
+    "alpha3_code": "FIN",
+    "numeric_code": 246,
+    "source": {
+      "source_url": "https://www.suomenpankki.fi/en/Statistics/mfi-balance-sheet/tables/",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://www.suomenpankki.fi/en/Statistics/mfi-balance-sheet/tables/",
+      "update_frequency": "Monthly",
+      "requires_js": false,
+      "notes": "Statistics>MFI balance sheet>Tables; direct table/Excel links"
+    }
+  },
+  {
+    "country_name": "Fiji",
+    "alpha2_code": "FJ",
+    "alpha3_code": "FJI",
+    "numeric_code": 242,
+    "source": {
+      "source_url": "https://www.rbf.gov.fj/statistics/economic-and-financial-statistics/",
+      "source_url_2": null,
+      "notes": "RBF Monetary Survey Table with Foreign Currency Deposits column"
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://www.rbf.gov.fj/statistics/economic-and-financial-statistics/",
+      "update_frequency": "Monthly",
+      "requires_js": false,
+      "notes": "Statistics>Economic and Financial Statistics; direct table/PDF links"
+    }
+  },
+  {
+    "country_name": "Falkland Islands (the) [Malvinas]",
+    "alpha2_code": "FK",
+    "alpha3_code": "FLK",
+    "numeric_code": 238,
+    "source": {
+      "source_url": null,
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": null,
+      "direct_download_url": null,
+      "update_frequency": null,
+      "requires_js": null,
+      "notes": "No central bank; Falkland Islands uses Falkland pound pegged to GBP, no separate monetary survey published"
+    }
+  },
+  {
+    "country_name": "France",
+    "alpha2_code": "FR",
+    "alpha3_code": "FRA",
+    "numeric_code": 250,
+    "source": {
+      "source_url": null,
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://www.banque-france.fr/en/statistics",
+      "update_frequency": "Monthly",
+      "requires_js": true,
+      "notes": "Statistics section; Banque de France, part of Eurosystem/ECB statistics framework, requires JS"
+    }
+  },
+  {
+    "country_name": "Faroe Islands (the)",
+    "alpha2_code": "FO",
+    "alpha3_code": "FRO",
+    "numeric_code": 234,
+    "source": {
+      "source_url": null,
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": null,
+      "direct_download_url": null,
+      "update_frequency": null,
+      "requires_js": null,
+      "notes": "No Source URL provided; part of Denmark (Kingdom), uses Danish krone; Faroese banking data limited"
+    }
+  },
+  {
+    "country_name": "Micronesia (Federated States of)",
+    "alpha2_code": "FM",
+    "alpha3_code": "FSM",
+    "numeric_code": 583,
+    "source": {
+      "source_url": null,
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": null,
+      "direct_download_url": null,
+      "update_frequency": null,
+      "requires_js": null,
+      "notes": "No central bank; Micronesia uses USD, no standalone central bank"
+    }
+  },
+  {
+    "country_name": "Gabon",
+    "alpha2_code": "GA",
+    "alpha3_code": "GAB",
+    "numeric_code": 266,
+    "source": {
+      "source_url": null,
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": null,
+      "direct_download_url": null,
+      "update_frequency": null,
+      "requires_js": null,
+      "notes": "No Source URL provided; BEAC (regional central bank for CEMAC) covers Gabon"
+    }
+  },
+  {
+    "country_name": "United Kingdom of Great Britain and Northern Ireland (the)",
+    "alpha2_code": "GB",
+    "alpha3_code": "GBR",
+    "numeric_code": 826,
+    "source": {
+      "source_url": "https://www.bankofengland.co.uk/statistics/tables#m4",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://www.bankofengland.co.uk/statistics/tables#m4",
+      "update_frequency": "Monthly",
+      "requires_js": true,
+      "notes": "Statistics>Tables; Bank of England interactive statistics database, requires JS"
+    }
+  },
+  {
+    "country_name": "Georgia",
+    "alpha2_code": "GE",
+    "alpha3_code": "GEO",
+    "numeric_code": 268,
+    "source": {
+      "source_url": "https://www.nbg.gov.ge/index.php?m=652&lng=eng",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://www.nbg.gov.ge/index.php?m=652&lng=eng",
+      "update_frequency": "Monthly",
+      "requires_js": false,
+      "notes": "Statistics>Monetary Statistics; direct table links, National Bank of Georgia"
+    }
+  },
+  {
+    "country_name": "Guernsey",
+    "alpha2_code": "GG",
+    "alpha3_code": "GGY",
+    "numeric_code": 831,
+    "source": {
+      "source_url": null,
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": null,
+      "direct_download_url": null,
+      "update_frequency": null,
+      "requires_js": null,
+      "notes": "No Source URL provided; Guernsey uses Guernsey pound pegged to GBP, no independent central bank"
+    }
+  },
+  {
+    "country_name": "Ghana",
+    "alpha2_code": "GH",
+    "alpha3_code": "GHA",
+    "numeric_code": 288,
+    "source": {
+      "source_url": "https://www.bog.gov.gh/economic-data/monetary-survey/",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://www.bog.gov.gh/economic-data/monetary-survey/",
+      "update_frequency": "Monthly",
+      "requires_js": false,
+      "notes": "Economic Data>Monetary Survey; direct table/PDF links, Bank of Ghana"
+    }
+  },
+  {
+    "country_name": "Gibraltar",
+    "alpha2_code": "GI",
+    "alpha3_code": "GIB",
+    "numeric_code": 292,
+    "source": {
+      "source_url": null,
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": null,
+      "direct_download_url": null,
+      "update_frequency": null,
+      "requires_js": null,
+      "notes": "No Source URL provided; Gibraltar uses Gibraltar pound pegged to GBP, part of UK overseas territory"
+    }
+  },
+  {
+    "country_name": "Guinea",
+    "alpha2_code": "GN",
+    "alpha3_code": "GIN",
+    "numeric_code": 324,
+    "source": {
+      "source_url": "https://www.bcrg-guinee.org/publications/bulletins-statistiques/",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "PDF Bulletin",
+      "direct_download_url": "https://www.bcrg-guinee.org/publications/bulletins-statistiques/",
+      "update_frequency": "Monthly",
+      "requires_js": false,
+      "notes": "Publications>Bulletins Statistiques; PDF bulletins listed directly, Banque Centrale de la République de Guinée"
+    }
+  },
+  {
+    "country_name": "Guadeloupe",
+    "alpha2_code": "GP",
+    "alpha3_code": "GLP",
+    "numeric_code": 312,
+    "source": {
+      "source_url": null,
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": null,
+      "direct_download_url": null,
+      "update_frequency": null,
+      "requires_js": null,
+      "notes": "No Source URL provided; Guadeloupe is French overseas department, uses Euro, data via Banque de France/IEDOM"
+    }
+  },
+  {
+    "country_name": "Gambia (the)",
+    "alpha2_code": "GM",
+    "alpha3_code": "GMB",
+    "numeric_code": 270,
+    "source": {
+      "source_url": "https://www.cbg.gm",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://www.cbg.gm",
+      "update_frequency": "Monthly",
+      "requires_js": false,
+      "notes": "Central Bank of Gambia homepage; statistics section has monetary survey publications, site navigation required"
+    }
+  },
+  {
+    "country_name": "Guinea-Bissau",
+    "alpha2_code": "GW",
+    "alpha3_code": "GNB",
+    "numeric_code": 624,
+    "source": {
+      "source_url": null,
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": null,
+      "direct_download_url": null,
+      "update_frequency": null,
+      "requires_js": null,
+      "notes": "No Source URL provided; BCEAO (regional central bank for WAEMU) covers Guinea-Bissau"
+    }
+  },
+  {
+    "country_name": "Equatorial Guinea",
+    "alpha2_code": "GQ",
+    "alpha3_code": "GNQ",
+    "numeric_code": 226,
+    "source": {
+      "source_url": null,
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": null,
+      "direct_download_url": null,
+      "update_frequency": null,
+      "requires_js": null,
+      "notes": "No Source URL provided; BEAC (regional central bank for CEMAC) covers Equatorial Guinea"
+    }
+  },
+  {
+    "country_name": "Greece",
+    "alpha2_code": "GR",
+    "alpha3_code": "GRC",
+    "numeric_code": 300,
+    "source": {
+      "source_url": "https://www.bankofgreece.gr/en/statistics/monetary-and-banking-statistics/deposits",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://www.bankofgreece.gr/en/statistics/monetary-and-banking-statistics/deposits",
+      "update_frequency": "Monthly",
+      "requires_js": false,
+      "notes": "Statistics>Monetary and Banking Statistics>Deposits; direct table links, Bank of Greece"
+    }
+  },
+  {
+    "country_name": "Grenada",
+    "alpha2_code": "GD",
+    "alpha3_code": "GRD",
+    "numeric_code": 308,
+    "source": {
+      "source_url": null,
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": null,
+      "direct_download_url": null,
+      "update_frequency": null,
+      "requires_js": null,
+      "notes": "No Source URL provided; ECCB regional central bank covers Grenada; see ECCB (row ATG)"
+    }
+  },
+  {
+    "country_name": "Greenland",
+    "alpha2_code": "GL",
+    "alpha3_code": "GRL",
+    "numeric_code": 304,
+    "source": {
+      "source_url": null,
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": null,
+      "direct_download_url": null,
+      "update_frequency": null,
+      "requires_js": null,
+      "notes": "No Source URL provided; part of Denmark (Kingdom), uses Danish krone; Greenlandic banking data limited"
+    }
+  },
+  {
+    "country_name": "Guatemala",
+    "alpha2_code": "GT",
+    "alpha3_code": "GTM",
+    "numeric_code": 320,
+    "source": {
+      "source_url": "https://www.banguat.gob.gt/page/agregados-monetarios",
+      "source_url_2": null,
+      "notes": "Banguat: Depósitos Monetarios en M/E 1995-2026 monthly"
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://www.banguat.gob.gt/page/agregados-monetarios",
+      "update_frequency": "Monthly",
+      "requires_js": false,
+      "notes": "Agregados Monetarios; direct table links, Banco de Guatemala"
+    }
+  },
+  {
+    "country_name": "French Guiana",
+    "alpha2_code": "GF",
+    "alpha3_code": "GUF",
+    "numeric_code": 254,
+    "source": {
+      "source_url": null,
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": null,
+      "direct_download_url": null,
+      "update_frequency": null,
+      "requires_js": null,
+      "notes": "No Source URL provided; French Guiana is French overseas department, uses Euro, data via Banque de France/IEDOM"
+    }
+  },
+  {
+    "country_name": "Guam",
+    "alpha2_code": "GU",
+    "alpha3_code": "GUM",
+    "numeric_code": 316,
+    "source": {
+      "source_url": null,
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": null,
+      "direct_download_url": null,
+      "update_frequency": null,
+      "requires_js": null,
+      "notes": "No central bank; Guam is US territory, uses USD, part of US Federal Reserve statistics"
+    }
+  },
+  {
+    "country_name": "Guyana",
+    "alpha2_code": "GY",
+    "alpha3_code": "GUY",
+    "numeric_code": 328,
+    "source": {
+      "source_url": "https://www.bankofguyana.org.gy/bog/research-publications/statistical-abstract",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://www.bankofguyana.org.gy/bog/research-publications/statistical-abstract",
+      "update_frequency": "Monthly",
+      "requires_js": false,
+      "notes": "Research Publications>Statistical Abstract; direct table/PDF links, Bank of Guyana"
+    }
+  },
+  {
+    "country_name": "Hong Kong",
+    "alpha2_code": "HK",
+    "alpha3_code": "HKG",
+    "numeric_code": 344,
+    "source": {
+      "source_url": "https://www.hkma.gov.hk/eng/data-publications-and-research/data-and-statistics/economic-financial-data-for-hong-kong/",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://www.hkma.gov.hk/eng/data-publications-and-research/data-and-statistics/economic-financial-data-for-hong-kong/",
+      "update_frequency": "Monthly",
+      "requires_js": true,
+      "notes": "Data, Publications and Research>Economic and Financial Data; interactive database, requires JS"
+    }
+  },
+  {
+    "country_name": "Heard Island and McDonald Islands",
+    "alpha2_code": "HM",
+    "alpha3_code": "HMD",
+    "numeric_code": 334,
+    "source": {
+      "source_url": null,
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": null,
+      "direct_download_url": null,
+      "update_frequency": null,
+      "requires_js": null,
+      "notes": "No central bank; Heard Island and McDonald Islands is an uninhabited Australian external territory"
+    }
+  },
+  {
+    "country_name": "Honduras",
+    "alpha2_code": "HN",
+    "alpha3_code": "HND",
+    "numeric_code": 340,
+    "source": {
+      "source_url": "https://www.bch.hn/agregados_monetarios.php",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://www.bch.hn/agregados_monetarios.php",
+      "update_frequency": "Monthly",
+      "requires_js": false,
+      "notes": "Agregados Monetarios; direct table links, Banco Central de Honduras"
+    }
+  },
+  {
+    "country_name": "Croatia",
+    "alpha2_code": "HR",
+    "alpha3_code": "HRV",
+    "numeric_code": 191,
+    "source": {
+      "source_url": "https://www.hnb.hr/en/statistics/statistical-data/financial-sector/consolidated-balance-sheet-of-mfis",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://www.hnb.hr/en/statistics/statistical-data/financial-sector/consolidated-balance-sheet-of-mfis",
+      "update_frequency": "Monthly",
+      "requires_js": false,
+      "notes": "Statistics>Statistical data>Financial sector>Consolidated balance sheet of MFIs; direct table links, Croatian National Bank"
+    }
+  },
+  {
+    "country_name": "Haiti",
+    "alpha2_code": "HT",
+    "alpha3_code": "HTI",
+    "numeric_code": 332,
+    "source": {
+      "source_url": "https://www.brh.ht/statistiques/monnaie/",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Direct Excel",
+      "direct_download_url": "https://www.brh.ht/statistiques/monnaie/",
+      "update_frequency": "Monthly",
+      "requires_js": false,
+      "notes": "Statistiques>Monnaie; direct Excel/PDF table links, Banque de la République d'Haïti"
+    }
+  },
+  {
+    "country_name": "Hungary",
+    "alpha2_code": "HU",
+    "alpha3_code": "HUN",
+    "numeric_code": 348,
+    "source": {
+      "source_url": "https://www.mnb.hu/en/statistics/statistical-data-and-information/statistical-time-series/x-monetary-and-other-balance-sheet-statistics",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://www.mnb.hu/en/statistics/statistical-data-and-information/statistical-time-series/x-monetary-and-other-balance-sheet-statistics",
+      "update_frequency": "Monthly",
+      "requires_js": true,
+      "notes": "Statistics>Statistical time series>Monetary and other balance sheet statistics; requires JS, Magyar Nemzeti Bank"
+    }
+  },
+  {
+    "country_name": "Indonesia",
+    "alpha2_code": "ID",
+    "alpha3_code": "IDN",
+    "numeric_code": 360,
+    "source": {
+      "source_url": "https://www.bi.go.id/en/statistik/indikator-terpilih-moneter-sistem-pembayaran/Default.aspx",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://www.bi.go.id/en/statistik/indikator-terpilih-moneter-sistem-pembayaran/Default.aspx",
+      "update_frequency": "Monthly",
+      "requires_js": true,
+      "notes": "Statistik>Indikator Terpilih Moneter dan Sistem Pembayaran; requires JS, Bank Indonesia"
+    }
+  },
+  {
+    "country_name": "Isle of Man",
+    "alpha2_code": "IM",
+    "alpha3_code": "IMN",
+    "numeric_code": 833,
+    "source": {
+      "source_url": null,
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": null,
+      "direct_download_url": null,
+      "update_frequency": null,
+      "requires_js": null,
+      "notes": "No Source URL provided; Isle of Man uses GBP, has own Treasury/Financial Services Authority, no separate central bank monetary survey"
+    }
+  },
+  {
+    "country_name": "India",
+    "alpha2_code": "IN",
+    "alpha3_code": "IND",
+    "numeric_code": 356,
+    "source": {
+      "source_url": "https://rbi.org.in/Scripts/BS_NSDPDisplay.aspx",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://rbi.org.in/Scripts/BS_NSDPDisplay.aspx",
+      "update_frequency": "Monthly",
+      "requires_js": false,
+      "notes": "NSDP Display; direct table links, Reserve Bank of India"
+    }
+  },
+  {
+    "country_name": "British Indian Ocean Territory (the)",
+    "alpha2_code": "IO",
+    "alpha3_code": "IOT",
+    "numeric_code": 86,
+    "source": {
+      "source_url": null,
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": null,
+      "direct_download_url": null,
+      "update_frequency": null,
+      "requires_js": null,
+      "notes": "No central bank; British Indian Ocean Territory is uninhabited UK territory, no monetary authority"
+    }
+  },
+  {
+    "country_name": "Ireland",
+    "alpha2_code": "IE",
+    "alpha3_code": "IRL",
+    "numeric_code": 372,
+    "source": {
+      "source_url": "https://www.centralbank.ie/statistics/data-and-analysis/credit-and-banking-statistics/bank-balance-sheets",
+      "source_url_2": null,
+      "notes": "ECB MFI balance sheet; FCD of resident sectors"
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://www.centralbank.ie/statistics/data-and-analysis/credit-and-banking-statistics/bank-balance-sheets",
+      "update_frequency": "Monthly",
+      "requires_js": true,
+      "notes": "Statistics>Data and analysis>Credit and Banking Statistics>Bank Balance Sheets; requires JS, Central Bank of Ireland"
+    }
+  },
+  {
+    "country_name": "Iran (Islamic Republic of)",
+    "alpha2_code": "IR",
+    "alpha3_code": "IRN",
+    "numeric_code": 364,
+    "source": {
+      "source_url": "https://www.cbi.ir/category/3392.aspx",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://www.cbi.ir/category/3392.aspx",
+      "update_frequency": "Monthly",
+      "requires_js": false,
+      "notes": "Category page; direct table/PDF links, Central Bank of Iran"
+    }
+  },
+  {
+    "country_name": "Iraq",
+    "alpha2_code": "IQ",
+    "alpha3_code": "IRQ",
+    "numeric_code": 368,
+    "source": {
+      "source_url": null,
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": null,
+      "direct_download_url": null,
+      "update_frequency": null,
+      "requires_js": null,
+      "notes": "No Source URL provided; Central Bank of Iraq statistics limited public availability"
+    }
+  },
+  {
+    "country_name": "Iceland",
+    "alpha2_code": "IS",
+    "alpha3_code": "ISL",
+    "numeric_code": 352,
+    "source": {
+      "source_url": "https://www.cb.is/statistics/statistics/2020/10/22/Monetary%20Statistics/?stdID=9",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://www.cb.is/statistics/statistics/2020/10/22/Monetary%20Statistics/?stdID=9",
+      "update_frequency": "Monthly",
+      "requires_js": false,
+      "notes": "Statistics>Monetary Statistics; direct table links, Central Bank of Iceland"
+    }
+  },
+  {
+    "country_name": "Israel",
+    "alpha2_code": "IL",
+    "alpha3_code": "ISR",
+    "numeric_code": 376,
+    "source": {
+      "source_url": "https://www.boi.org.il/en/",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://www.boi.org.il/en/",
+      "update_frequency": "Monthly",
+      "requires_js": true,
+      "notes": "Bank of Israel homepage; statistics section requires navigation, JS needed"
+    }
+  },
+  {
+    "country_name": "Italy",
+    "alpha2_code": "IT",
+    "alpha3_code": "ITA",
+    "numeric_code": 380,
+    "source": {
+      "source_url": "https://www.bancaditalia.it/pubblicazioni/moneta-banche/index.html",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://www.bancaditalia.it/pubblicazioni/moneta-banche/index.html",
+      "update_frequency": "Monthly",
+      "requires_js": false,
+      "notes": "Pubblicazioni>Moneta e banche; direct table/PDF links, Banca d'Italia"
+    }
+  },
+  {
+    "country_name": "Jamaica",
+    "alpha2_code": "JM",
+    "alpha3_code": "JAM",
+    "numeric_code": 388,
+    "source": {
+      "source_url": "http://www.boj.org.jm/statistics/econdata/stats_list.php?type=1",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "PDF Bulletin",
+      "direct_download_url": "http://www.boj.org.jm/statistics/econdata/stats_list.php?type=1",
+      "update_frequency": "Monthly",
+      "requires_js": false,
+      "notes": "Statistics>Economic Data; PDF/Excel table links, Bank of Jamaica"
+    }
+  },
+  {
+    "country_name": "Jersey",
+    "alpha2_code": "JE",
+    "alpha3_code": "JEY",
+    "numeric_code": 832,
+    "source": {
+      "source_url": "https://www.boi.org.il/en/BankingSupervision/Data/Pages/DataTable.aspx?Chapter=Chapter+V+-+Deposits&Years=2013-2017+",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://www.boi.org.il/en/BankingSupervision/Data/Pages/DataTable.aspx?Chapter=Chapter+V+-+Deposits&Years=2013-2017+",
+      "update_frequency": "Monthly",
+      "requires_js": true,
+      "notes": "Note: URL appears to be mismatched (Bank of Israel), Jersey has no independent central bank, uses GBP; Jersey Financial Services Commission publishes limited statistics"
+    }
+  },
+  {
+    "country_name": "Jordan",
+    "alpha2_code": "JO",
+    "alpha3_code": "JOR",
+    "numeric_code": 400,
+    "source": {
+      "source_url": "https://www.cbj.gov.jo/Pages/viewpage.aspx?pageID=236",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://www.cbj.gov.jo/Pages/viewpage.aspx?pageID=236",
+      "update_frequency": "Monthly",
+      "requires_js": false,
+      "notes": "Statistics page; direct table links, Central Bank of Jordan"
+    }
+  },
+  {
+    "country_name": "Japan",
+    "alpha2_code": "JP",
+    "alpha3_code": "JPN",
+    "numeric_code": 392,
+    "source": {
+      "source_url": "https://www.stat-search.boj.or.jp/",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://www.stat-search.boj.or.jp/",
+      "update_frequency": "Monthly",
+      "requires_js": true,
+      "notes": "Time-Series Data Search; interactive database, requires JS, Bank of Japan"
+    }
+  },
+  {
+    "country_name": "Kazakhstan",
+    "alpha2_code": "KZ",
+    "alpha3_code": "KAZ",
+    "numeric_code": 398,
+    "source": {
+      "source_url": "https://nationalbank.kz/en/monetarybase/denezhnaya-baza-i-agregaty-shirokoy-denezhnoy-massy",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://nationalbank.kz/en/monetarybase/denezhnaya-baza-i-agregaty-shirokoy-denezhnoy-massy",
+      "update_frequency": "Monthly",
+      "requires_js": false,
+      "notes": "Monetary Base>Broad Money Aggregates; direct table links, National Bank of Kazakhstan"
+    }
+  },
+  {
+    "country_name": "Kenya",
+    "alpha2_code": "KE",
+    "alpha3_code": "KEN",
+    "numeric_code": 404,
+    "source": {
+      "source_url": "https://www.centralbank.go.ke/releases/statistical-bulletin/",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "PDF Bulletin",
+      "direct_download_url": "https://www.centralbank.go.ke/releases/statistical-bulletin/",
+      "update_frequency": "Monthly",
+      "requires_js": false,
+      "notes": "Releases>Statistical Bulletin; PDF bulletins listed directly, Central Bank of Kenya"
+    }
+  },
+  {
+    "country_name": "Kyrgyzstan",
+    "alpha2_code": "KG",
+    "alpha3_code": "KGZ",
+    "numeric_code": 417,
+    "source": {
+      "source_url": "https://www.nbkr.kg/index1.jsp?item=80&lang=ENG",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://www.nbkr.kg/index1.jsp?item=80&lang=ENG",
+      "update_frequency": "Monthly",
+      "requires_js": false,
+      "notes": "Statistics page; direct table links, National Bank of the Kyrgyz Republic"
+    }
+  },
+  {
+    "country_name": "Cambodia",
+    "alpha2_code": "KH",
+    "alpha3_code": "KHM",
+    "numeric_code": 116,
+    "source": {
+      "source_url": "https://www.nbc.org.kh/english/economic_research/monetary_and_financial_statistics_data.php",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://www.nbc.org.kh/english/economic_research/monetary_and_financial_statistics_data.php",
+      "update_frequency": "Monthly",
+      "requires_js": false,
+      "notes": "Economic Research>Monetary and Financial Statistics Data; direct table links, National Bank of Cambodia"
+    }
+  },
+  {
+    "country_name": "Kiribati",
+    "alpha2_code": "KI",
+    "alpha3_code": "KIR",
+    "numeric_code": 296,
+    "source": {
+      "source_url": null,
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": null,
+      "direct_download_url": null,
+      "update_frequency": null,
+      "requires_js": null,
+      "notes": "No central bank; Kiribati uses Australian dollar, no independent monetary authority"
+    }
+  },
+  {
+    "country_name": "Saint Kitts and Nevis",
+    "alpha2_code": "KN",
+    "alpha3_code": "KNA",
+    "numeric_code": 659,
+    "source": {
+      "source_url": "https://www.nbkr.kg/index1.jsp?item=127&lang=ENG",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://www.nbkr.kg/index1.jsp?item=127&lang=ENG",
+      "update_frequency": "Monthly",
+      "requires_js": false,
+      "notes": "Note: URL appears to be mismatched (National Bank of Kyrgyz Republic); Saint Kitts and Nevis covered by ECCB regional central bank"
+    }
+  },
+  {
+    "country_name": "Korea (the Republic of)",
+    "alpha2_code": "KR",
+    "alpha3_code": "KOR",
+    "numeric_code": 410,
+    "source": {
+      "source_url": "http://ecos.bok.or.kr/EIndex_en.jsp",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "http://ecos.bok.or.kr/EIndex_en.jsp",
+      "update_frequency": "Monthly",
+      "requires_js": true,
+      "notes": "ECOS (Economic Statistics System); interactive database, requires JS, Bank of Korea"
+    }
+  },
+  {
+    "country_name": "Kuwait",
+    "alpha2_code": "KW",
+    "alpha3_code": "KWT",
+    "numeric_code": 414,
+    "source": {
+      "source_url": "https://www.cbk.gov.kw/en/statistics-and-publication/publications/annual-reports",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "PDF Bulletin",
+      "direct_download_url": "https://www.cbk.gov.kw/en/statistics-and-publication/publications/annual-reports",
+      "update_frequency": "Annual",
+      "requires_js": false,
+      "notes": "Statistics and Publication>Publications>Annual Reports; also has separate monthly statistical bulletin section, Central Bank of Kuwait"
+    }
+  },
+  {
+    "country_name": "Lao People's Democratic Republic (the)",
+    "alpha2_code": "LA",
+    "alpha3_code": "LAO",
+    "numeric_code": 418,
+    "source": {
+      "source_url": "https://www.bol.gov.la/en/financial_statistics",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://www.bol.gov.la/en/financial_statistics",
+      "update_frequency": "Monthly",
+      "requires_js": false,
+      "notes": "Financial Statistics; direct table links, Bank of the Lao PDR"
+    }
+  },
+  {
+    "country_name": "Lebanon",
+    "alpha2_code": "LB",
+    "alpha3_code": "LBN",
+    "numeric_code": 422,
+    "source": {
+      "source_url": "https://www.bdl.gov.lb/tabs/index/6/325/Money-Supply..html",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://www.bdl.gov.lb/tabs/index/6/325/Money-Supply..html",
+      "update_frequency": "Monthly",
+      "requires_js": false,
+      "notes": "Tabs>Money Supply; direct table links, Banque du Liban"
+    }
+  },
+  {
+    "country_name": "Liberia",
+    "alpha2_code": "LR",
+    "alpha3_code": "LBR",
+    "numeric_code": 430,
+    "source": {
+      "source_url": "https://www.cbl.org.lr/2content.php?sub=222&related=29&third=222&pg=sp&pt=Monthly%20Economic%20Review",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://www.cbl.org.lr/2content.php?sub=222&related=29&third=222&pg=sp&pt=Monthly%20Economic%20Review",
+      "update_frequency": "Monthly",
+      "requires_js": false,
+      "notes": "Monthly Economic Review; direct table/PDF links, Central Bank of Liberia"
+    }
+  },
+  {
+    "country_name": "Libya",
+    "alpha2_code": "LY",
+    "alpha3_code": "LBY",
+    "numeric_code": 434,
+    "source": {
+      "source_url": "https://cbl.gov.ly/en/",
+      "source_url_2": null,
+      "notes": "Economic Bulletin > Monetary Survey: Includes foreign currency deposits of resident customers"
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://cbl.gov.ly/en/",
+      "update_frequency": "Monthly",
+      "requires_js": false,
+      "notes": "Central Bank of Libya homepage; statistics section has monetary survey publications, site navigation required"
+    }
+  },
+  {
+    "country_name": "Saint Lucia",
+    "alpha2_code": "LC",
+    "alpha3_code": "LCA",
+    "numeric_code": 662,
+    "source": {
+      "source_url": null,
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": null,
+      "direct_download_url": null,
+      "update_frequency": null,
+      "requires_js": null,
+      "notes": "No Source URL provided; ECCB regional central bank covers Saint Lucia; see ECCB (row ATG)"
+    }
+  },
+  {
+    "country_name": "Liechtenstein",
+    "alpha2_code": "LI",
+    "alpha3_code": "LIE",
+    "numeric_code": 438,
+    "source": {
+      "source_url": null,
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": null,
+      "direct_download_url": null,
+      "update_frequency": null,
+      "requires_js": null,
+      "notes": "No Source URL provided; Liechtenstein uses Swiss franc, no independent central bank, banking data via Swiss National Bank/local FMA"
+    }
+  },
+  {
+    "country_name": "Sri Lanka",
+    "alpha2_code": "LK",
+    "alpha3_code": "LKA",
+    "numeric_code": 144,
+    "source": {
+      "source_url": "https://www.cbsl.gov.lk/en/publications/economic-and-financial-reports/annual-reports/annual-report-2019",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://www.cbsl.gov.lk/en/publications/economic-and-financial-reports/annual-reports/annual-report-2024",
+      "update_frequency": "Annual",
+      "requires_js": false,
+      "notes": "Publications>Economic and Financial Reports>Annual Reports; also has separate monthly statistical section, Central Bank of Sri Lanka"
+    }
+  },
+  {
+    "country_name": "Lesotho",
+    "alpha2_code": "LS",
+    "alpha3_code": "LSO",
+    "numeric_code": 426,
+    "source": {
+      "source_url": "https://centralbank.org.ls/statistics/",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://centralbank.org.ls/statistics/",
+      "update_frequency": "Monthly",
+      "requires_js": false,
+      "notes": "Statistics; direct table/PDF links, Central Bank of Lesotho"
+    }
+  },
+  {
+    "country_name": "Lithuania",
+    "alpha2_code": "LT",
+    "alpha3_code": "LTU",
+    "numeric_code": 440,
+    "source": {
+      "source_url": "https://www.lb.lt/en/reviews-and-publications/category.4356/series.200#group-2",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://www.lb.lt/en/reviews-and-publications/category.4356/series-200#group-2",
+      "update_frequency": "Monthly",
+      "requires_js": true,
+      "notes": "Reviews and Publications>Statistics; requires JS for series navigation, Bank of Lithuania"
+    }
+  },
+  {
+    "country_name": "Luxembourg",
+    "alpha2_code": "LU",
+    "alpha3_code": "LUX",
+    "numeric_code": 442,
+    "source": {
+      "source_url": null,
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": null,
+      "direct_download_url": null,
+      "update_frequency": null,
+      "requires_js": null,
+      "notes": "No Source URL provided; Luxembourg uses Euro, monetary statistics compiled via Banque centrale du Luxembourg/ECB framework"
+    }
+  },
+  {
+    "country_name": "Latvia",
+    "alpha2_code": "LV",
+    "alpha3_code": "LVA",
+    "numeric_code": 428,
+    "source": {
+      "source_url": "https://www.bank.lv/en/statistics/stat-data/monetary-statistics",
+      "source_url_2": "https://www.bank.lv/en/publications-r/annual-report",
+      "notes": "Monetary statistics page; FCD near zero"
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://statdb.bank.lv/lb/Data.aspx?id=243&lang=en",
+      "update_frequency": "Monthly",
+      "requires_js": true,
+      "notes": "Statistics>MFI Balance Sheet>0101 breakdown by residency,sector,country,currency; direct Euro/Foreign currency breakdown, requires JS interactive table, Bank of Latvia"
+    }
+  },
+  {
+    "country_name": "Macao",
+    "alpha2_code": "MO",
+    "alpha3_code": "MAC",
+    "numeric_code": 446,
+    "source": {
+      "source_url": "https://www.amcm.gov.mo/en/research-statistics/research-and-publications/macao-economic-bulletin",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Direct Excel",
+      "direct_download_url": "https://cdn.amcm.gov.mo/uploads/media/research_and_stats/stats/monetary_and_financial_statistics_time_series/2_Resident_Deps_and_Domestic_Credit_104.xlsx",
+      "update_frequency": "Monthly",
+      "requires_js": false,
+      "notes": "Research and Statistics>Monetary and Financial Statistics Time Series>Section 2 Resident Time Deposits by Maturity and Currency, direct Excel download, AMCM"
+    }
+  },
+  {
+    "country_name": "Saint Martin (French part)",
+    "alpha2_code": "MF",
+    "alpha3_code": "MAF",
+    "numeric_code": 663,
+    "source": {
+      "source_url": null,
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": null,
+      "direct_download_url": null,
+      "update_frequency": null,
+      "requires_js": null,
+      "notes": "No deposit-specific data found; IEDOM (regional issuing institute covering Guadeloupe, Martinique, French Guiana, Réunion, Mayotte, St-Barthélemy, St-Martin, St-Pierre-et-Miquelon) only publishes 'Encours de crédit' (credit outstanding) and business climate surveys per territory; no separate deposits/currency breakdown for St-Martin found on iedom.fr"
+    }
+  },
+  {
+    "country_name": "Morocco",
+    "alpha2_code": "MA",
+    "alpha3_code": "MAR",
+    "numeric_code": 504,
+    "source": {
+      "source_url": "https://www.bkam.ma/Publications-statistiques-et-recherche/Documents-d-information-et-de-statistiques/Statistiques-monetaires/Statistiques-monetaires-2020",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Direct Excel",
+      "direct_download_url": "https://www.bkam.ma/content/download/610158/6745696/3-CompteDePatrimoineDesbanques.xlsx",
+      "update_frequency": "Monthly",
+      "requires_js": false,
+      "notes": "Statistiques>Statistiques monétaires>Séries statistiques monétaires>3-Compte de patrimoine des banques (balance sheet incl. foreign currency deposits); direct xlsx download, Bank Al-Maghrib"
+    }
+  },
+  {
+    "country_name": "Monaco",
+    "alpha2_code": "MC",
+    "alpha3_code": "MCO",
+    "numeric_code": 492,
+    "source": {
+      "source_url": null,
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": null,
+      "direct_download_url": null,
+      "update_frequency": null,
+      "requires_js": null,
+      "notes": "No central bank; Monaco uses Euro via Banque de France/Eurosystem monetary union agreement, no independent monetary statistics published for Monaco specifically"
+    }
+  },
+  {
+    "country_name": "Moldova (the Republic of)",
+    "alpha2_code": "MD",
+    "alpha3_code": "MDA",
+    "numeric_code": 498,
+    "source": {
+      "source_url": "https://www.bnm.md/bdi/pages/reports/dpmc/DPMC11.xhtml?id=0&lang=en",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://www.bnm.md/bdi/pages/reports/dpmc/DPMC11.xhtml?id=0&lang=en",
+      "update_frequency": "Monthly",
+      "requires_js": true,
+      "notes": "Statistics>BDI Reports Generator>Monetary survey; interactive JS report generator with residency/currency breakdown, National Bank of Moldova"
+    }
+  },
+  {
+    "country_name": "Madagascar",
+    "alpha2_code": "MG",
+    "alpha3_code": "MDG",
+    "numeric_code": 450,
+    "source": {
+      "source_url": "https://www.banky-foibe.mg/vente_bulletin-de-bfm",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "PDF Bulletin",
+      "direct_download_url": "https://www.banky-foibe.mg/vente_bulletin-de-bfm",
+      "update_frequency": "Quarterly",
+      "requires_js": false,
+      "notes": "Bulletin de BFM>quarterly PDF bulletin with monetary/credit/foreign sector statistics section; Original URL had typo (hyphen vs underscore, found via search), Banky Foiben'i Madagasikara"
+    }
+  },
+  {
+    "country_name": "Maldives",
+    "alpha2_code": "MV",
+    "alpha3_code": "MDV",
+    "numeric_code": 462,
+    "source": {
+      "source_url": "https://www.mma.gov.mv/#/research/statisticalPublications/mstat/Monthly%20Statistics",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://database.mma.gov.mv",
+      "update_frequency": "Monthly",
+      "requires_js": true,
+      "notes": "Statistics>MMA Statistics Database (VIYA); interactive charts/tables platform for macroeconomic and monetary data, Maldives Monetary Authority. Original URL had broken hash routing."
+    }
+  },
+  {
+    "country_name": "Mexico",
+    "alpha2_code": "MX",
+    "alpha3_code": "MEX",
+    "numeric_code": 484,
+    "source": {
+      "source_url": "https://www.banxico.org.mx/publications-and-press/annual-reports/annual-reports-economy-banco-.html",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "API",
+      "direct_download_url": "https://www.banxico.org.mx/SieAPIRest/service/v1/",
+      "update_frequency": "Monthly",
+      "requires_js": false,
+      "notes": "SIE (Sistema de Información Económica)>Agregados monetarios (CA452/CF77)>direct foreign currency deposits breakdown 'En moneda extranjera'; interactive web tables + official REST API (SIE-API), Banco de México"
+    }
+  },
+  {
+    "country_name": "Marshall Islands (the)",
+    "alpha2_code": "MH",
+    "alpha3_code": "MHL",
+    "numeric_code": 584,
+    "source": {
+      "source_url": "https://aric.adb.org/marshall-islands/data",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Direct Excel",
+      "direct_download_url": "https://aric.adb.org/database/economic-financial-indicators-result?mode=excel&cty=169&frq=3&predefined=16&prec=3",
+      "update_frequency": "Monthly",
+      "requires_js": false,
+      "notes": "Data>Monetary and Financial Sectors>Monthly (Broad Money, Credit, Capital Adequacy); direct Excel download, ADB Asia Regional Integration Center (Marshall Islands has no own central bank/currency, uses USD)"
+    }
+  },
+  {
+    "country_name": "Republic of North Macedonia",
+    "alpha2_code": "MK",
+    "alpha3_code": "MKD",
+    "numeric_code": 807,
+    "source": {
+      "source_url": "https://www.nbrm.mk/ns-newsarticle-kvartalen-izvestaj-statisticki-prilog-2019-en.nspx",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://www.nbrm.mk/monetarna_statistika_i_statistika_na_kamatni_stapki-en.nspx",
+      "update_frequency": "Monthly",
+      "requires_js": false,
+      "notes": "Statistics>Monetary and Interest Rates Statistics; Denar and foreign currency deposits/loans breakdown by sector, interest rates by currency. Original URL (kvartalen-izvestaj) was outdated/blocked by Cloudflare bot check, found current statistics page via search, National Bank of the Republic of North Macedonia"
+    }
+  },
+  {
+    "country_name": "Mali",
+    "alpha2_code": "ML",
+    "alpha3_code": "MLI",
+    "numeric_code": 466,
+    "source": {
+      "source_url": null,
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": null,
+      "direct_download_url": null,
+      "update_frequency": null,
+      "requires_js": null,
+      "notes": "No Source URL provided; BCEAO (regional central bank for WAEMU) covers Mali, uses same statistics portal as other WAEMU countries (Benin, Burkina Faso, etc.)"
+    }
+  },
+  {
+    "country_name": "Malta",
+    "alpha2_code": "MT",
+    "alpha3_code": "MLT",
+    "numeric_code": 470,
+    "source": {
+      "source_url": "https://www.centralbankmalta.org/monetary-and-banking",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": null,
+      "direct_download_url": null,
+      "update_frequency": null,
+      "requires_js": null,
+      "notes": "Site protected by Cloudflare bot-detection (verification challenge), cannot access directly; Central Bank of Malta is part of Eurosystem, monetary/deposit statistics for Malta available via ECB Statistical Data Warehouse (SDW) as alternative"
+    }
+  },
+  {
+    "country_name": "Myanmar",
+    "alpha2_code": "MM",
+    "alpha3_code": "MMR",
+    "numeric_code": 104,
+    "source": {
+      "source_url": "https://www.bcm.mr/statistiques-monetaires",
+      "source_url_2": "https://www.cbm.gov.mm/content/3912",
+      "notes": "CBM Depository Corporations Survey; FCD breakdown"
+    },
+    "target": {
+      "data_type": "PDF Bulletin",
+      "direct_download_url": "https://www.cbm.gov.mm/content/2506",
+      "update_frequency": "Quarterly",
+      "requires_js": false,
+      "notes": "Statistics>Quarterly Financial Statistics Bulletin; PDF volumes by year/quarter, contains Central Bank Survey & monetary statistics; also Financial Statistics>Central Bank Survey submenu available. Original URL (bcm.mr) was wrong domain (Mauritania), corrected to cbm.gov.mm, Central Bank of Myanmar"
+    }
+  },
+  {
+    "country_name": "Montenegro",
+    "alpha2_code": "ME",
+    "alpha3_code": "MNE",
+    "numeric_code": 499,
+    "source": {
+      "source_url": null,
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Direct Excel",
+      "direct_download_url": "https://www.cbcg.me/en/statistics/statistical-data/monetary-and-financial-statistics/monetary-financial-institutions/monetary-financial-institutions_jun_2026.zip",
+      "update_frequency": "Monthly",
+      "requires_js": false,
+      "notes": "Statistics>Statistical Data>Monetary and Financial Statistics>Monetary Financial Institutions; direct ZIP/Excel download (deposits by sector/currency), monthly, in EUR. Original URL was 404, found via search, Central Bank of Montenegro"
+    }
+  },
+  {
+    "country_name": "Mongolia",
+    "alpha2_code": "MN",
+    "alpha3_code": "MNG",
+    "numeric_code": 496,
+    "source": {
+      "source_url": "https://www.mongolbank.mn/eng/liststatistic.aspx?id=8",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "PDF Bulletin",
+      "direct_download_url": "https://www.mongolbank.mn/documents/statistic/monetaryreview/",
+      "update_frequency": "Monthly",
+      "requires_js": false,
+      "notes": "Monetary Review (Money Supply) monthly PDF reports with detailed FC/domestic currency deposits breakdown by sector (personal/corporate); Original URL (statistics/monetary-statistics) was 404, found via search, Bank of Mongolia"
+    }
+  },
+  {
+    "country_name": "Northern Mariana Islands (the)",
+    "alpha2_code": "MP",
+    "alpha3_code": "MNP",
+    "numeric_code": 580,
+    "source": {
+      "source_url": "https://ver1.cnmicommerce.com/divisions/central-statistics/",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": null
+  },
+  {
+    "country_name": "Mozambique",
+    "alpha2_code": "MZ",
+    "alpha3_code": "MOZ",
+    "numeric_code": 508,
+    "source": {
+      "source_url": "http://www.bancomoc.mz/fm_pgTab1.aspx?id=106",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "PDF Bulletin",
+      "direct_download_url": "https://www.bancomoc.mz/pt/areas-de-actuacao/estatisticas/dominios-e-indicadores-estatisticos/estatisticas-monetarias/",
+      "update_frequency": "Monthly",
+      "requires_js": false,
+      "notes": "Estatísticas>Domínios e Indicadores Estatísticos>Estatísticas Monetárias; monthly PDF 'Síntese/Resumo Mensal de Informação Estatística' with Contas Monetárias (deposits by currency/sector), Banco de Moçambique"
+    }
+  },
+  {
+    "country_name": "Mauritania",
+    "alpha2_code": "MR",
+    "alpha3_code": "MRT",
+    "numeric_code": 478,
+    "source": {
+      "source_url": "https://ons.mr/content/view/131/53/",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Direct Excel",
+      "direct_download_url": "https://bo.bcm.mr/sites/default/files/2026-02/Valeurs%20po.monetaire.xlsx",
+      "update_frequency": "Monthly",
+      "requires_js": false,
+      "notes": "Homepage>Valeurs PO Monétaires>direct xlsx download; no dedicated monetary statistics portal, BCM main site sections mostly 404; 수집 경로: bcm.mr homepage direct link"
+    }
+  },
+  {
+    "country_name": "Montserrat",
+    "alpha2_code": "MS",
+    "alpha3_code": "MSR",
+    "numeric_code": 500,
+    "source": {
+      "source_url": null,
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://www.eccb-centralbank.org/statistics",
+      "update_frequency": "Monthly",
+      "requires_js": true,
+      "notes": "ECCB regional central bank statistics portal>Monetary and Financial Sector; no Montserrat-specific direct file; 수집 경로: eccb-centralbank.org/statistics"
+    }
+  },
+  {
+    "country_name": "Martinique",
+    "alpha2_code": "MQ",
+    "alpha3_code": "MTQ",
+    "numeric_code": 474,
+    "source": {
+      "source_url": null,
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://www.iedom.fr/Statistiques?lang=en",
+      "update_frequency": "Monthly",
+      "requires_js": true,
+      "notes": "IEDOM regional statistics portal for French overseas departments (Martinique); interactive charts, no direct file; 수집 경로: iedom.fr/Statistiques"
+    }
+  },
+  {
+    "country_name": "Mauritius",
+    "alpha2_code": "MU",
+    "alpha3_code": "MUS",
+    "numeric_code": 480,
+    "source": {
+      "source_url": "https://www.bom.mu/publications-and-statistics/statistics/monetary-and-financial-statistics/depository-corporation-survey",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Direct Excel",
+      "direct_download_url": "https://www.bom.mu/sites/default/files/dcs_june26.xlsx",
+      "update_frequency": "Monthly",
+      "requires_js": false,
+      "notes": "Publications and Statistics>Monetary and Financial Statistics>Depository Corporation Survey>direct xlsx download; 수집 경로: bom.mu DCS page direct link"
+    }
+  },
+  {
+    "country_name": "Malawi",
+    "alpha2_code": "MW",
+    "alpha3_code": "MWI",
+    "numeric_code": 454,
+    "source": {
+      "source_url": "https://www.rbm.mw/Publications/AnnualReports/",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Direct Excel",
+      "direct_download_url": "https://www.rbm.mw/Home/GetContentFile/?ContentID=63649",
+      "update_frequency": "Monthly",
+      "requires_js": false,
+      "notes": "Home>What's New>Monetary Survey Jan 1975-Jun 2026>direct file download; 수집 경로: rbm.mw homepage direct link"
+    }
+  },
+  {
+    "country_name": "Malaysia",
+    "alpha2_code": "MY",
+    "alpha3_code": "MYS",
+    "numeric_code": 458,
+    "source": {
+      "source_url": "https://www.bnm.gov.my/index.php?ch=en_publication&pg=en_msb&lang=en&mnth=8&yr=2020",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://www.bnm.gov.my/publications/mhs",
+      "update_frequency": "Monthly",
+      "requires_js": true,
+      "notes": "Publications>Monthly Highlights and Statistics (MHS)>XLSX data release, requires navigating to latest issue page; 수집 경로: bnm.gov.my/publications/mhs"
+    }
+  },
+  {
+    "country_name": "Mayotte",
+    "alpha2_code": "YT",
+    "alpha3_code": "MYT",
+    "numeric_code": 175,
+    "source": {
+      "source_url": null,
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://www.iedom.fr/Statistiques?lang=en",
+      "update_frequency": "Monthly",
+      "requires_js": true,
+      "notes": "IEDOM regional statistics portal for French overseas departments (Mayotte); interactive charts, no direct file; 수집 경로: iedom.fr/Statistiques"
+    }
+  },
+  {
+    "country_name": "Namibia",
+    "alpha2_code": "NA",
+    "alpha3_code": "NAM",
+    "numeric_code": 516,
+    "source": {
+      "source_url": "https://www.bon.com.na/Publications/Annual-Reports.aspx",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Direct Excel",
+      "direct_download_url": "https://www.bon.com.na/getattachment/64248304-11d9-4c54-a8e0-3b32843809ff/.aspx",
+      "update_frequency": "Monthly",
+      "requires_js": false,
+      "notes": "Economic Information>Statistical Information>Monetary and Financial Statistics>Set of Table 2026 direct xls download; 수집 경로: bon.com.na monetary statistics page"
+    }
+  },
+  {
+    "country_name": "New Caledonia",
+    "alpha2_code": "NC",
+    "alpha3_code": "NCL",
+    "numeric_code": 540,
+    "source": {
+      "source_url": null,
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://www.iedom.fr/Statistiques?lang=en",
+      "update_frequency": "Monthly",
+      "requires_js": true,
+      "notes": "IEDOM regional statistics portal for French overseas territories (New Caledonia); interactive charts, no direct file; 수집 경로: iedom.fr/Statistiques"
+    }
+  },
+  {
+    "country_name": "Niger (the)",
+    "alpha2_code": "NE",
+    "alpha3_code": "NER",
+    "numeric_code": 562,
+    "source": {
+      "source_url": null,
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "PDF Bulletin",
+      "direct_download_url": "https://www.bceao.int/en/statistiques",
+      "update_frequency": "Quarterly",
+      "requires_js": false,
+      "notes": "BCEAO (regional central bank for WAEMU incl. Niger); statistics section with PDF bulletins; 수집 경로: bceao.int statistics page"
+    }
+  },
+  {
+    "country_name": "Norfolk Island",
+    "alpha2_code": "NF",
+    "alpha3_code": "NFK",
+    "numeric_code": 574,
+    "source": {
+      "source_url": null,
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": null,
+      "direct_download_url": null,
+      "update_frequency": null,
+      "requires_js": null,
+      "notes": "No central bank; Norfolk Island is an Australian external territory using AUD, no separate monetary statistics source found; 수집 경로: N/A"
+    }
+  },
+  {
+    "country_name": "Nigeria",
+    "alpha2_code": "NG",
+    "alpha3_code": "NGA",
+    "numeric_code": 566,
+    "source": {
+      "source_url": "https://www.cbn.gov.ng/documents/Statbulletin.asp",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://www.cbn.gov.ng/rates/mnycredit.html",
+      "update_frequency": "Monthly",
+      "requires_js": true,
+      "notes": "Data & Statistics>Money and Credit Statistics; interactive chart with underlying data; 수집 경로: cbn.gov.ng/rates/mnycredit.html"
+    }
+  },
+  {
+    "country_name": "Nicaragua",
+    "alpha2_code": "NI",
+    "alpha3_code": "NIC",
+    "numeric_code": 558,
+    "source": {
+      "source_url": "https://www.bcn.gob.ni/estadisticas/monetario_financiero/monetario/monetario_diario/index.php",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://www.bcn.gob.ni/estadisticas-monetarias",
+      "update_frequency": "Monthly",
+      "requires_js": true,
+      "notes": "Estadisticas>Estadisticas Monetarias>Indicadores Monetarios Diarios (HTML pages); 수집 경로: bcn.gob.ni/estadisticas-monetarias"
+    }
+  },
+  {
+    "country_name": "Niue",
+    "alpha2_code": "NU",
+    "alpha3_code": "NIU",
+    "numeric_code": 570,
+    "source": {
+      "source_url": null,
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": null,
+      "direct_download_url": null,
+      "update_frequency": null,
+      "requires_js": null,
+      "notes": "Niue uses NZD, no independent central bank; monetary statistics fall under RBNZ/NZ Treasury, no dedicated Niue monetary source found; 수집 경로: N/A"
+    }
+  },
+  {
+    "country_name": "Netherlands (the)",
+    "alpha2_code": "NL",
+    "alpha3_code": "NLD",
+    "numeric_code": 528,
+    "source": {
+      "source_url": "https://statistiek.dnb.nl/en/downloads/index.aspx#/details/breakdown-of-specific-assets-and-liabilities-of-dutch-based-mfis-not-including-dnb-by-currency-adjusted-for-breaks-quarter/dataset/bfb0ea1c-f04a-408b-a12f-88c02865b9ae/resource/9bd27a13-eead-416a-8684-e1201601a34e",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://www.dnb.nl/en/statistics/data-search/#/",
+      "update_frequency": "Monthly",
+      "requires_js": true,
+      "notes": "Statistics>Data search portal; interactive time series search tool covering monetary statistics; 수집 경로: dnb.nl/en/statistics/data-search"
+    }
+  },
+  {
+    "country_name": "Norway",
+    "alpha2_code": "NO",
+    "alpha3_code": "NOR",
+    "numeric_code": 578,
+    "source": {
+      "source_url": "https://www.norges-bank.no/en/topics/statistics/",
+      "source_url_2": null,
+      "notes": "SSB/Norges Bank: M3 Deposits in Foreign Exchange series"
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://www.norges-bank.no/en/topics/statistics/",
+      "update_frequency": "Monthly",
+      "requires_js": true,
+      "notes": "Topics>Statistics>Norges Bank's data portal; interactive statistics portal; 수집 경로: norges-bank.no/en/topics/statistics"
+    }
+  },
+  {
+    "country_name": "Nepal",
+    "alpha2_code": "NP",
+    "alpha3_code": "NPL",
+    "numeric_code": 524,
+    "source": {
+      "source_url": "https://www.nrb.org.np/category/banking-and-financial-statistics/?department=bfr",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://www.nrb.org.np/departments/statistics-data-links/",
+      "update_frequency": "Quarterly",
+      "requires_js": true,
+      "notes": "Statistics>Statistics Data Links>Financial Corporations Survey (FCS); quarterly survey pages, no single direct file; 수집 경로: nrb.org.np/departments/statistics-data-links"
+    }
+  },
+  {
+    "country_name": "Nauru",
+    "alpha2_code": "NR",
+    "alpha3_code": "NRU",
+    "numeric_code": 520,
+    "source": {
+      "source_url": null,
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": null,
+      "direct_download_url": null,
+      "update_frequency": null,
+      "requires_js": null,
+      "notes": "Nauru uses AUD, no independent central bank; no dedicated monetary statistics portal found; 수집 경로: N/A"
+    }
+  },
+  {
+    "country_name": "New Zealand",
+    "alpha2_code": "NZ",
+    "alpha3_code": "NZL",
+    "numeric_code": 554,
+    "source": {
+      "source_url": "https://www.rbnz.govt.nz/statistics",
+      "source_url_2": null,
+      "notes": "search C4"
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://www.rbnz.govt.nz/statistics",
+      "update_frequency": "Monthly",
+      "requires_js": true,
+      "notes": "Statistics>Statistical series; interactive data portal with multiple categories"
+    }
+  },
+  {
+    "country_name": "Oman",
+    "alpha2_code": "OM",
+    "alpha3_code": "OMN",
+    "numeric_code": 512,
+    "source": {
+      "source_url": "https://cbo.gov.om/report/QuarterlyBulletins/114",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "PDF Bulletin",
+      "direct_download_url": "https://cbo.gov.om/report/QuarterlyBulletins/114",
+      "update_frequency": "Quarterly",
+      "requires_js": false,
+      "notes": "Publications>Quarterly Bulletins; PDF report downloads"
+    }
+  },
+  {
+    "country_name": "Pakistan",
+    "alpha2_code": "PK",
+    "alpha3_code": "PAK",
+    "numeric_code": 586,
+    "source": {
+      "source_url": "https://www.sbp.org.pk/ecodata/index2.asp",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://www.sbp.org.pk/economic-data",
+      "update_frequency": "Monthly",
+      "requires_js": true,
+      "notes": "Economic Data>Monetary & Financial Sector; filterable document list (redirected from old ecodata URL)"
+    }
+  },
+  {
+    "country_name": "Panama",
+    "alpha2_code": "PA",
+    "alpha3_code": "PAN",
+    "numeric_code": 591,
+    "source": {
+      "source_url": null,
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": null,
+      "direct_download_url": null,
+      "update_frequency": null,
+      "requires_js": null,
+      "notes": "Panama uses USD, no independent central bank; Superintendencia de Bancos publishes limited statistics"
+    }
+  },
+  {
+    "country_name": "Pitcairn",
+    "alpha2_code": "PN",
+    "alpha3_code": "PCN",
+    "numeric_code": 612,
+    "source": {
+      "source_url": null,
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": null,
+      "direct_download_url": null,
+      "update_frequency": null,
+      "requires_js": null,
+      "notes": "Pitcairn uses NZD, no independent central bank; no dedicated monetary statistics source"
+    }
+  },
+  {
+    "country_name": "Peru",
+    "alpha2_code": "PE",
+    "alpha3_code": "PER",
+    "numeric_code": 604,
+    "source": {
+      "source_url": "https://www.bcrp.gob.pe/publicaciones/nota-semanal/resumen-informativo.html",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://www.bcrp.gob.pe/publicaciones/nota-semanal/resumen-informativo.html",
+      "update_frequency": "Weekly",
+      "requires_js": true,
+      "notes": "Publicaciones>Nota Semanal>Resumen Informativo; weekly PDF reports with monetary data"
+    }
+  },
+  {
+    "country_name": "Philippines (the)",
+    "alpha2_code": "PH",
+    "alpha3_code": "PHL",
+    "numeric_code": 608,
+    "source": {
+      "source_url": "https://www.bsp.gov.ph/SitePages/Statistics/Financial%20System%20Accounts.aspx",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://www.bsp.gov.ph/SitePages/Statistics/Financial%20System%20Accounts.aspx",
+      "update_frequency": "Monthly",
+      "requires_js": true,
+      "notes": "Statistics>Financial System Accounts>Monetary Survey; tabbed data with PDF/HTML/Excel"
+    }
+  },
+  {
+    "country_name": "Palau",
+    "alpha2_code": "PW",
+    "alpha3_code": "PLW",
+    "numeric_code": 585,
+    "source": {
+      "source_url": null,
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": null,
+      "direct_download_url": null,
+      "update_frequency": null,
+      "requires_js": null,
+      "notes": "Palau uses USD, no central bank; no dedicated monetary statistics source"
+    }
+  },
+  {
+    "country_name": "Papua New Guinea",
+    "alpha2_code": "PG",
+    "alpha3_code": "PNG",
+    "numeric_code": 598,
+    "source": {
+      "source_url": "https://www.bankpng.gov.pg/publications/foreign-exchange-rates/historical-exchange-rates",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://www.bankpng.gov.pg/publications/foreign-exchange-rates/historical-exchange-rates",
+      "update_frequency": "Monthly",
+      "requires_js": true,
+      "notes": "Publications>Foreign Exchange Rates>Historical Exchange Rates; original fortnightly-statistics URL was broken (404)"
+    }
+  },
+  {
+    "country_name": "Poland",
+    "alpha2_code": "PL",
+    "alpha3_code": "POL",
+    "numeric_code": 616,
+    "source": {
+      "source_url": "https://www.nbp.pl/homen.aspx?f=/en/publikacje/biuletyn/biuletyn.html",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "PDF Bulletin",
+      "direct_download_url": "https://www.nbp.pl/homen.aspx?f=/en/publikacje/biuletyn/biuletyn.html",
+      "update_frequency": "Monthly",
+      "requires_js": false,
+      "notes": "Publications>Bulletin; monthly statistical bulletin PDF archive"
+    }
+  },
+  {
+    "country_name": "Puerto Rico",
+    "alpha2_code": "PR",
+    "alpha3_code": "PRI",
+    "numeric_code": 630,
+    "source": {
+      "source_url": null,
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": null,
+      "direct_download_url": null,
+      "update_frequency": null,
+      "requires_js": null,
+      "notes": "Puerto Rico uses USD, part of US Federal Reserve System; no standalone central bank"
+    }
+  },
+  {
+    "country_name": "Korea (the Democratic People's Republic of)",
+    "alpha2_code": "KP",
+    "alpha3_code": "PRK",
+    "numeric_code": 408,
+    "source": {
+      "source_url": null,
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": null,
+      "direct_download_url": null,
+      "update_frequency": null,
+      "requires_js": null,
+      "notes": "No public monetary statistics available; Central Bank of DPRK does not publish data; North Korean won not internationally convertible"
+    }
+  },
+  {
+    "country_name": "Portugal",
+    "alpha2_code": "PT",
+    "alpha3_code": "PRT",
+    "numeric_code": 620,
+    "source": {
+      "source_url": "https://bpstat.bportugal.pt",
+      "source_url_2": null,
+      "notes": "BPstat: MFI foreign currency deposits (EUR area reporting)"
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://bpstat.bportugal.pt",
+      "update_frequency": "Monthly",
+      "requires_js": true,
+      "notes": "BPstat statistical database; part of Eurosystem/ECB monetary union"
+    }
+  },
+  {
+    "country_name": "Paraguay",
+    "alpha2_code": "PY",
+    "alpha3_code": "PRY",
+    "numeric_code": 600,
+    "source": {
+      "source_url": "https://www.bcp.gov.py/anexo-estadistico-indicadores-financieros-i367",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://www.bcp.gov.py/anexo-estadistico-indicadores-financieros-i367",
+      "update_frequency": "Monthly",
+      "requires_js": true,
+      "notes": "Anexo Estadístico>Indicadores Financieros; interactive statistics page"
+    }
+  },
+  {
+    "country_name": "Palestine, State of",
+    "alpha2_code": "PS",
+    "alpha3_code": "PSE",
+    "numeric_code": 275,
+    "source": {
+      "source_url": "https://www.pma.ps/en/Statistics//TimeSeriesData",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://www.pma.ps/en/Statistics//TimeSeriesData",
+      "update_frequency": "Monthly",
+      "requires_js": true,
+      "notes": "Statistics>Time Series Data; Palestine Monetary Authority"
+    }
+  },
+  {
+    "country_name": "French Polynesia",
+    "alpha2_code": "PF",
+    "alpha3_code": "PYF",
+    "numeric_code": 258,
+    "source": {
+      "source_url": "https://www.ieom.fr/Polynesie-francaise?lang=en",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://www.ieom.fr/Polynesie-francaise?lang=en",
+      "update_frequency": "Monthly",
+      "requires_js": true,
+      "notes": "IEOM regional central bank for French Pacific territories (CFP franc)"
+    }
+  },
+  {
+    "country_name": "Qatar",
+    "alpha2_code": "QA",
+    "alpha3_code": "QAT",
+    "numeric_code": 634,
+    "source": {
+      "source_url": "http://www.qcb.gov.qa/English/Publications/Statistics/Pages/MonthlyBulletin.aspx",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "PDF Bulletin",
+      "direct_download_url": "http://www.qcb.gov.qa/English/Publications/Statistics/Pages/MonthlyBulletin.aspx",
+      "update_frequency": "Monthly",
+      "requires_js": false,
+      "notes": "Publications>Statistics>Monthly Bulletin; PDF reports"
+    }
+  },
+  {
+    "country_name": "Réunion",
+    "alpha2_code": "RE",
+    "alpha3_code": "REU",
+    "numeric_code": 638,
+    "source": {
+      "source_url": null,
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": null,
+      "direct_download_url": null,
+      "update_frequency": null,
+      "requires_js": null,
+      "notes": "Réunion is French overseas department; uses EUR, ECB/Eurosystem monetary policy; no separate statistics"
+    }
+  },
+  {
+    "country_name": "Romania",
+    "alpha2_code": "RO",
+    "alpha3_code": "ROU",
+    "numeric_code": 642,
+    "source": {
+      "source_url": "https://www.bnr.ro/Regular-publications-2504.aspx",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "PDF Bulletin",
+      "direct_download_url": "https://www.bnr.ro/Regular-publications-2504.aspx",
+      "update_frequency": "Monthly",
+      "requires_js": false,
+      "notes": "Regular Publications; monthly statistical bulletins in PDF"
+    }
+  },
+  {
+    "country_name": "Russian Federation (the)",
+    "alpha2_code": "RU",
+    "alpha3_code": "RUS",
+    "numeric_code": 643,
+    "source": {
+      "source_url": "https://www.cbr.ru/eng/statistics/macro_itm/dkfs/",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://www.cbr.ru/eng/statistics/macro_itm/dkfs/",
+      "update_frequency": "Monthly",
+      "requires_js": true,
+      "notes": "Statistics>Macroeconomic Statistics>Monetary and Financial Statistics"
+    }
+  },
+  {
+    "country_name": "Rwanda",
+    "alpha2_code": "RW",
+    "alpha3_code": "RWA",
+    "numeric_code": 646,
+    "source": {
+      "source_url": "https://www.bnr.rw/index.php?id=46",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://www.bnr.rw/index.php?id=46",
+      "update_frequency": "Monthly",
+      "requires_js": true,
+      "notes": "Statistics; monetary data pages"
+    }
+  },
+  {
+    "country_name": "Saudi Arabia",
+    "alpha2_code": "SA",
+    "alpha3_code": "SAU",
+    "numeric_code": 682,
+    "source": {
+      "source_url": "http://www.sama.gov.sa/en-US/EconomicReports/Pages/MonthlyStatistics.aspx",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "PDF Bulletin",
+      "direct_download_url": "http://www.sama.gov.sa/en-US/EconomicReports/Pages/MonthlyStatistics.aspx",
+      "update_frequency": "Monthly",
+      "requires_js": false,
+      "notes": "Economic Reports>Monthly Statistics; PDF bulletin"
+    }
+  },
+  {
+    "country_name": "Sudan (the)",
+    "alpha2_code": "SD",
+    "alpha3_code": "SDN",
+    "numeric_code": 729,
+    "source": {
+      "source_url": "https://cbos.gov.sd/en/periodicals-publications?field_publication_type_tid_i18n=44",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "PDF Bulletin",
+      "direct_download_url": "https://cbos.gov.sd/en/periodicals-publications?field_publication_type_tid_i18n=44",
+      "update_frequency": "Monthly",
+      "requires_js": false,
+      "notes": "Periodicals & Publications filtered by type; PDF reports"
+    }
+  },
+  {
+    "country_name": "Senegal",
+    "alpha2_code": "SN",
+    "alpha3_code": "SEN",
+    "numeric_code": 686,
+    "source": {
+      "source_url": null,
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": null,
+      "direct_download_url": null,
+      "update_frequency": null,
+      "requires_js": null,
+      "notes": "No Source URL provided; BCEAO (regional central bank for WAEMU)"
+    }
+  },
+  {
+    "country_name": "Singapore",
+    "alpha2_code": "SG",
+    "alpha3_code": "SGP",
+    "numeric_code": 702,
+    "source": {
+      "source_url": "https://www.mas.gov.sg/statistics/monthly-statistical-bulletin/msb-historical-summary",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://www.mas.gov.sg/statistics/monthly-statistical-bulletin/msb-historical-summary",
+      "update_frequency": "Monthly",
+      "requires_js": true,
+      "notes": "Statistics>Monthly Statistical Bulletin>Historical Summary; interactive tables"
+    }
+  },
+  {
+    "country_name": "South Georgia and the South Sandwich Islands",
+    "alpha2_code": "GS",
+    "alpha3_code": "SGS",
+    "numeric_code": 239,
+    "source": {
+      "source_url": null,
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": null,
+      "direct_download_url": null,
+      "update_frequency": null,
+      "requires_js": null,
+      "notes": "South Georgia and South Sandwich Islands uninhabited except research stations; no economy or central bank"
+    }
+  },
+  {
+    "country_name": "Saint Helena, Ascension and Tristan da Cunha",
+    "alpha2_code": "SH",
+    "alpha3_code": "SHN",
+    "numeric_code": 654,
+    "source": {
+      "source_url": "https://www.sainthelena.gov.sh/statistical-updates-benefits-and-exchange-rates/",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://www.sainthelena.gov.sh/statistical-updates-benefits-and-exchange-rates/",
+      "update_frequency": "Monthly",
+      "requires_js": true,
+      "notes": "Statistical Updates>Exchange Rates; Bank of St Helena has no central bank, uses SHP pegged to GBP"
+    }
+  },
+  {
+    "country_name": "Svalbard and Jan Mayen",
+    "alpha2_code": "SJ",
+    "alpha3_code": "SJM",
+    "numeric_code": 744,
+    "source": {
+      "source_url": null,
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": null,
+      "direct_download_url": null,
+      "update_frequency": null,
+      "requires_js": null,
+      "notes": "Svalbard and Jan Mayen use NOK, part of Norway; no separate central bank or statistics"
+    }
+  },
+  {
+    "country_name": "Solomon Islands",
+    "alpha2_code": "SB",
+    "alpha3_code": "SLB",
+    "numeric_code": 90,
+    "source": {
+      "source_url": "http://www.cbsi.com.sb/",
+      "source_url_2": null,
+      "notes": "CBSI statistics; monetary survey includes FCD"
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "http://www.cbsi.com.sb/",
+      "update_frequency": "Monthly",
+      "requires_js": true,
+      "notes": "Data & Statistics>Key Indicators; Central Bank of Solomon Islands homepage with exchange rates and monetary statistics"
+    }
+  },
+  {
+    "country_name": "Sierra Leone",
+    "alpha2_code": "SL",
+    "alpha3_code": "SLE",
+    "numeric_code": 694,
+    "source": {
+      "source_url": "https://www.bsl.gov.sl/statistics.html",
+      "source_url_2": null,
+      "notes": "BSL monetary statistics; FCD series via IMF IFS"
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://www.bsl.gov.sl/statistics.html",
+      "update_frequency": "Monthly",
+      "requires_js": true,
+      "notes": "Statistics; Bank of Sierra Leone monetary data"
+    }
+  },
+  {
+    "country_name": "El Salvador",
+    "alpha2_code": "SV",
+    "alpha3_code": "SLV",
+    "numeric_code": 222,
+    "source": {
+      "source_url": "https://estadisticas.bcr.gob.sv/serie/panorama-de-las-sociedades-de-depositos",
+      "source_url_2": null,
+      "notes": "BCR: 3.4.1 Depósitos Transferibles en Moneda Extranjera (dollarized economy)"
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://estadisticas.bcr.gob.sv/serie/panorama-de-las-sociedades-de-depositos",
+      "update_frequency": "Monthly",
+      "requires_js": true,
+      "notes": "Estadisticas>Panorama de las Sociedades de Depósitos; El Salvador uses USD"
+    }
+  },
+  {
+    "country_name": "San Marino",
+    "alpha2_code": "SM",
+    "alpha3_code": "SMR",
+    "numeric_code": 674,
+    "source": {
+      "source_url": null,
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": null,
+      "direct_download_url": null,
+      "update_frequency": null,
+      "requires_js": null,
+      "notes": "San Marino uses EUR, part of Eurozone via agreement with Italy/EU; no separate central bank"
+    }
+  },
+  {
+    "country_name": "Somalia",
+    "alpha2_code": "SO",
+    "alpha3_code": "SOM",
+    "numeric_code": 706,
+    "source": {
+      "source_url": "https://centralbank.gov.so/",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://centralbank.gov.so/",
+      "update_frequency": "Monthly",
+      "requires_js": true,
+      "notes": "Annual Statistical Bulletin and Financial Access Survey Reports; Central Bank of Somalia"
+    }
+  },
+  {
+    "country_name": "Saint Pierre and Miquelon",
+    "alpha2_code": "PM",
+    "alpha3_code": "SPM",
+    "numeric_code": 666,
+    "source": {
+      "source_url": "https://www.iedom.fr/Saint-Pierre-et-Miquelon",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "PDF Bulletin",
+      "direct_download_url": "https://www.iedom.fr/Saint-Pierre-et-Miquelon",
+      "update_frequency": "Annual",
+      "requires_js": false,
+      "notes": "IEDOM regional office; Saint Pierre and Miquelon uses EUR, annual economic reports"
+    }
+  },
+  {
+    "country_name": "Serbia",
+    "alpha2_code": "RS",
+    "alpha3_code": "SRB",
+    "numeric_code": 688,
+    "source": {
+      "source_url": "https://nbs.rs/en/drugi-nivo-navigacije/statistika/mon_stat/",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "PDF Bulletin",
+      "direct_download_url": "https://www.nbs.rs/en/drugi-nivo-navigacije/statistika/mon_stat/",
+      "update_frequency": "Monthly",
+      "requires_js": false,
+      "notes": "Statistics>Monetary Statistics; National Bank of Serbia"
+    }
+  },
+  {
+    "country_name": "South Sudan",
+    "alpha2_code": "SS",
+    "alpha3_code": "SSD",
+    "numeric_code": 728,
+    "source": {
+      "source_url": "https://boss.gov.ss/monetary-statistics/",
+      "source_url_2": null,
+      "notes": "Foreign Currency Positions section; monetary survey FCD data"
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://boss.gov.ss/monetary-statistics/",
+      "update_frequency": "Monthly",
+      "requires_js": true,
+      "notes": "Monetary Statistics page; Bank of South Sudan"
+    }
+  },
+  {
+    "country_name": "Sao Tome and Principe",
+    "alpha2_code": "ST",
+    "alpha3_code": "STP",
+    "numeric_code": 678,
+    "source": {
+      "source_url": "https://www.bcstp.st/Banco-Central/Publicacoes",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "PDF Bulletin",
+      "direct_download_url": "https://www.bcstp.st/Banco-Central/Publicacoes",
+      "update_frequency": "Monthly",
+      "requires_js": false,
+      "notes": "Banco Central>Publicações; PDF monetary reports"
+    }
+  },
+  {
+    "country_name": "Suriname",
+    "alpha2_code": "SR",
+    "alpha3_code": "SUR",
+    "numeric_code": 740,
+    "source": {
+      "source_url": "https://www.cbvs.sr/en/statistics/macroeconomic-statistics/macro-economic-tables/499-monetary-statistics-en",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://www.cbvs.sr/en/statistics/macroeconomic-statistics/macro-economic-tables/499-monetary-statistics-en",
+      "update_frequency": "Monthly",
+      "requires_js": true,
+      "notes": "Statistics>Macroeconomic Statistics>Monetary Statistics tables"
+    }
+  },
+  {
+    "country_name": "Slovakia",
+    "alpha2_code": "SK",
+    "alpha3_code": "SVK",
+    "numeric_code": 703,
+    "source": {
+      "source_url": "https://nbs.sk/en/statistics/financial-institutions/banks/statistical-data-of-monetary-financial-institutions/",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://www.nbs.sk/en/statistics/financial-institutions/banks/statistical-data-of-monetary-financial-institutions/",
+      "update_frequency": "Monthly",
+      "requires_js": true,
+      "notes": "Statistics>Financial Institutions>Banks; National Bank of Slovakia, part of Eurosystem"
+    }
+  },
+  {
+    "country_name": "Slovenia",
+    "alpha2_code": "SI",
+    "alpha3_code": "SVN",
+    "numeric_code": 705,
+    "source": {
+      "source_url": "https://www.bsi.si/en/publications/statistical-reports/monthly-bulletin",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "PDF Bulletin",
+      "direct_download_url": "https://www.bsi.si/en/publications/statistical-reports/monthly-bulletin",
+      "update_frequency": "Monthly",
+      "requires_js": false,
+      "notes": "Publications>Statistical Reports>Monthly Bulletin; Bank of Slovenia, Eurosystem member"
+    }
+  },
+  {
+    "country_name": "Sweden",
+    "alpha2_code": "SE",
+    "alpha3_code": "SWE",
+    "numeric_code": 752,
+    "source": {
+      "source_url": "https://www.scb.se/fm5001-en",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "PDF Bulletin",
+      "direct_download_url": "https://www.scb.se/fm5001-en",
+      "update_frequency": "Monthly",
+      "requires_js": false,
+      "notes": "FM5001 Financial Market Statistics; Statistics Sweden monetary data"
+    }
+  },
+  {
+    "country_name": "Eswatini",
+    "alpha2_code": "SZ",
+    "alpha3_code": "SWZ",
+    "numeric_code": 748,
+    "source": {
+      "source_url": "https://www.centralbank.org.sz/statistics/",
+      "source_url_2": null,
+      "notes": "Monthly Statistical Release; FX deposits by banking sector"
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://www.centralbank.org.sz/statistics/",
+      "update_frequency": "Monthly",
+      "requires_js": true,
+      "notes": "Statistics page; Central Bank of Eswatini"
+    }
+  },
+  {
+    "country_name": "Sint Maarten (Dutch part)",
+    "alpha2_code": "SX",
+    "alpha3_code": "SXM",
+    "numeric_code": 534,
+    "source": {
+      "source_url": "https://www.centralbank.cw/publications/annual-reports-quarterly-bulletins/2019",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "PDF Bulletin",
+      "direct_download_url": "https://www.centralbank.cw/publications/annual-reports-quarterly-bulletins/2019",
+      "update_frequency": "Quarterly",
+      "requires_js": false,
+      "notes": "Central Bank of Curaçao and Sint Maarten; quarterly bulletins"
+    }
+  },
+  {
+    "country_name": "Seychelles",
+    "alpha2_code": "SC",
+    "alpha3_code": "SYC",
+    "numeric_code": 690,
+    "source": {
+      "source_url": "https://www.cbs.sc/Statistics/StatisticsData.html",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://www.cbs.sc/Statistics/StatisticsData.html",
+      "update_frequency": "Monthly",
+      "requires_js": true,
+      "notes": "Statistics>Statistics Data; Central Bank of Seychelles"
+    }
+  },
+  {
+    "country_name": "Syrian Arab Republic",
+    "alpha2_code": "SY",
+    "alpha3_code": "SYR",
+    "numeric_code": 760,
+    "source": {
+      "source_url": "https://www.ceicdata.com/en/syria/consolidated-balance-sheet-local-banks/local-banks-liabilities-cons-deposits-foreign-currency",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Direct Excel",
+      "direct_download_url": "https://www.ceicdata.com/en/syria/consolidated-balance-sheet-local-banks/local-banks-liabilities-cons-deposits-foreign-currency",
+      "update_frequency": "Monthly",
+      "requires_js": false,
+      "notes": "Third-party aggregator (CEIC); Syrian central bank data limited due to conflict/sanctions"
+    }
+  },
+  {
+    "country_name": "Turks and Caicos Islands (the)",
+    "alpha2_code": "TC",
+    "alpha3_code": "TCA",
+    "numeric_code": 796,
+    "source": {
+      "source_url": null,
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": null,
+      "direct_download_url": null,
+      "update_frequency": null,
+      "requires_js": null,
+      "notes": "Turks and Caicos uses USD, no independent central bank"
+    }
+  },
+  {
+    "country_name": "Chad",
+    "alpha2_code": "TD",
+    "alpha3_code": "TCD",
+    "numeric_code": 148,
+    "source": {
+      "source_url": "https://www.beac.int/economie-stats/statistiques-monetaires/",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "PDF Bulletin",
+      "direct_download_url": "https://www.beac.int/economie-stats/statistiques-monetaires/",
+      "update_frequency": "Monthly",
+      "requires_js": false,
+      "notes": "Statistiques Monétaires; BEAC regional central bank for CEMAC incl. Chad"
+    }
+  },
+  {
+    "country_name": "Togo",
+    "alpha2_code": "TG",
+    "alpha3_code": "TGO",
+    "numeric_code": 768,
+    "source": {
+      "source_url": "https://www.bceao.int/fr/content/la-base-des-donnees-economiques-et-financieres",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://www.bceao.int/fr/content/la-base-des-donnees-economiques-et-financieres",
+      "update_frequency": "Monthly",
+      "requires_js": true,
+      "notes": "Base des Données Economiques et Financières; BCEAO regional central bank for WAEMU incl. Togo"
+    }
+  },
+  {
+    "country_name": "Thailand",
+    "alpha2_code": "TH",
+    "alpha3_code": "THA",
+    "numeric_code": 764,
+    "source": {
+      "source_url": "https://www.bot.or.th/App/BTWS_STAT/statistics/ReportPage.aspx?reportID=7&language=eng",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://www.bot.or.th/App/BTWS_STAT/statistics/ReportPage.aspx?reportID=7&language=eng",
+      "update_frequency": "Monthly",
+      "requires_js": true,
+      "notes": "Statistics; Bank of Thailand interactive report portal"
+    }
+  },
+  {
+    "country_name": "Tajikistan",
+    "alpha2_code": "TJ",
+    "alpha3_code": "TJK",
+    "numeric_code": 762,
+    "source": {
+      "source_url": "https://nbt.tj/en/statistics/monetary_sector.php",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://nbt.tj/en/statistics/monetary_sector.php",
+      "update_frequency": "Monthly",
+      "requires_js": true,
+      "notes": "Statistics>Monetary Sector; National Bank of Tajikistan"
+    }
+  },
+  {
+    "country_name": "Tokelau",
+    "alpha2_code": "TK",
+    "alpha3_code": "TKL",
+    "numeric_code": 772,
+    "source": {
+      "source_url": null,
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": null,
+      "direct_download_url": null,
+      "update_frequency": null,
+      "requires_js": null,
+      "notes": "Tokelau uses NZD, no independent central bank; administered by New Zealand"
+    }
+  },
+  {
+    "country_name": "Turkmenistan",
+    "alpha2_code": "TM",
+    "alpha3_code": "TKM",
+    "numeric_code": 795,
+    "source": {
+      "source_url": null,
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": null,
+      "direct_download_url": null,
+      "update_frequency": null,
+      "requires_js": null,
+      "notes": "No public monetary statistics available from Central Bank of Turkmenistan"
+    }
+  },
+  {
+    "country_name": "Timor-Leste",
+    "alpha2_code": "TL",
+    "alpha3_code": "TLS",
+    "numeric_code": 626,
+    "source": {
+      "source_url": "https://bancocentral.tl/en/go/menu-side-left/konaba-bctl/",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://bancocentral.tl/en/go/menu-side-left/konaba-bctl/",
+      "update_frequency": "Monthly",
+      "requires_js": true,
+      "notes": "Interactive statistics dashboard; Banco Central de Timor-Leste, uses USD"
+    }
+  },
+  {
+    "country_name": "Tonga",
+    "alpha2_code": "TO",
+    "alpha3_code": "TON",
+    "numeric_code": 776,
+    "source": {
+      "source_url": "https://www.reservebank.to/",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://www.reservebank.to/",
+      "update_frequency": "Daily/Weekly",
+      "requires_js": true,
+      "notes": "Latest Statistics; National Reserve Bank of Tonga, exchange rates and liquidity data"
+    }
+  },
+  {
+    "country_name": "Trinidad and Tobago",
+    "alpha2_code": "TT",
+    "alpha3_code": "TTO",
+    "numeric_code": 780,
+    "source": {
+      "source_url": "https://www.central-bank.org.tt/publications/latest-reports",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "PDF Bulletin",
+      "direct_download_url": "https://www.central-bank.org.tt/publications/latest-reports",
+      "update_frequency": "Monthly",
+      "requires_js": false,
+      "notes": "Publications>Latest Reports; Central Bank of Trinidad and Tobago"
+    }
+  },
+  {
+    "country_name": "Tunisia",
+    "alpha2_code": "TN",
+    "alpha3_code": "TUN",
+    "numeric_code": 788,
+    "source": {
+      "source_url": "https://www.bct.gov.tn/bct/siteprod/page.jsp?id=76",
+      "source_url_2": null,
+      "notes": "Bulletin Statistiques Financières"
+    },
+    "target": {
+      "data_type": "PDF Bulletin",
+      "direct_download_url": "https://www.bct.gov.tn/bct/siteprod/page.jsp?id=76",
+      "update_frequency": "Monthly",
+      "requires_js": false,
+      "notes": "Statistics page; Central Bank of Tunisia"
+    }
+  },
+  {
+    "country_name": "Turkey",
+    "alpha2_code": "TR",
+    "alpha3_code": "TUR",
+    "numeric_code": 792,
+    "source": {
+      "source_url": "https://www.tcmb.gov.tr/wps/wcm/connect/EN/TCMB+EN/Main+Menu/Statistics/Monetary+and+Financial+Statistics/Monthly+Money+and+Banking+Statistics/",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://www.tcmb.gov.tr/wps/wcm/connect/EN/TCMB+EN/Main+Menu/Statistics/Monetary",
+      "update_frequency": "Monthly",
+      "requires_js": true,
+      "notes": "Statistics>Monetary and Financial Statistics; Central Bank of Turkey"
+    }
+  },
+  {
+    "country_name": "Tuvalu",
+    "alpha2_code": "TV",
+    "alpha3_code": "TUV",
+    "numeric_code": 798,
+    "source": {
+      "source_url": null,
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": null,
+      "direct_download_url": null,
+      "update_frequency": null,
+      "requires_js": null,
+      "notes": "Tuvalu uses AUD, no independent central bank; National Bank of Tuvalu limited data"
+    }
+  },
+  {
+    "country_name": "Taiwan (Province of China)",
+    "alpha2_code": "TW",
+    "alpha3_code": "TWN",
+    "numeric_code": 158,
+    "source": {
+      "source_url": "https://www.cbc.gov.tw/en/cp-902-123617-370e1-2.html",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "PDF Bulletin",
+      "direct_download_url": "https://www.cbc.gov.tw/en/cp-902-123617-370e1-2.html",
+      "update_frequency": "Monthly",
+      "requires_js": false,
+      "notes": "Publications; Central Bank of the Republic of China (Taiwan) statistics"
+    }
+  },
+  {
+    "country_name": "Tanzania, United Republic of",
+    "alpha2_code": "TZ",
+    "alpha3_code": "TZA",
+    "numeric_code": 834,
+    "source": {
+      "source_url": "https://www.bot.go.tz/Publications/Filter/16",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": {
+      "data_type": "Interactive Web",
+      "direct_download_url": "https://www.bot.go.tz/Publications/Filter/16",
+      "update_frequency": "Monthly",
+      "requires_js": true,
+      "notes": "Publications filtered by type; Bank of Tanzania monetary statistics"
+    }
+  },
+  {
+    "country_name": "Uganda",
+    "alpha2_code": "UG",
+    "alpha3_code": "UGA",
+    "numeric_code": 800,
+    "source": {
+      "source_url": "https://www.bou.or.ug/bou/bouwebsite/Statistics/Statistics.html",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": null
+  },
+  {
+    "country_name": "Ukraine",
+    "alpha2_code": "UA",
+    "alpha3_code": "UKR",
+    "numeric_code": 804,
+    "source": {
+      "source_url": "https://bank.gov.ua/en/statistic/sector-financial/data-sector-financial#1ms",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": null
+  },
+  {
+    "country_name": "United States Minor Outlying Islands (the)",
+    "alpha2_code": "UM",
+    "alpha3_code": "UMI",
+    "numeric_code": 581,
+    "source": {
+      "source_url": null,
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": null
+  },
+  {
+    "country_name": "Uruguay",
+    "alpha2_code": "UY",
+    "alpha3_code": "URY",
+    "numeric_code": 858,
+    "source": {
+      "source_url": "https://www.bcu.gub.uy/Estadisticas-e-Indicadores/Paginas/Principales-Agregados-Monetarios.aspx",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": null
+  },
+  {
+    "country_name": "United States of America (the)",
+    "alpha2_code": "US",
+    "alpha3_code": "USA",
+    "numeric_code": 840,
+    "source": {
+      "source_url": null,
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": null
+  },
+  {
+    "country_name": "Uzbekistan",
+    "alpha2_code": "UZ",
+    "alpha3_code": "UZB",
+    "numeric_code": 860,
+    "source": {
+      "source_url": "https://cbu.uz/en/statistics/dks/412167/",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": null
+  },
+  {
+    "country_name": "Holy See (the)",
+    "alpha2_code": "VA",
+    "alpha3_code": "VAT",
+    "numeric_code": 336,
+    "source": {
+      "source_url": null,
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": null
+  },
+  {
+    "country_name": "Saint Vincent and the Grenadines",
+    "alpha2_code": "VC",
+    "alpha3_code": "VCT",
+    "numeric_code": 670,
+    "source": {
+      "source_url": "https://www.eccb-centralbank.org/statistics",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": null
+  },
+  {
+    "country_name": "Venezuela (Bolivarian Republic of)",
+    "alpha2_code": "VE",
+    "alpha3_code": "VEN",
+    "numeric_code": 862,
+    "source": {
+      "source_url": "http://www.bcv.org.ve/estadisticas/balances-monetarios",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": null
+  },
+  {
+    "country_name": "Virgin Islands (British)",
+    "alpha2_code": "VG",
+    "alpha3_code": "VGB",
+    "numeric_code": 92,
+    "source": {
+      "source_url": null,
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": null
+  },
+  {
+    "country_name": "Virgin Islands (U.S.)",
+    "alpha2_code": "VI",
+    "alpha3_code": "VIR",
+    "numeric_code": 850,
+    "source": {
+      "source_url": null,
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": null
+  },
+  {
+    "country_name": "Viet Nam",
+    "alpha2_code": "VN",
+    "alpha3_code": "VNM",
+    "numeric_code": 704,
+    "source": {
+      "source_url": "https://www.nso.gov.vn/en/",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": null
+  },
+  {
+    "country_name": "Vanuatu",
+    "alpha2_code": "VU",
+    "alpha3_code": "VUT",
+    "numeric_code": 548,
+    "source": {
+      "source_url": "https://www.rbv.gov.vu/index.php/en/research-publications/311-2020-quarterly-economic-reviews",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": null
+  },
+  {
+    "country_name": "Wallis and Futuna",
+    "alpha2_code": "WF",
+    "alpha3_code": "WLF",
+    "numeric_code": 876,
+    "source": {
+      "source_url": "https://www.ieom.fr/Wallis-et-Futuna?lang=en",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": null
+  },
+  {
+    "country_name": "Samoa",
+    "alpha2_code": "WS",
+    "alpha3_code": "WSM",
+    "numeric_code": 882,
+    "source": {
+      "source_url": "https://www.cbs.gov.ws/index.php/statistics/quarterly-bulletin/a-money-and-banking/",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": null
+  },
+  {
+    "country_name": "Yemen",
+    "alpha2_code": "YE",
+    "alpha3_code": "YEM",
+    "numeric_code": 887,
+    "source": {
+      "source_url": "http://centralbank.gov.ye/newslettar.aspx?keyid=48&pid=46&lang=1&cattype=6",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": null
+  },
+  {
+    "country_name": "South Africa",
+    "alpha2_code": "ZA",
+    "alpha3_code": "ZAF",
+    "numeric_code": 710,
+    "source": {
+      "source_url": "https://www.resbank.co.za/Publications/Detail-Item-View/Pages/Publications.aspx?sarbweb=3b6aa07d-92ab-441f-b7bf-bb7dfb1bedb4&sarblist=21b5222e-7125-4e55-bb65-56fd3333371e&sarbitem=10267",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": null
+  },
+  {
+    "country_name": "Zambia",
+    "alpha2_code": "ZM",
+    "alpha3_code": "ZMB",
+    "numeric_code": 894,
+    "source": {
+      "source_url": "https://www.boz.zm/bi-annual-monetary-policy-statements.htm",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": null
+  },
+  {
+    "country_name": "Zimbabwe",
+    "alpha2_code": "ZW",
+    "alpha3_code": "ZWE",
+    "numeric_code": 716,
+    "source": {
+      "source_url": "https://www.rbz.co.zw/publications/monetary-policy-statements/monetary-policy-statements.html",
+      "source_url_2": null,
+      "notes": null
+    },
+    "target": null
+  }
+]

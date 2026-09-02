@@ -1,0 +1,54 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://deposit-dollarization-collector/schema/country_source_target.json",
+  "title": "CountryDataCollectionSchema",
+  "description": "Source(국가별 원천 정보) + Target(수집 대상 상세) 통합 스키마. alpha3 코드로 두 탭을 조인한다.",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "required": ["country_name", "alpha2_code", "alpha3_code", "numeric_code"],
+    "properties": {
+      "country_name": {
+        "type": "string",
+        "description": "Source 탭 'nd' 컬럼 (국가명)"
+      },
+      "alpha2_code": {
+        "type": "string",
+        "pattern": "^[A-Z]{2}$",
+        "description": "ISO 3166-1 alpha-2 코드"
+      },
+      "alpha3_code": {
+        "type": "string",
+        "pattern": "^[A-Z]{3}$",
+        "description": "ISO 3166-1 alpha-3 코드. Source/Target 조인 키"
+      },
+      "numeric_code": {
+        "type": "integer",
+        "description": "ISO 3166-1 숫자 코드"
+      },
+      "source": {
+        "type": "object",
+        "description": "Source 탭 원본 정보",
+        "properties": {
+          "source_url": { "type": ["string", "null"], "format": "uri" },
+          "source_url_2": { "type": ["string", "null"], "format": "uri" },
+          "notes": { "type": ["string", "null"] }
+        },
+        "additionalProperties": false
+      },
+      "target": {
+        "type": ["object", "null"],
+        "description": "Target 탭 수집 상세 정보. Source에만 존재하고 Target에 매칭되는 행이 없으면 null",
+        "properties": {
+          "data_type": { "type": ["string", "null"] },
+          "direct_download_url": { "type": ["string", "null"], "format": "uri" },
+          "update_frequency": { "type": ["string", "null"] },
+          "requires_js": { "type": ["boolean", "null"] },
+          "notes": { "type": ["string", "null"] }
+        },
+        "additionalProperties": false
+      }
+    },
+    "additionalProperties": false
+  }
+}

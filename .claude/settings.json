@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pip3 install *)",
+      "Bash(curl -sI --max-time 8 https://www.centralbank.org.bz/home/statistics/banking-system/monetary-survey)"
+    ]
+  }
+}

@@ -1,0 +1,1418 @@
+{
+  "finished_at": "2026-08-13T14:33:35",
+  "elapsed_sec": 558.7,
+  "dry_run": false,
+  "workers": 8,
+  "timeout_sec": 180.0,
+  "upsert_batch_size": 5,
+  "summary": {
+    "success": 47,
+    "empty": 120,
+    "fail": 0,
+    "timeout": 11,
+    "rows_collected": 1909,
+    "rows_upserted": 1909
+  },
+  "success": [
+    {
+      "country_code": "AIA",
+      "rows": 52
+    },
+    {
+      "country_code": "ARE",
+      "rows": 26
+    },
+    {
+      "country_code": "ATG",
+      "rows": 52
+    },
+    {
+      "country_code": "AUT",
+      "rows": 18
+    },
+    {
+      "country_code": "BGD",
+      "rows": 71
+    },
+    {
+      "country_code": "BHR",
+      "rows": 83
+    },
+    {
+      "country_code": "DJI",
+      "rows": 72
+    },
+    {
+      "country_code": "DMA",
+      "rows": 52
+    },
+    {
+      "country_code": "GRD",
+      "rows": 52
+    },
+    {
+      "country_code": "GTM",
+      "rows": 71
+    },
+    {
+      "country_code": "KEN",
+      "rows": 24
+    },
+    {
+      "country_code": "KNA",
+      "rows": 52
+    },
+    {
+      "country_code": "LCA",
+      "rows": 52
+    },
+    {
+      "country_code": "LTU",
+      "rows": 39
+    },
+    {
+      "country_code": "MAR",
+      "rows": 45
+    },
+    {
+      "country_code": "MDA",
+      "rows": 15
+    },
+    {
+      "country_code": "MEX",
+      "rows": 9
+    },
+    {
+      "country_code": "MNG",
+      "rows": 39
+    },
+    {
+      "country_code": "MOZ",
+      "rows": 3
+    },
+    {
+      "country_code": "MSR",
+      "rows": 52
+    },
+    {
+      "country_code": "NIC",
+      "rows": 33
+    },
+    {
+      "country_code": "NPL",
+      "rows": 75
+    },
+    {
+      "country_code": "NZL",
+      "rows": 15
+    },
+    {
+      "country_code": "PAK",
+      "rows": 18
+    },
+    {
+      "country_code": "PHL",
+      "rows": 6
+    },
+    {
+      "country_code": "PNG",
+      "rows": 12
+    },
+    {
+      "country_code": "POL",
+      "rows": 12
+    },
+    {
+      "country_code": "PRY",
+      "rows": 24
+    },
+    {
+      "country_code": "QAT",
+      "rows": 21
+    },
+    {
+      "country_code": "ROU",
+      "rows": 12
+    },
+    {
+      "country_code": "SDN",
+      "rows": 6
+    },
+    {
+      "country_code": "SLE",
+      "rows": 48
+    },
+    {
+      "country_code": "SLV",
+      "rows": 24
+    },
+    {
+      "country_code": "THA",
+      "rows": 18
+    },
+    {
+      "country_code": "TJK",
+      "rows": 318
+    },
+    {
+      "country_code": "TUN",
+      "rows": 12
+    },
+    {
+      "country_code": "UGA",
+      "rows": 18
+    },
+    {
+      "country_code": "UZB",
+      "rows": 12
+    },
+    {
+      "country_code": "VCT",
+      "rows": 52
+    },
+    {
+      "country_code": "VEN",
+      "rows": 6
+    },
+    {
+      "country_code": "VNM",
+      "rows": 12
+    },
+    {
+      "country_code": "VUT",
+      "rows": 219
+    },
+    {
+      "country_code": "WSM",
+      "rows": 15
+    },
+    {
+      "country_code": "YEM",
+      "rows": 6
+    },
+    {
+      "country_code": "ZAF",
+      "rows": 3
+    },
+    {
+      "country_code": "ZMB",
+      "rows": 21
+    },
+    {
+      "country_code": "ZWE",
+      "rows": 12
+    }
+  ],
+  "empty": [
+    "ALA",
+    "AND",
+    "ASM",
+    "ATA",
+    "ATF",
+    "AUS",
+    "AZE",
+    "BEN",
+    "BES",
+    "BFA",
+    "BLM",
+    "BLR",
+    "BRA",
+    "BRN",
+    "BTN",
+    "BVT",
+    "CAF",
+    "CCK",
+    "CHN",
+    "CIV",
+    "CMR",
+    "COG",
+    "COK",
+    "COL",
+    "COM",
+    "CUB",
+    "CUW",
+    "CXR",
+    "CYM",
+    "CYP",
+    "DEU",
+    "ECU",
+    "ERI",
+    "ESH",
+    "ETH",
+    "FJI",
+    "FLK",
+    "FRA",
+    "FRO",
+    "FSM",
+    "GAB",
+    "GGY",
+    "GIB",
+    "GLP",
+    "GNB",
+    "GNQ",
+    "GRL",
+    "GUF",
+    "GUM",
+    "GUY",
+    "HMD",
+    "IMN",
+    "IOT",
+    "IRL",
+    "IRN",
+    "IRQ",
+    "ITA",
+    "JEY",
+    "KIR",
+    "LBY",
+    "LIE",
+    "LSO",
+    "LUX",
+    "LVA",
+    "MAF",
+    "MCO",
+    "MDG",
+    "MDV",
+    "MHL",
+    "MLI",
+    "MLT",
+    "MMR",
+    "MNP",
+    "MRT",
+    "MTQ",
+    "MYT",
+    "NCL",
+    "NER",
+    "NFK",
+    "NIU",
+    "NLD",
+    "NOR",
+    "NRU",
+    "PAN",
+    "PCN",
+    "PLW",
+    "PRI",
+    "PRK",
+    "PRT",
+    "PSE",
+    "PYF",
+    "REU",
+    "SAU",
+    "SEN",
+    "SGS",
+    "SHN",
+    "SJM",
+    "SLB",
+    "SMR",
+    "SOM",
+    "SPM",
+    "SSD",
+    "SWZ",
+    "SXM",
+    "SYR",
+    "TCA",
+    "TCD",
+    "TGO",
+    "TKL",
+    "TKM",
+    "TLS",
+    "TON",
+    "TTO",
+    "TUV",
+    "UMI",
+    "USA",
+    "VAT",
+    "VGB",
+    "VIR",
+    "WLF"
+  ],
+  "fail": [],
+  "timeout": [
+    "ABW",
+    "AFG",
+    "BHS",
+    "BLZ",
+    "BMU",
+    "BWA",
+    "COD",
+    "DZA",
+    "LBN",
+    "SVK",
+    "TZA"
+  ],
+  "outcomes": [
+    {
+      "country_code": "ABW",
+      "status": "timeout",
+      "rows": 0,
+      "detail": "TIMEOUT after 180s (elapsed 180s)"
+    },
+    {
+      "country_code": "AFG",
+      "status": "timeout",
+      "rows": 0,
+      "detail": "TIMEOUT after 180s (elapsed 180s)"
+    },
+    {
+      "country_code": "AIA",
+      "status": "success",
+      "rows": 52,
+      "detail": null
+    },
+    {
+      "country_code": "ALA",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "AND",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "ARE",
+      "status": "success",
+      "rows": 26,
+      "detail": null
+    },
+    {
+      "country_code": "ASM",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "ATA",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "ATF",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "ATG",
+      "status": "success",
+      "rows": 52,
+      "detail": null
+    },
+    {
+      "country_code": "AUS",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "AUT",
+      "status": "success",
+      "rows": 18,
+      "detail": null
+    },
+    {
+      "country_code": "AZE",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "BEN",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "BES",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "BFA",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "BGD",
+      "status": "success",
+      "rows": 71,
+      "detail": null
+    },
+    {
+      "country_code": "BHR",
+      "status": "success",
+      "rows": 83,
+      "detail": null
+    },
+    {
+      "country_code": "BHS",
+      "status": "timeout",
+      "rows": 0,
+      "detail": "TIMEOUT after 180s (elapsed 180s)"
+    },
+    {
+      "country_code": "BLM",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "BLR",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "BLZ",
+      "status": "timeout",
+      "rows": 0,
+      "detail": "TIMEOUT after 180s (elapsed 180s)"
+    },
+    {
+      "country_code": "BMU",
+      "status": "timeout",
+      "rows": 0,
+      "detail": "TIMEOUT after 180s (elapsed 180s)"
+    },
+    {
+      "country_code": "BRA",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "BRN",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "BTN",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "BVT",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "BWA",
+      "status": "timeout",
+      "rows": 0,
+      "detail": "TIMEOUT after 180s (elapsed 180s)"
+    },
+    {
+      "country_code": "CAF",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "CCK",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "CHN",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "CIV",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "CMR",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "COD",
+      "status": "timeout",
+      "rows": 0,
+      "detail": "TIMEOUT after 180s (elapsed 180s)"
+    },
+    {
+      "country_code": "COG",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "COK",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "COL",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "COM",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "CUB",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "CUW",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "CXR",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "CYM",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "CYP",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "DEU",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "DJI",
+      "status": "success",
+      "rows": 72,
+      "detail": null
+    },
+    {
+      "country_code": "DMA",
+      "status": "success",
+      "rows": 52,
+      "detail": null
+    },
+    {
+      "country_code": "DZA",
+      "status": "timeout",
+      "rows": 0,
+      "detail": "TIMEOUT after 180s (elapsed 180s)"
+    },
+    {
+      "country_code": "ECU",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "ERI",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "ESH",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "ETH",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "FJI",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "FLK",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "FRA",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "FRO",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "FSM",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "GAB",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "GGY",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "GIB",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "GLP",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "GNB",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "GNQ",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "GRD",
+      "status": "success",
+      "rows": 52,
+      "detail": null
+    },
+    {
+      "country_code": "GRL",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "GTM",
+      "status": "success",
+      "rows": 71,
+      "detail": null
+    },
+    {
+      "country_code": "GUF",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "GUM",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "GUY",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "HMD",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "IMN",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "IOT",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "IRL",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "IRN",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "IRQ",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "ITA",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "JEY",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "KEN",
+      "status": "success",
+      "rows": 24,
+      "detail": null
+    },
+    {
+      "country_code": "KIR",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "KNA",
+      "status": "success",
+      "rows": 52,
+      "detail": null
+    },
+    {
+      "country_code": "LBN",
+      "status": "timeout",
+      "rows": 0,
+      "detail": "TIMEOUT after 180s (elapsed 180s)"
+    },
+    {
+      "country_code": "LBY",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "LCA",
+      "status": "success",
+      "rows": 52,
+      "detail": null
+    },
+    {
+      "country_code": "LIE",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "LSO",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "LTU",
+      "status": "success",
+      "rows": 39,
+      "detail": null
+    },
+    {
+      "country_code": "LUX",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "LVA",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "MAF",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "MAR",
+      "status": "success",
+      "rows": 45,
+      "detail": null
+    },
+    {
+      "country_code": "MCO",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "MDA",
+      "status": "success",
+      "rows": 15,
+      "detail": null
+    },
+    {
+      "country_code": "MDG",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "MDV",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "MEX",
+      "status": "success",
+      "rows": 9,
+      "detail": null
+    },
+    {
+      "country_code": "MHL",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "MLI",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "MLT",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "MMR",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "MNG",
+      "status": "success",
+      "rows": 39,
+      "detail": null
+    },
+    {
+      "country_code": "MNP",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "MOZ",
+      "status": "success",
+      "rows": 3,
+      "detail": null
+    },
+    {
+      "country_code": "MRT",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "MSR",
+      "status": "success",
+      "rows": 52,
+      "detail": null
+    },
+    {
+      "country_code": "MTQ",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "MYT",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "NCL",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "NER",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "NFK",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "NIC",
+      "status": "success",
+      "rows": 33,
+      "detail": null
+    },
+    {
+      "country_code": "NIU",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "NLD",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "NOR",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "NPL",
+      "status": "success",
+      "rows": 75,
+      "detail": null
+    },
+    {
+      "country_code": "NRU",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "NZL",
+      "status": "success",
+      "rows": 15,
+      "detail": null
+    },
+    {
+      "country_code": "PAK",
+      "status": "success",
+      "rows": 18,
+      "detail": null
+    },
+    {
+      "country_code": "PAN",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "PCN",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "PHL",
+      "status": "success",
+      "rows": 6,
+      "detail": null
+    },
+    {
+      "country_code": "PLW",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "PNG",
+      "status": "success",
+      "rows": 12,
+      "detail": null
+    },
+    {
+      "country_code": "POL",
+      "status": "success",
+      "rows": 12,
+      "detail": null
+    },
+    {
+      "country_code": "PRI",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "PRK",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "PRT",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "PRY",
+      "status": "success",
+      "rows": 24,
+      "detail": null
+    },
+    {
+      "country_code": "PSE",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "PYF",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "QAT",
+      "status": "success",
+      "rows": 21,
+      "detail": null
+    },
+    {
+      "country_code": "REU",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "ROU",
+      "status": "success",
+      "rows": 12,
+      "detail": null
+    },
+    {
+      "country_code": "SAU",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "SDN",
+      "status": "success",
+      "rows": 6,
+      "detail": null
+    },
+    {
+      "country_code": "SEN",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "SGS",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "SHN",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "SJM",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "SLB",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "SLE",
+      "status": "success",
+      "rows": 48,
+      "detail": null
+    },
+    {
+      "country_code": "SLV",
+      "status": "success",
+      "rows": 24,
+      "detail": null
+    },
+    {
+      "country_code": "SMR",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "SOM",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "SPM",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "SSD",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "SVK",
+      "status": "timeout",
+      "rows": 0,
+      "detail": "TIMEOUT after 180s (elapsed 180s)"
+    },
+    {
+      "country_code": "SWZ",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "SXM",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "SYR",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "TCA",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "TCD",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "TGO",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "THA",
+      "status": "success",
+      "rows": 18,
+      "detail": null
+    },
+    {
+      "country_code": "TJK",
+      "status": "success",
+      "rows": 318,
+      "detail": null
+    },
+    {
+      "country_code": "TKL",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "TKM",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "TLS",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "TON",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "TTO",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "TUN",
+      "status": "success",
+      "rows": 12,
+      "detail": null
+    },
+    {
+      "country_code": "TUV",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "TZA",
+      "status": "timeout",
+      "rows": 0,
+      "detail": "TIMEOUT after 180s (elapsed 180s)"
+    },
+    {
+      "country_code": "UGA",
+      "status": "success",
+      "rows": 18,
+      "detail": null
+    },
+    {
+      "country_code": "UMI",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "USA",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "UZB",
+      "status": "success",
+      "rows": 12,
+      "detail": null
+    },
+    {
+      "country_code": "VAT",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "VCT",
+      "status": "success",
+      "rows": 52,
+      "detail": null
+    },
+    {
+      "country_code": "VEN",
+      "status": "success",
+      "rows": 6,
+      "detail": null
+    },
+    {
+      "country_code": "VGB",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "VIR",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "VNM",
+      "status": "success",
+      "rows": 12,
+      "detail": null
+    },
+    {
+      "country_code": "VUT",
+      "status": "success",
+      "rows": 219,
+      "detail": null
+    },
+    {
+      "country_code": "WLF",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "WSM",
+      "status": "success",
+      "rows": 15,
+      "detail": null
+    },
+    {
+      "country_code": "YEM",
+      "status": "success",
+      "rows": 6,
+      "detail": null
+    },
+    {
+      "country_code": "ZAF",
+      "status": "success",
+      "rows": 3,
+      "detail": null
+    },
+    {
+      "country_code": "ZMB",
+      "status": "success",
+      "rows": 21,
+      "detail": null
+    },
+    {
+      "country_code": "ZWE",
+      "status": "success",
+      "rows": 12,
+      "detail": null
+    }
+  ],
+  "notes": {
+    "success": "DataFrame 행 있음. 파서 내부 WARNING/부분 스킵이 있어도 성공으로 집계.",
+    "empty": "예외 없이 빈 결과. 파서가 실패를 삼키고 empty를 반환한 경우 포함.",
+    "fail": "collect 경로에서 ERROR 문자열이 반환된 경우만.",
+    "timeout": "하드 타임아웃으로 프로세스 kill."
+  }
+}

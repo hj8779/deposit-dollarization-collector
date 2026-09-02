@@ -1,0 +1,14 @@
+pandas
+sqlalchemy
+psycopg2-binary
+playwright
+pdfplumber
+openpyxl
+xlrd
+requests
+python-dotenv
+pytest
+lxml                 # pd.read_html 기본 엔진 (CHL/CRI/MKD/NGA 등)
+beautifulsoup4       # HTML 파서 보조 (AFG/TJK 등)
+html5lib             # pd.read_html 대체 엔진
+pytesseract  # OCR 폴백용. 시스템에 tesseract-ocr 바이너리 별도 설치 필요(brew install tesseract)

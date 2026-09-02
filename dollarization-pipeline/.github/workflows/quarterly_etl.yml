@@ -1,0 +1,36 @@
+# NOTE: Prefer the monorepo-root workflow at
+#   ../.github/workflows/quarterly_etl.yml
+# when this folder is nested under deposit-dollarization-collector.
+# This copy is kept for a standalone dollarization-pipeline repo checkout.
+
+name: Quarterly ETL
+
+on:
+  schedule:
+    - cron: "0 0 1 1,4,7,10 *"
+  workflow_dispatch: {}
+
+jobs:
+  run-etl:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install system deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y tesseract-ocr poppler-utils
+      - name: Install Python deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          playwright install --with-deps chromium
+      - name: Init DB + ETL
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          python main.py --init-db
+          python main.py --status success --only-with-parser

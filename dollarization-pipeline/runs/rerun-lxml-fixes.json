@@ -1,0 +1,79 @@
+{
+  "finished_at": "2026-08-13T12:34:42",
+  "elapsed_sec": 180.7,
+  "dry_run": false,
+  "workers": 3,
+  "timeout_sec": 180.0,
+  "upsert_batch_size": 5,
+  "summary": {
+    "success": 5,
+    "empty": 0,
+    "fail": 0,
+    "timeout": 0,
+    "rows_collected": 1597,
+    "rows_upserted": 1597
+  },
+  "success": [
+    {
+      "country_code": "CHL",
+      "rows": 210
+    },
+    {
+      "country_code": "CRI",
+      "rows": 475
+    },
+    {
+      "country_code": "MKD",
+      "rows": 360
+    },
+    {
+      "country_code": "NGA",
+      "rows": 540
+    },
+    {
+      "country_code": "TUN",
+      "rows": 12
+    }
+  ],
+  "empty": [],
+  "fail": [],
+  "timeout": [],
+  "outcomes": [
+    {
+      "country_code": "CHL",
+      "status": "success",
+      "rows": 210,
+      "detail": null
+    },
+    {
+      "country_code": "CRI",
+      "status": "success",
+      "rows": 475,
+      "detail": null
+    },
+    {
+      "country_code": "MKD",
+      "status": "success",
+      "rows": 360,
+      "detail": null
+    },
+    {
+      "country_code": "NGA",
+      "status": "success",
+      "rows": 540,
+      "detail": null
+    },
+    {
+      "country_code": "TUN",
+      "status": "success",
+      "rows": 12,
+      "detail": null
+    }
+  ],
+  "notes": {
+    "success": "DataFrame 행 있음. 파서 내부 WARNING/부분 스킵이 있어도 성공으로 집계.",
+    "empty": "예외 없이 빈 결과. 파서가 실패를 삼키고 empty를 반환한 경우 포함.",
+    "fail": "collect 경로에서 ERROR 문자열이 반환된 경우만.",
+    "timeout": "하드 타임아웃으로 프로세스 kill."
+  }
+}

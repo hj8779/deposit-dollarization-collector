@@ -1,0 +1,167 @@
+{
+  "finished_at": "2026-08-20T12:41:20",
+  "elapsed_sec": 533.0,
+  "dry_run": false,
+  "workers": 4,
+  "timeout_sec": 0,
+  "upsert_batch_size": 5,
+  "summary": {
+    "success": 13,
+    "empty": 1,
+    "fail": 0,
+    "timeout": 0,
+    "rows_collected": 3341,
+    "rows_upserted": 3341
+  },
+  "success": [
+    {
+      "country_code": "AGO",
+      "rows": 324
+    },
+    {
+      "country_code": "BOL",
+      "rows": 309
+    },
+    {
+      "country_code": "GIN",
+      "rows": 429
+    },
+    {
+      "country_code": "MNG",
+      "rows": 39
+    },
+    {
+      "country_code": "MWI",
+      "rows": 224
+    },
+    {
+      "country_code": "NAM",
+      "rows": 396
+    },
+    {
+      "country_code": "NPL",
+      "rows": 75
+    },
+    {
+      "country_code": "NZL",
+      "rows": 345
+    },
+    {
+      "country_code": "PER",
+      "rows": 204
+    },
+    {
+      "country_code": "QAT",
+      "rows": 501
+    },
+    {
+      "country_code": "RWA",
+      "rows": 84
+    },
+    {
+      "country_code": "SLE",
+      "rows": 90
+    },
+    {
+      "country_code": "TJK",
+      "rows": 321
+    }
+  ],
+  "empty": [
+    "LBR"
+  ],
+  "fail": [],
+  "timeout": [],
+  "outcomes": [
+    {
+      "country_code": "AGO",
+      "status": "success",
+      "rows": 324,
+      "detail": null
+    },
+    {
+      "country_code": "BOL",
+      "status": "success",
+      "rows": 309,
+      "detail": null
+    },
+    {
+      "country_code": "GIN",
+      "status": "success",
+      "rows": 429,
+      "detail": null
+    },
+    {
+      "country_code": "LBR",
+      "status": "empty",
+      "rows": 0,
+      "detail": "parser returned empty (soft-fail / no data)"
+    },
+    {
+      "country_code": "MNG",
+      "status": "success",
+      "rows": 39,
+      "detail": null
+    },
+    {
+      "country_code": "MWI",
+      "status": "success",
+      "rows": 224,
+      "detail": null
+    },
+    {
+      "country_code": "NAM",
+      "status": "success",
+      "rows": 396,
+      "detail": null
+    },
+    {
+      "country_code": "NPL",
+      "status": "success",
+      "rows": 75,
+      "detail": null
+    },
+    {
+      "country_code": "NZL",
+      "status": "success",
+      "rows": 345,
+      "detail": null
+    },
+    {
+      "country_code": "PER",
+      "status": "success",
+      "rows": 204,
+      "detail": null
+    },
+    {
+      "country_code": "QAT",
+      "status": "success",
+      "rows": 501,
+      "detail": null
+    },
+    {
+      "country_code": "RWA",
+      "status": "success",
+      "rows": 84,
+      "detail": null
+    },
+    {
+      "country_code": "SLE",
+      "status": "success",
+      "rows": 90,
+      "detail": null
+    },
+    {
+      "country_code": "TJK",
+      "status": "success",
+      "rows": 321,
+      "detail": null
+    }
+  ],
+  "notes": {
+    "success": "DataFrame 행 있음. 파서 내부 WARNING/부분 스킵이 있어도 성공으로 집계.",
+    "empty": "예외 없이 빈 결과. 파서가 실패를 삼키고 empty를 반환한 경우 포함.",
+    "fail": "collect 경로에서 ERROR 문자열이 반환된 경우만.",
+    "timeout": "하드 타임아웃으로 프로세스 kill."
+  }
+}

@@ -1,0 +1,3751 @@
+[
+  {
+    "country_code": "ABW",
+    "country_name": "Aruba",
+    "data_type": "PDF Bulletin",
+    "source_url": "https://www.cbaruba.org/document/monthly-tables-2026/",
+    "update_frequency": "Monthly",
+    "requires_js": true,
+    "notes": "Home>Monthly Tables>연도별 페이지에서 최신 월 PDF Download 클릭 필요(연도별 페이지 목록형)",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "PdfBulletinStrategy",
+      "status": "success",
+      "notes": "Monthly Bulletin PDF, TABLE 2: COMPONENTS OF BROAD MONEY. FCD=col(5)+col(9)+col(11), TD=col(6)+col(12). 연도별 아카이브(/document/monthly-tables-{YYYY}/)를 2010~현재까지 순회하며 각 연도의 롤링 윈도우(약 18개월+과거4개년 연간)를 병합해 장기 시계열을 재구성. 일부 PDF는 텍스트가 글자 단위로 뒤집혀 추출되는 손상본이라(2010,2011,2013,2014년 다수, 2018/2021 일부월) 해당 연도는 같은 해 다른 달로 자동 재시도하며, 그래도 실패하면 스킵 -> 2013년만 월별 데이터 공백, 나머지는 2011-01~최신월까지 커버 2010/2011/2013/2014년(및 일부 손상월)은 표준 OCR 폴백(README 참고)으로 추가 복구 시도, 완전 손상 연도는 여전히 일부 공백."
+    }
+  },
+  {
+    "country_code": "AFG",
+    "country_name": "Afghanistan",
+    "data_type": "PDF Bulletin",
+    "source_url": "https://dab.gov.af/quarterly-economic-and-statistical-bulletins",
+    "update_frequency": "Quarterly",
+    "requires_js": false,
+    "notes": "Statistics>Quarterly Economic and Statistical Bulletins, 외화예금(Foreign currency deposits) 수치 포함 분기 보고서",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "PdfBulletinStrategy",
+      "status": "success",
+      "notes": "Annual/Quarterly Bulletin 랜딩 페이지에서 PDF 전부 수집(파일명에서 분기/연도 라벨 추출, 아프간력<1500이면 +621로 그레고리력 환산), 각 PDF의 'Table 2.1'류 표에서 'In Foreign currency'(Other Deposits/Quasi Money의 외화분) 행의 최신(가장 오른쪽) 열 값 추출. 35개 중 26개 성공(2006~2020, Q 단위), 9개는 해당 연도 표 포맷이 달라 행 자체가 없어 스킵. 사이트 마지막 게시물이 2021-01(FY1399 Q3)이라 최신 데이터는 아님"
+    }
+  },
+  {
+    "country_code": "AGO",
+    "country_name": "Angola",
+    "data_type": "Direct Excel",
+    "source_url": "https://www.bna.ao/#/pt/estatisticas/estatisticas-monetarias-financeiras/nova-serie",
+    "update_frequency": "Monthly",
+    "requires_js": true,
+    "notes": "사이트 인증서 오류로 자동접근 불가. 검색결과에 따르면 '통계>Estatisticas Monetarias e Financeiras' 메뉴에서 EMF Nova Serie 엑셀파일 제공 확인(bancobai 자료 인용)",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "DirectExcelStrategy",
+      "status": "success",
+      "notes": "'Nova Série' 통계 페이지에서 'Agregados Monetários' 클릭(JS 다운로드, Playwright 필요) -> legacy .xls, 시트 'IA2.AggrMon'(Quadro I.A.2). indicator=foreign_currency_deposits: row25 'Total dos depósitos em moeda externa'(메모 항목 공식 합계). indicator=TD: row12 'Depósitos transferíveis'+row17 'Outros depósitos'(각 총액 행). 2012-01~2026-06, 161개월. bna.ao 응답이 간헐적으로 느려 자체 재시도(최대 3회) 포함"
+    }
+  },
+  {
+    "country_code": "AIA",
+    "country_name": "Anguilla",
+    "data_type": "Interactive Web",
+    "source_url": "https://www.eccb-centralbank.org/statistics-category/monetary-and-financial-statistics/summarized-monetary-survey/a",
+    "update_frequency": "Annual",
+    "requires_js": true,
+    "notes": "Statistics>Monetary and Financial Sector>Summarized Monetary Survey, Country=Anguilla 선택 후 Foreign Currency Deposits 항목 확인, Download 버튼으로 Excel 추출 가능",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "InteractiveWebStrategy",
+      "status": "success",
+      "notes": "사용자가 제시한 SDMX REST API(sdmx.eccb-centralbank.org)는 DNS 미해석(존재하지 않는 도메인) 확인됨 -> 실제로는 eccb-centralbank.org의 'Interactive Database' 쿼리 폼(Laravel, CSRF+암호화 hidden 필드, 부트스트랩 모달 안 select2 멀티셀렉트)이 진짜 데이터 소스. Playwright로 모달 열기-> 국가 선택->'Foreign Currency Deposits' 지표 선택->제출 흐름 재현(src/parsers/_eccb_common.py 공용). start_date를 jQuery datepicker API로 2000-01-01로 설정해 2000~2025년(26개년) 연간 데이터 확보. 8개국(AIA/ATG/DMA/GRD/MSR/KNA/LCA/VCT) 공용 로직 검증 완료"
+    }
+  },
+  {
+    "country_code": "ALA",
+    "country_name": "Åland Islands",
+    "data_type": "No Standalone Source",
+    "source_url": null,
+    "update_frequency": null,
+    "requires_js": null,
+    "notes": "해당 지역(올란드 제도)은 독립 중앙은행이 없으며 핀란드/ECB 통계에 포함됨. Source URL 없음",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "not_applicable",
+      "notes": "data_type=No Standalone Source, 확인된 개별 통계 소스 없음 -> 수집 대상 아님(NoSourceStrategy)"
+    }
+  },
+  {
+    "country_code": "ALB",
+    "country_name": "Albania",
+    "data_type": "Interactive Web",
+    "source_url": "https://www.bankofalbania.org/Statistics/Monetary_Financial_and_Banking_statistics/Sectoral_balance_sheet_of_banks.html",
+    "update_frequency": "Monthly",
+    "requires_js": true,
+    "notes": "Monetary,Financial and Banking statistics>Deposits>\"Foreign currency deposits converted in ALL by sector and maturity\"(cregtab_id=741) 클릭 후 Show values로 테이블 조회, 별도 엑셀다운로드 버튼 없음(웹 테이블만 제공)",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "InteractiveWebStrategy",
+      "status": "success",
+      "notes": "'Sectoral balance sheet of Deposit money banks' 페이지. 체크박스 트리에서 2.1.1.2(Transferable deposits In FC, id=85581) + 2.1.2.2(Other deposits In FC, id=85601) 선택 -> 'Show values' 2단계 클릭(1차: 기간선택 UI 노출, From을 최초월로 설정 -> 2차: 결과가 새 탭(?mode=alone)으로 열림) -> 두 항목 합산이 FCD. 2006-12~2026-06, 235개월 확보"
+    }
+  },
+  {
+    "country_code": "AND",
+    "country_name": "Andorra",
+    "data_type": "No Standalone Source",
+    "source_url": null,
+    "update_frequency": null,
+    "requires_js": null,
+    "notes": "안도라는 자체 중앙은행 없음(INAF가 유사기능). 공개된 시계열 통계 페이지 확인 안됨, Source URL 없음",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "not_applicable",
+      "notes": "data_type=No Standalone Source, 확인된 개별 통계 소스 없음 -> 수집 대상 아님(NoSourceStrategy)"
+    }
+  },
+  {
+    "country_code": "ARE",
+    "country_name": "United Arab Emirates (the)",
+    "data_type": "PDF Bulletin",
+    "source_url": "https://www.centralbank.ae/media/r0mirede/statistical-bulletin-may-2026.pdf",
+    "update_frequency": "Monthly",
+    "requires_js": true,
+    "notes": "Research and Statistics>Statistics by Theme>\"Statistical Bulletin-Banking & Monetary Statistics\">월별 항목 클릭 후 상세페이지에서 PDF Download",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "PdfBulletinStrategy",
+      "status": "success",
+      "notes": "Statistical Bulletin PDF, Table 2 Monetary Survey, 'Foreign Currency Deposits' 행을 월별 헤더와 매칭, PDF당 ~13개월 롤링. 목록 페이지는 requests에 403(CF)이지만 Playwright로는 통과됨을 확인해 /en/research-and-statistics/latest-statistics/ 페이지에서 최신 호를 자동 발견하도록 추가(2026-08-19) + 2025-08/09/12 등 빠졌던 호 시드 보강. 2026-08-19 버그 수정: 'Table 3: Monthly Changes in Factors Affecting Money Supply'가 Table 2와 똑같은 행 라벨(Foreign Currency Deposits 등)을 쓰지만 값은 전월대비 증감(음수 가능)이라, 파서가 두 표를 구분 못 해 증감값이 재고값을 덮어써 음수 FCD/TD/ratio가 들어가고 있었음 — 'monthly changes' 페이지를 건너뛰도록 수정. 잔여 이슈: 2025-07/08 두 기간은 여전히 음수로 나와 DB 값범위 검증(supabase_store._validate_value_range)에서 자동 드롭됨(원인 미해결, 아마 다른 표 겹침 케이스) — 그 두 달은 FCD/ratio 없이 TD만 있을 수 있음. 2026-08-19 추가: 2008~2013년판 Annual Report의 'TABLE (A-4): MONETARY SURVEY' 부록(연 1~2개 데이터포인트)을 추가 소스로 병합 — 2018년 이전 이력 확장(2009,2010,2011,2012,2013-Annual). 개선 후 실측 59기간(2009-Annual~2026-06)."
+    }
+  },
+  {
+    "country_code": "ARG",
+    "country_name": "Argentina",
+    "data_type": "API",
+    "source_url": "https://api.bcra.gob.ar/estadisticas/v4.0/Monetarias/1414",
+    "update_frequency": "Daily",
+    "requires_js": false,
+    "notes": "Boletín Estadístico(월간) 목록에서 최신월 클릭 시 PDF 내 Excel(.xls) 시리즈 링크 포함, 예: dep....xls 형태로 개별 시리즈 다운 가능",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "ApiStrategy",
+      "status": "success",
+      "notes": "사용자가 제시한 idVariable=14는 실제로 'Tasa de interés de préstamos personales'(개인대출 금리)였음 -> 전체 변수 목록(/v4.0/Monetarias)에서 descripcion 검색으로 idVariable=1414('Depósitos totales del total de sectores', 카테고리='Depósitos por cuenta', 단위=USD백만)를 정확한 지표로 특정. API도 v3.0은 이미 폐기(HTTP 410)되어 v4.0 사용. 일별 데이터를 월말값 기준 월별 집계, offset 페이지네이션(limit=3000). 1999-12~2026-08, 321개월 확보"
+    }
+  },
+  {
+    "country_code": "ARM",
+    "country_name": "Armenia",
+    "data_type": "Interactive Web",
+    "source_url": "https://www.cba.am/en/statistics/monetary-aggregates/50",
+    "update_frequency": "Monthly",
+    "requires_js": false,
+    "notes": "Statistics>Deposits>Commercial banks deposits by sectors; interactive filterable table by sector/currency, no direct file download",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "InteractiveWebStrategy",
+      "status": "success",
+      "notes": "Monetary Aggregates 페이지의 'Export all' 링크(/50/export-all/)가 실제로는 JSON이 아니라 XLSX를 반환(단일 GET, Playwright 불필요). 시트 'value, month': col3 Demand deposits in drams + col5 Time deposits in drams + col7 Deposits in foreign currency(=FCD) = TD. 2003-01~2026-06, 282개월 x 2지표 = 564행"
+    }
+  },
+  {
+    "country_code": "ASM",
+    "country_name": "American Samoa",
+    "data_type": "No Standalone Source",
+    "source_url": null,
+    "update_frequency": null,
+    "requires_js": null,
+    "notes": "No central bank; uses US Federal Reserve System. No standalone monetary statistics source found for American Samoa",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "not_applicable",
+      "notes": "data_type=No Standalone Source, 확인된 개별 통계 소스 없음 -> 수집 대상 아님(NoSourceStrategy)"
+    }
+  },
+  {
+    "country_code": "ATA",
+    "country_name": "Antarctica",
+    "data_type": "No Standalone Source",
+    "source_url": null,
+    "update_frequency": null,
+    "requires_js": null,
+    "notes": "No central bank; Antarctica has no permanent population or banking system",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "not_applicable",
+      "notes": "data_type=No Standalone Source, 확인된 개별 통계 소스 없음 -> 수집 대상 아님(NoSourceStrategy)"
+    }
+  },
+  {
+    "country_code": "ATF",
+    "country_name": "French Southern Territories (the)",
+    "data_type": "No Standalone Source",
+    "source_url": null,
+    "update_frequency": null,
+    "requires_js": null,
+    "notes": "No central bank; French Southern Territories administered by France, uses French/EU statistics",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "not_applicable",
+      "notes": "data_type=No Standalone Source, 확인된 개별 통계 소스 없음 -> 수집 대상 아님(NoSourceStrategy)"
+    }
+  },
+  {
+    "country_code": "ATG",
+    "country_name": "Antigua and Barbuda",
+    "data_type": "Interactive Web",
+    "source_url": "https://www.eccb-centralbank.org/statistics-category/monetary-and-financial-statistics/summarized-monetary-survey/a",
+    "update_frequency": "Annual",
+    "requires_js": true,
+    "notes": "ECCB regional central bank covers Antigua and Barbuda; Statistics>Monetary and Financial Statistics>Summarized Monetary Survey; interactive table",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "InteractiveWebStrategy",
+      "status": "success",
+      "notes": "사용자가 제시한 SDMX REST API(sdmx.eccb-centralbank.org)는 DNS 미해석(존재하지 않는 도메인) 확인됨 -> 실제로는 eccb-centralbank.org의 'Interactive Database' 쿼리 폼(Laravel, CSRF+암호화 hidden 필드, 부트스트랩 모달 안 select2 멀티셀렉트)이 진짜 데이터 소스. Playwright로 모달 열기-> 국가 선택->'Foreign Currency Deposits' 지표 선택->제출 흐름 재현(src/parsers/_eccb_common.py 공용). start_date를 jQuery datepicker API로 2000-01-01로 설정해 2000~2025년(26개년) 연간 데이터 확보. 8개국(AIA/ATG/DMA/GRD/MSR/KNA/LCA/VCT) 공용 로직 검증 완료"
+    }
+  },
+  {
+    "country_code": "AUS",
+    "country_name": "Australia",
+    "data_type": "Direct Excel",
+    "source_url": "https://www.rba.gov.au/statistics/tables/xls/d03hist.xlsx?v=2026-08-10-12-51-18",
+    "update_frequency": "Monthly",
+    "requires_js": false,
+    "notes": "Statistics>Statistical Tables>Money and Credit>Monetary Aggregates D3 XLSX; direct downloadable Excel with historical monetary aggregates incl. deposits",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "failed",
+      "notes": "d03hist.xlsx(D3 Monetary Aggregates) 다운로드는 성공하지만 Currency/Transaction Deposits/M1/CD만 있고 외화예금 항목 없음"
+    }
+  },
+  {
+    "country_code": "AUT",
+    "country_name": "Austria",
+    "data_type": "Interactive Web",
+    "source_url": "https://www.oenb.at/isawebstat/stabfrage/createReport?lang=EN&report=1.7.10",
+    "update_frequency": "Monthly",
+    "requires_js": true,
+    "notes": "Statistics>Standardized Tables>OeNB Eurosystem and Monetary Indicators>Deposits of MFIs>Deposits with Austrian MFIs; breaks down EUR vs Foreign currencies; has Excel/CSV export icon",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "InteractiveWebStrategy",
+      "status": "success",
+      "notes": "OeNB report=1.7.10, 'Austria' 거주지 블록 하위 MFIs/Non-MFIs의 'Foreign currencies' 행 2개 합산, 연간3+월간6"
+    }
+  },
+  {
+    "country_code": "AZE",
+    "country_name": "Azerbaijan",
+    "data_type": "PDF Bulletin",
+    "source_url": "https://www.cbar.az/page-42/monetary-indicators?language=en",
+    "update_frequency": "Monthly",
+    "requires_js": false,
+    "notes": "Statistics>Monetary Indicators; lists downloadable files e.g. \"Structure of deposits by currencies\" as PDF/XLS attachments",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "needs_research",
+      "notes": "접속 실패(SSL/연결 오류)"
+    }
+  },
+  {
+    "country_code": "BDI",
+    "country_name": "Burundi",
+    "data_type": "Direct Excel",
+    "source_url": "https://www.brb.bi/sites/default/files/2026-07/II3_2%20Passif%20Banques%20commerciales..xlsx",
+    "update_frequency": "Monthly",
+    "requires_js": false,
+    "notes": "Statistiques>Monnaie et Credit>Situation agrégée des Banques Commerciales>Passif; direct xlsx download with deposit liabilities",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "DirectExcelStrategy",
+      "status": "success",
+      "notes": "sheet='Mensuelle', col A=date(monthly), col D='Dépôts en devises des résidents' (거주자 외화예금, BIF백만)"
+    }
+  },
+  {
+    "country_code": "BEL",
+    "country_name": "Belgium",
+    "data_type": "Interactive Web",
+    "source_url": "https://nsidisseminate-stat.nbb.be/rest/data/BE2,DF_BSIMFI,1.0/M.L2BE+L2BEFC?startPeriod=1990-01&dimensionAtObservation=AllDimensions",
+    "update_frequency": "Monthly",
+    "requires_js": false,
+    "notes": "Statistics>Financial institutions>Banks>Loans and deposits; links to NBB.Stat dataexplorer (dataexplorer.nbb.be) interactive database",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "InteractiveWebStrategy",
+      "status": "success",
+      "notes": "NBB 공식 SDMX-JSON REST API(dataflow BE2,DF_BSIMFI,1.0) 실사용 가능 확인. MBSI_ITEM 코드 L2BEFC='Deposits, Belgium, Foreign currencies'(FCD), L2BE='Deposits, Belgium 전체'(TD) - 실측으로 L2BEEU+L2BEFC=L2BE 항등식 확인. 쿼리 키 M.L2BE+L2BEFC로 필요한 두 시리즈만 요청. base.download()의 기본 Accept 헤더로는 JSON을 못 받아와 render()에서 Accept: application/json 직접 지정 필요. 1996-12~2026-06, 355개월 x 2지표 = 710행"
+    }
+  },
+  {
+    "country_code": "BEN",
+    "country_name": "Benin",
+    "data_type": "No Standalone Source",
+    "source_url": null,
+    "update_frequency": null,
+    "requires_js": null,
+    "notes": "No Source URL provided; BCEAO (regional central bank for WAEMU incl. Benin) not listed in Source tab",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "not_applicable",
+      "notes": "data_type=No Standalone Source, 확인된 개별 통계 소스 없음 -> 수집 대상 아님(NoSourceStrategy)"
+    }
+  },
+  {
+    "country_code": "BES",
+    "country_name": "Bonaire, Sint Eustatius and Saba",
+    "data_type": "No Standalone Source",
+    "source_url": null,
+    "update_frequency": null,
+    "requires_js": null,
+    "notes": "No Source URL provided; part of Netherlands, uses Dutch/ECB statistics, no standalone central bank",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "not_applicable",
+      "notes": "data_type=No Standalone Source, 확인된 개별 통계 소스 없음 -> 수집 대상 아님(NoSourceStrategy)"
+    }
+  },
+  {
+    "country_code": "BFA",
+    "country_name": "Burkina Faso",
+    "data_type": "No Standalone Source",
+    "source_url": null,
+    "update_frequency": null,
+    "requires_js": null,
+    "notes": "No Source URL provided; BCEAO (regional central bank for WAEMU incl. Burkina Faso) not listed in Source tab",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "not_applicable",
+      "notes": "data_type=No Standalone Source, 확인된 개별 통계 소스 없음 -> 수집 대상 아님(NoSourceStrategy)"
+    }
+  },
+  {
+    "country_code": "BGD",
+    "country_name": "Bangladesh",
+    "data_type": "Direct Excel",
+    "source_url": "https://www.bb.org.bd/en/index.php/econdata/index",
+    "update_frequency": "Annual",
+    "requires_js": true,
+    "notes": "Economic Data>Economic Statistics>Bank Deposit and Credit; searchable table by month/year, no direct file download visible",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "DirectExcelStrategy",
+      "status": "success",
+      "notes": "econdata 페이지에 안내 없이 박혀 있는 직접 링크(/econdata/time_series_data1972-2024.xlsx) 발견, 단순 GET은 봇 방어(TSPD) 챌린지 HTML만 반환해 Playwright 다운로드 이벤트 필요. 시트 'Table IA'에 시대별 소표 5개가 세로로 이어붙어 있고 컬럼 구성이 다 다름 -> 'Foreign Currency Deposit'/'FC Deposit' 헤더 텍스트를 동적으로 찾아 그 열만 추출(컬럼 인덱스 고정 시 무관한 'From Inter-Banks' 항목과 우연히 겹쳐 잘못된 값이 섞이는 함정 있었음). 1988-89~2023-24 회계연도, 35개년"
+    }
+  },
+  {
+    "country_code": "BGR",
+    "country_name": "Bulgaria",
+    "data_type": "Direct Excel",
+    "source_url": "https://www.bnb.bg/Statistics/StHistoricalData/StMIRArchive/StMonetarySurvey/index.htm",
+    "update_frequency": "Monthly",
+    "requires_js": false,
+    "notes": "Original Source URL (StMonetarySurvey) broken/404; found via search - Statistics>SDDS Plus National Summary Data Page>Central Bank Survey/Depository Corporations Survey; also has SDMX-ML machine-readable data",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "DirectExcelStrategy",
+      "status": "success",
+      "notes": "'Monetary Survey' 페이지의 직접 xlsx 링크(s_ms_monetarystatistics_all_en.xlsx), 단일 GET으로 다운로드. 시트 'MS_short'(첫 탭)에서 상위 카테고리 라벨에 'deposit'이 포함된 4개 항목(Overnight/Agreed maturity<=2y/Redeemable at notice<=3m/Agreed maturity>2y)의 'in foreign currency' 하위행 합산=FCD, 'in BGN'+FC 합산=TD (자산 측에도 동일 라벨의 통화분해가 있어 부모라벨 필터로 구분 필요). 1995-12~2025-12, 361개월 x 2지표 = 722행"
+    }
+  },
+  {
+    "country_code": "BHR",
+    "country_name": "Bahrain",
+    "data_type": "Interactive Web",
+    "source_url": "https://www.cbb.gov.bh/publications/",
+    "update_frequency": "Monthly",
+    "requires_js": false,
+    "notes": "Publications>Statistical Bulletin (monthly PDF); also Central Bank Survey monthly PDF with monetary/deposit data",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "InteractiveWebStrategy",
+      "status": "success",
+      "notes": "Publications 페이지 'Statistical Bulletin' 섹션에 xlsx(2016-12~)/xls(2010-12~2015-12, 12월판만)가 게시(88개 파일 전부 순회). 'Deposit Liabilities to Non-Banks' 표를 제목 텍스트로 매 파일마다 동적으로 찾음(tab 번호가 시기별로 다름: 사용자가 지정한 tab 17은 시기에 따라 'Assets by Currency' 등 전혀 다른 표라 부적합함을 실측 확인, 제목 검색으로 해결). Private Sector Demand+Savings+Time 각각의 BD/FC 컬럼을 라벨로 동적 탐색(Government 제외). FCD = 세 항목 FC 합계(구버전은 Demand FC만 사용해 과소집계, 이번에 Savings/Time FC까지 포함하도록 확장), TD = 세 항목 BD+FC 합계. 컬럼 레이아웃은 2001년부터 지금까지 안정적으로 동일함을 실측 확인. 2020-01~현재는 매월, 2009-12~2019-12는 12월 스냅샷만(연 1회). 2010-12 이전(2001~2009)은 같은 섹션의 PDF(파일명이 극도로 불규칙: MSB-Dec2011.pdf/QSB Dec 2007.pdf/dec_2001.pdf 등 — 내용은 동일 표 구조라 pdfplumber extract_tables()로 xlsx와 동일하게 파싱 가능, 마지막 행이 항상 월간 블록)까지 순회해 확장. xlsx/xls가 이미 커버하는 기간은 그쪽을 우선하고 PDF는 빈 구간만 보충. 최종 2000-03~2026-06, 316개월(632행), 음수 없음."
+    }
+  },
+  {
+    "country_code": "BHS",
+    "country_name": "Bahamas (the)",
+    "data_type": "PDF Bulletin",
+    "source_url": "https://www.centralbankbahamas.com/publications/qsd",
+    "update_frequency": "Monthly",
+    "requires_js": false,
+    "notes": "Publications>Quarterly Statistical Digest; PDF contains Monetary Survey table with Foreign Currency Deposits breakdown",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "PdfBulletinStrategy",
+      "status": "success",
+      "notes": "'Quarterly Statistical Digest' 목록 페이지(?page=1~6, 총 93개 PDF, 2005~현재)를 전부 순회. 각 호의 'Table 2.5 Financial Survey' 페이지에서 'Foreign Currency Deposits'(Quasi Money 14개 값 중 12번째) 열을 텍스트 정규식으로 추출(벡터 罫線 없어 extract_tables 실패, extract_text 라인 파싱). 연간(수년 롤링)+분기(최근1년)+월간(최근~15개월 롤링) 세 단위 모두 캡처, 기간 라벨로 구분해 저장. 2005~2008년 4개 파일은 표 제목/레이아웃이 달라 별도 조사 필요(스킵됨). 2009-01~2026-03, 152개 기간(연/분기/월 합산)"
+    }
+  },
+  {
+    "country_code": "BIH",
+    "country_name": "Bosnia and Herzegovina",
+    "data_type": "Direct Excel",
+    "source_url": "https://www.cbbh.ba/content/DownloadAttachment/?id=53a74b79-f1c9-49d3-8de7-1df1f86e1f53&langTag=en",
+    "update_frequency": "Monthly",
+    "requires_js": false,
+    "notes": "Statistics>Statistical Appendix>Monetary and Financial Sector Statistics>Attachment 10a - Analytical Review of Deposits at Commercial Banks; direct file download",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "DirectExcelStrategy",
+      "status": "success",
+      "notes": "legacy .xls, row7(TOTAL DEPOSITS) 하위 row12='in foreign currency', 헤더 row7='MM-YY'"
+    }
+  },
+  {
+    "country_code": "BLM",
+    "country_name": "Saint Barthélemy",
+    "data_type": "No Standalone Source",
+    "source_url": null,
+    "update_frequency": null,
+    "requires_js": null,
+    "notes": "No Source URL provided; part of France (Saint Barthélemy), uses French/ECB statistics, no standalone central bank",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "not_applicable",
+      "notes": "data_type=No Standalone Source, 확인된 개별 통계 소스 없음 -> 수집 대상 아님(NoSourceStrategy)"
+    }
+  },
+  {
+    "country_code": "BLR",
+    "country_name": "Belarus",
+    "data_type": "Interactive Web",
+    "source_url": "https://www.nbrb.by/engl/statistics/MonetaryStat/BroadMoney/",
+    "update_frequency": "Monthly",
+    "requires_js": true,
+    "notes": "Statistics>Monetary Statistics>Broad Money Supply; page directly displays \"Deposits in foreign currency, USD m\" line items by sector",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "needs_research",
+      "notes": "nbrb.by 페이지 로딩 타임아웃(20초 초과) -> 접근성 재조사 필요"
+    }
+  },
+  {
+    "country_code": "BLZ",
+    "country_name": "Belize",
+    "data_type": "PDF Bulletin",
+    "source_url": "https://www.centralbank.org.bz/docs/default-source/4.2.5-statistical-digest/statistical-digest-2025c640da5a-dd75-4fc3-a3bc-3a431d52c202.pdf?sfvrsn=6342168f_1",
+    "update_frequency": "Annual",
+    "requires_js": false,
+    "notes": "Central Bank of Belize Statistical Digest(1977~최신년 누적, 연1회 갱신). TABLE 7(Domestic Banks: Summary of Liabilities)의 Deposits Total에서 TABLE 8(Domestic Banks: Breakdown of Local Currency Deposits)의 Total Local Currency Deposits를 빼 FCD 산출. PDF가 180도 회전되어 렌더링되어 있어 OCR 필수; 연도별로 Deposits 하위 컴럼 수가 달라 인덱스 고정 대신 누적합 자기검증으로 Total 열 탐지.",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "PdfBulletinStrategy",
+      "status": "success",
+      "notes": "src/parsers/blz.py. OCR 해상도에 따라 tesseract가 표를 행이 아닌 열 단위로 잘못 읽는 경우가 산발적으로 발생해 여러 해상도(240/250/260/275/300dpi)로 시도 후 행 파싱이 가장 잘 된 결과를 채택. 1977-2025, 분기/월간 혼재. 2000년말~2005년말은 FCD=0(실제 값, 외화예금이 거의 없던 시기로 확인)."
+    }
+  },
+  {
+    "country_code": "BMU",
+    "country_name": "Bermuda",
+    "data_type": "PDF/Document",
+    "source_url": "https://www.bma.bm/documents-centre/document-annual-reports/general-all-sectors",
+    "update_frequency": "Quarterly",
+    "requires_js": true,
+    "notes": "BMA Annual Report PDF 시리즈(연1회, 2000~현재). 목록 페이지네이션이 JS 기반이라 Playwright로 2페이지 모두 순회 필요. 각 보고서의 Combined Balance Sheet of Bermuda Banks and Deposit Companies 표, Liabilities 섹션의 Sub Total Deposits 행에서 FCD = Total - BD$ 산출(분기 3개씩 묶여 보고서당 보통 6개 분기 수록, 보고서 간 중복분기는 최신판 우선).",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "PdfBulletinStrategy",
+      "status": "success",
+      "notes": "src/parsers/bmu.py (render()). 2000-2025, 분기별, BD$ millions. 2003-Q1/Q2(2003년 보고서가 텍스트 없는 스캔본), 2020-Q1/Q2(50th Anniversary 특별판에 통계 부록 없음)는 소스 자체 결측으로 다른 보고서로도 못 채움. 일부 연도는 Total/BD$/Other 3열, 일부는 Total/BD$/US$/Other 4열이라 FCD=Total-BD$로 통일 계산."
+    }
+  },
+  {
+    "country_code": "BOL",
+    "country_name": "Bolivia (Plurinational State of)",
+    "data_type": "Direct Excel",
+    "source_url": "https://www.bcb.gob.bo/webdocs/sector_monetario/Cr%C3%A9ditos%20y%20Dep%C3%B3sitos/OSD/17.%20Dep%C3%B3sitos%20totales%20por%20monedas%20serie.xlsx",
+    "update_frequency": "Monthly",
+    "requires_js": false,
+    "notes": "sector-monetario > Créditos y Depósitos > OSD 목록의 \"Depósitos totales por monedas serie\" 직접 다운로드 링크. 전체 금융시스템(은행+Pyme+저축은행+협동조합) 예금을 MN/ME/UFV/MVDOL 통화별 시트로 분리한 월별 시계열(2017-12~현재).",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "DirectExcelStrategy",
+      "status": "success",
+      "notes": "src/parsers/bol.py. TD = Total 시트 TOTAL SISTEMA 행(볼리비아노 기준). 사용자가 처음 제안한 Base Monetaria 31행(Moneda Extranjera)은 중앙은행 지급준비금 중 외화분일 뿐 시중은행 고객 외화예금이 아니라서(금액도 훨씬 작음) 채택하지 않고, 같은 목록의 더 정확한 파일로 대체. 2026-08-19 중대 버그 수정: FCD로 쓰던 'ME' 시트 TOTAL SISTEMA 행이 볼리비아노 환산액이 아니라 원화(달러) 그대로였음(시트 제목 'MONEDA DÓLARES') — 그동안 FCD(USD)/TD(Bs)를 그대로 나눠 ratio가 실제보다 ~7배 작게(예: 2026-06 1.0%) 나오고 있었다. 사용자가 '3. Sistema Monetario.xlsx'와 교차검증하다 발견, 실제 뉴스(2023년 이후 달러위기로 $2.5B 예금 동결, 2026-06-26 변동환율제 전환)로도 확인. 볼리비아는 2011-11~2026-06-26까지 고정환율(6.96 Bs/USD)이었고 그 이후는 BCB가 매일 공개하는 TCO(tco_tcreferencial_descargar_csv.php) 가중평균 환율을 사용해 ME(USD)×환율로 Bs 환산 후 TD와 비교하도록 수정. 수정 후 실측: 2026-06 ratio≈9.75%(변동환율 전환 직후 급등), 2026-01~05는 7.2~7.4%대(기존 대비 약 7배)."
+    }
+  },
+  {
+    "country_code": "BRA",
+    "country_name": "Brazil",
+    "data_type": "No Standalone Source",
+    "source_url": "https://www3.bcb.gov.br/sgspub/localizarseries/localizarSeries.do?method=prepararTelaLocalizarSeries",
+    "update_frequency": "Daily/Monthly",
+    "requires_js": false,
+    "notes": "브라질도 콜롬비아와 유사하게 거주자(residente)는 원칙적으로 국내 은행에 외화예금 계좌를 개설할 수 없음(전통적으로 여행사/우체국/국제카드사/외국인 단기체류자 등 제한적 그룹만 허용). 2024년 초 상원이 개인 포함 전 국민 대상 허용 법안(Marco Cambial)을 통과시켜 BCB에 세부규정 제정 권한을 부여했고, 2026-07 Resolução BCB 575로 대상을 확대했으나 이번에도 법인(수출기업/해외채무보유기업/비거주자출자기업 등) 중심이고 개인 전면 허용은 2026-10-01 시행 예정으로 아직임(핀테크 \"달러계좌\"(Nomad/Wise/C6/Inter)는 해외 파트너은행 계좌를 앱으로 접근하는 구조라 국내 외화예금이 아님). BCB 통계포털의 \"moeda e depósitos\"는 국제투자포지션(IIP) 산하 대외 자산부채 통계라 국내 거주자 외화예금과 무관.",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "not_applicable",
+      "notes": "규제상 거주자 외화예금이 원칙적으로 금지되어 있어(2026-10-01부터 법인 대상만 일부 완화, 개인 전면 허용은 미시행) 수집 대상 아님. 콜롬비아보다는 향후 개인 대상 확대 및 관련 통계 신설 가능성이 열려 있어, 2026-10 이후 재확인 가치 있음."
+    }
+  },
+  {
+    "country_code": "BRB",
+    "country_name": "Barbados",
+    "data_type": "Interactive Web",
+    "source_url": "https://www.centralbank.org.bb/news/statistics-1",
+    "update_frequency": "Monthly",
+    "requires_js": true,
+    "notes": "1989-01~2011-12는 commercial-banks-deposit-liabilities-2 페이지의 HISTORY 4 xlsx(시트 HISTORY 14, J열 'Deposits in Foreign Currency'). 2012-01~현재는 Statistics 게시글 목록에서 최신 \"Commercial Banks Assets and Liabilities {Month} {Year}\" 글의 xlsx(2번째 탭 BANKS - Liabilities); 이 파일 하나가 매번 2012-01부터 해당 월까지 전체 누적 시계열을 담고 있어 월별 게시글을 전부 순회할 필요 없음. 두 소스를 이어붙이면 1989-01~현재 결측 없음.",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "InteractiveWebStrategy",
+      "status": "success",
+      "notes": "src/parsers/brb.py (render()). 1989-2011: HISTORY 14 시트 J열 직접 사용. 2012~: TRANSFERABLE DEPOSITS + OTHER DEPOSITS 카테고리의 Foreign Currency 열 합(Included/Excluded from Broad Money 모두 포함), 5행/7행 헤더 텍스트로 컬럼 동적 탐색. 두 구간 경계(2011-12→2012-01) 이음매 깨끗, 총 449개월(1989-01~2026-05) 결측 없음."
+    }
+  },
+  {
+    "country_code": "BRN",
+    "country_name": "Brunei Darussalam",
+    "data_type": "PDF Bulletin",
+    "source_url": "https://www.bdcb.gov.bn/statistics/monetary-and-financial-statistics",
+    "update_frequency": "Monthly",
+    "requires_js": false,
+    "notes": "Statistics>Monetary and Financial Statistics; PDF/Excel tables listed directly",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "needs_research",
+      "notes": "페이지에 PDF 링크가 없음(JS 렌더링 추정)"
+    }
+  },
+  {
+    "country_code": "BTN",
+    "country_name": "Bhutan",
+    "data_type": "PDF Bulletin",
+    "source_url": "https://www.rma.org.bt/publication/41/",
+    "update_frequency": "Quarterly",
+    "requires_js": false,
+    "notes": "RMA 사이트 리뉴얼로 구 URL(publication.jsp?id=2)은 404, 신규 경로는 publication/41/ (Financial Sector Publication & Statistics). 'Financial Sector Performance Review' 분기 보고서(media/Publication/Financial%20Sector%20Performance%20Review/{Month}%20{Year}.pdf, Mar/Jun/Sep/Dec, 2012~2022-Q3)의 ANNEXURE I 'Deposit by Customer' 표에 FCD(Foreign Currency 행)+TD(Total 행) 있음. 2022-Q3 이후 이 보고서 시리즈 발간 중단, 후속 발간물(Core Financial Indicators/Annual Supervision Report)엔 예금 통화별 분해 없음 - 하프매뉴얼(최신 분기는 대시보드 수동 입력 필요).",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "InteractiveWebStrategy",
+      "status": "success",
+      "notes": "src/parsers/btn.py (render()). 2012~2022-Q3 분기 보고서 43개 후보 URL을 순회, 표마다 당분기+전년동분기 2개 기간을 함께 확보. 단위가 시기별로 백만/십억 Nu.로 다르고, 두 기간 컬럼 순서도 보고서마다 뒤바뀌어 있어 헤더의 Mon-YY 토큰 순서를 그대로 따라가도록 구현. verify=False 필요(SSL 인증서 체인 문제)."
+    }
+  },
+  {
+    "country_code": "BVT",
+    "country_name": "Bouvet Island",
+    "data_type": "No Standalone Source",
+    "source_url": null,
+    "update_frequency": null,
+    "requires_js": null,
+    "notes": "No central bank; Bouvet Island is an uninhabited Norwegian dependency, no financial data",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "not_applicable",
+      "notes": "data_type=No Standalone Source, 확인된 개별 통계 소스 없음 -> 수집 대상 아님(NoSourceStrategy)"
+    }
+  },
+  {
+    "country_code": "BWA",
+    "country_name": "Botswana",
+    "data_type": "Interactive Web",
+    "source_url": "https://www.bankofbotswana.bw/publications",
+    "update_frequency": "Monthly",
+    "requires_js": true,
+    "notes": "Publications 목록(페이지네이션, JS)에 매달 \"Botswana Economic and Financial Statistics - {Month} {Year}\" xlsx가 게시됨. 시트 3.16(COMMERCIAL BANKS: FOREIGN CURRENCY ACCOUNTS AND TOTAL DEPOSITS)에 통화별 외화계좌 풀라 환산 합계가 있음. 각 파일이 최근 ~10~13년 롤링 윈도우만 담고 있어 여러 발행월의 파일을 모아야 함. 목록에는 안 뜨지만 사용자가 알려준 구형 직접 링크 (BFS-JAN-2015.xls, 옛 바이너리 .xls 포맷)에 2004~2014년치가 있어 이것도 함께 받아 2004-12까지 확장.",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "InteractiveWebStrategy",
+      "status": "success",
+      "notes": "src/parsers/bwa.py (render()). Publications 전체 페이지(52p)를 순회해 EFS xlsx 30개 + 레거시 xls 1개(2004~2014, xlrd로 파싱)를 모두 찾아 시트 3.16의 Total Pula equivalent(FCD)/Deposits (Pula)(TD) 열을 헤더 텍스트로 동적 탐색, 겹치는 기간은 더 최근 발행 파일 값으로 dedup. 2004-12~2026-05, 146개월, 결측 없음."
+    }
+  },
+  {
+    "country_code": "CAF",
+    "country_name": "Central African Republic (the)",
+    "data_type": "Interactive Web",
+    "source_url": "https://www.beac.int/economie-stats/base-de-donnees-economiques-monetaires-financieres/",
+    "update_frequency": "Monthly",
+    "requires_js": true,
+    "notes": "BEAC (regional central bank for CEMAC, covers Central African Republic)>Base de Données Économiques, Monétaires et Financières (BDEMF); login: public/public; exportable PDF/HTML/XLSX/XLS",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "needs_research",
+      "notes": "beac.int 페이지에 테이블/파일 없음(SPA 추정) -> 재조사 필요"
+    }
+  },
+  {
+    "country_code": "CAN",
+    "country_name": "Canada",
+    "data_type": "Interactive Web",
+    "source_url": "https://www.bankofcanada.ca/rates/banking-and-financial-statistics/selected-monetary-aggregates-and-their-components-formerly-e1/",
+    "update_frequency": "Monthly",
+    "requires_js": true,
+    "notes": "Rates>Banking and Financial Statistics>Selected Monetary Aggregates and Their Components; interactive charts/tables, CSV download",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "InteractiveWebStrategy",
+      "status": "success",
+      "notes": "Playwright 렌더링 후 테이블에서 'Foreign currency deposits of residents (Unadjusted)' 행 추출, 월별(2026-01~05)"
+    }
+  },
+  {
+    "country_code": "CCK",
+    "country_name": "Cocos (Keeling) Islands (the)",
+    "data_type": "Interactive Web",
+    "source_url": "https://stats.gov.ck/banking-statistics/",
+    "update_frequency": "Quarterly",
+    "requires_js": false,
+    "notes": "Banking Statistics; Cook Islands stats site also covers Cocos-adjacent Pacific format but note: Cocos (Keeling) Islands uses AUD, monetary policy via Reserve Bank of Australia (RBA), no separate territory-level banking survey published",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "needs_research",
+      "notes": "stats.gov.ck 페이지에 다운로드 가능한 파일 링크 없음(JS 렌더링 또는 별도 API 추정) -> requires_js 재확인 필요"
+    }
+  },
+  {
+    "country_code": "CHE",
+    "country_name": "Switzerland",
+    "data_type": "API",
+    "source_url": "https://data.snb.ch/api/cube/babilpobm/data/csv/en?dimSel=D0(VKE),INLANDAUSLAND(I),WAEHRUNG(T,CHF),BANKENGRUPPE(A40)&fromDate=1987-01",
+    "update_frequency": "Monthly",
+    "requires_js": false,
+    "notes": "SNB 데이터 포털 cube babilpobm(Banks balance sheet items by currency, monthly)의 REST CSV API 직접 호출. Balance sheet item=VKE(Amounts due in respect of customer deposits), Domestic/foreign=I(Domestic), Bank category=A40(All banks). Currency 차원은 CHF/EUR/USD 개별 + T(전체 통화 합계)만 제공하고 그 외 통화는 개별 항목 없음 -> FCD = 전체합계(T) - CHF로 계산하면 EUR/USD 외 통화까지 포함됨.",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "ApiStrategy",
+      "status": "success",
+      "notes": "src/parsers/che.py. FCD = Total(WAEHRUNG=T) - CHF, TD = Total. CHF 개별 통화값 자체가 1996-11까지 비어있어(그 이전은 통화별 분해가 소스에 없음) 1996-12부터만 산출 가능. 1996-12~2026-05, 354개월, 결측 없음."
+    }
+  },
+  {
+    "country_code": "CHL",
+    "country_name": "Chile",
+    "data_type": "Interactive Web",
+    "source_url": "https://si3.bcentral.cl/Siete/en/Siete/Cuadro/CAP_DYB/MN_ESTAD_MON55/EM_DEP_ME/E32",
+    "update_frequency": "Monthly",
+    "requires_js": false,
+    "notes": "BDE(Statistics Database) 조회 화면 Money and Banking > Deposits from banking sector > Total for the system > Foreign currency deposits. 정식 API는 이메일 신청 후 자격증명이 필요해 외부에서 즉시 쓰기 어렵지만, 조회 화면 자체가 로그인/JS 없이 일반 GET만으로 전체 시계열이 담긴 HTML 표를 그대로 내려줌(Playwright로 확인해도 별도 XHR 없음) - 그래서 화면을 직접 GET해서 파싱.",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "InteractiveWebStrategy",
+      "status": "success",
+      "notes": "src/parsers/chl.py. HTML 표의 Serie=\"Total deposits\" 행(백만 달러) = FCD. 2009-01~2026-06, 210개월, 결측 없음."
+    }
+  },
+  {
+    "country_code": "CHN",
+    "country_name": "China",
+    "data_type": "Interactive Web",
+    "source_url": "https://www.ceicdata.com/en/china/deposit-foreign-currency",
+    "update_frequency": "Monthly",
+    "requires_js": true,
+    "notes": "CEIC Data>China Deposits (third-party aggregator, PBOC does not publish free direct deposit series); requires subscription/JS",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "needs_research",
+      "notes": "CEIC(제3자 유료 플랫폼) 페이지로 실제 수치가 로그인/구독 없이는 노출되지 않음 -> 재조사 필요"
+    }
+  },
+  {
+    "country_code": "CIV",
+    "country_name": "Côte d'Ivoire",
+    "data_type": "No Standalone Source",
+    "source_url": null,
+    "update_frequency": null,
+    "requires_js": null,
+    "notes": "No Source URL provided; BCEAO (regional central bank for WAEMU) covers Côte d'Ivoire",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "not_applicable",
+      "notes": "data_type=No Standalone Source, 확인된 개별 통계 소스 없음 -> 수집 대상 아님(NoSourceStrategy)"
+    }
+  },
+  {
+    "country_code": "CMR",
+    "country_name": "Cameroon",
+    "data_type": "No Standalone Source",
+    "source_url": null,
+    "update_frequency": null,
+    "requires_js": null,
+    "notes": "No Source URL provided; BEAC (regional central bank for CEMAC) covers Cameroon",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "not_applicable",
+      "notes": "data_type=No Standalone Source, 확인된 개별 통계 소스 없음 -> 수집 대상 아님(NoSourceStrategy)"
+    }
+  },
+  {
+    "country_code": "COD",
+    "country_name": "Congo (the Democratic Republic of the)",
+    "data_type": "Interactive Web",
+    "source_url": "https://www.bcc.cd/statistiques/secteur-monetaire/depots",
+    "update_frequency": "Monthly",
+    "requires_js": false,
+    "notes": "BCC 신형 통계 사이트(2025경 개편) 'Dépôts : Secteur monétaire' 위젯. Next.js RSC가 페이지 HTML 안에 전체 시계열을 스트리밍 청크로 그대로 심어놓아(self.__next_f.push) 별도 API 호출 없이 정적 HTML 하나로 전체 데이터 확보 가능 - 사용자가 언급한 CSV/XLSX 내보내기 버튼도 이 내장 데이터를 클라이언트에서 파일로 변환하는 것으로 보임. depots--mn(자국통화)/depots--me(외화, FCD) 필드, 단위는 백만 미국 달러(콩고프랑 아님, 화폐개혁/환율 이슈 없음). 2010-12부터. bcc.cd 인증서 체인 문제로 verify=False 필요.",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "InteractiveWebStrategy",
+      "status": "success",
+      "notes": "src/parsers/cod.py: 기존 'Bulletin mensuel' PDF 다중 수집 방식(2009-12~2026-06, 116개월, 2013-2017 결측)을 폐기하고 신형 위젯 내장 데이터로 전면 전환. 결측 없이 2010-12~2026-05 (172개월, 516행). 2010-12 이전은 이 위젯에 없어 연차보고서 Tableau 4.2를 개별로 찾아야 함 - web/src/lib/manualUpdateCountries.ts에 half_manual로 등록."
+    }
+  },
+  {
+    "country_code": "COG",
+    "country_name": "Congo (the)",
+    "data_type": "No Standalone Source",
+    "source_url": null,
+    "update_frequency": null,
+    "requires_js": null,
+    "notes": "No Source URL provided; BEAC (regional central bank for CEMAC) covers Republic of Congo",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "not_applicable",
+      "notes": "data_type=No Standalone Source, 확인된 개별 통계 소스 없음 -> 수집 대상 아님(NoSourceStrategy)"
+    }
+  },
+  {
+    "country_code": "COK",
+    "country_name": "Cook Islands (the)",
+    "data_type": "Interactive Web",
+    "source_url": "https://stats.gov.ck/banking-statistics/",
+    "update_frequency": "Quarterly",
+    "requires_js": false,
+    "notes": "Banking Statistics; Cook Islands has no central bank, uses NZD; quarterly banking survey covering 4 commercial banks, M1/M2 money supply data",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "needs_research",
+      "notes": "CCK와 동일 사이트(stats.gov.ck) 사용, 다운로드 가능한 파일 링크 없음(JS 렌더링 추정)"
+    }
+  },
+  {
+    "country_code": "COL",
+    "country_name": "Colombia",
+    "data_type": "No Standalone Source",
+    "source_url": "https://www.banrep.gov.co/es/el-banco/estados-financieros-anuales",
+    "update_frequency": "Annual",
+    "requires_js": false,
+    "notes": "콜롬비아 외환규제(Régimen Cambiario) 상 거주자(residentes)는 원칙적으로 국내 금융중개기관(IMC)에 외화예금 계좌를 개설할 수 없음(외화예금 계좌 개설이 허용되는 쪽은 오히려 비거주자). 즉 한국은행식 FCD(거주자외화예금) 개념 자체가 콜롬비아 통계체계에 없음. BanRep SUAMECA 포털(카탈로그/그래프 도구)에서 확인, \"FCD\"나 이에 대응하는 시계열 없음. 대신 존재하는 관련 통계: 비거주자 외화예금(분기별, Circular Reglamentaria Externa DCIP-83 보고 체계로만 존재, 공개 시계열 아님), 국제유동성포지션(PLI, /informacionSerie/4220), 환거래수지(Balanza Cambiaria, /informacionSerie/4230) - 모두 FCD의 대체물이 아님.",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "not_applicable",
+      "notes": "규제상 거주자 외화예금 자체가 존재하지 않아(개념적으로 성립 불가) 수집 대상 아님. 소스를 못 찾은 게 아니라 대상 지표가 원천적으로 없는 경우."
+    }
+  },
+  {
+    "country_code": "COM",
+    "country_name": "Comoros (the)",
+    "data_type": "No Standalone Source",
+    "source_url": null,
+    "update_frequency": null,
+    "requires_js": null,
+    "notes": "No Source URL provided; Banque Centrale des Comores (BCC) at banque-comores.km, limited online statistics availability",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "not_applicable",
+      "notes": "data_type=No Standalone Source, 확인된 개별 통계 소스 없음 -> 수집 대상 아님(NoSourceStrategy)"
+    }
+  },
+  {
+    "country_code": "CPV",
+    "country_name": "Cabo Verde",
+    "data_type": "Interactive Web",
+    "source_url": "https://www.bcv.cv/pt/Estatisticas/Quadros%20Estatisticos/AnaliseEstatica/sectorbancario2/Paginas/SectorBanc%C3%A1rio.aspx",
+    "update_frequency": "Monthly",
+    "requires_js": true,
+    "notes": "Estatísticas > Quadros Estatísticos > Análise Estática > Sector Bancário 페이지의 'Síntese Monetária' xls 다운로드(옛 바이너리 .xls, 파일 하나가 2010-12부터 현재까지 전체 시계열을 담고 있어 재게시될 때마다 갱신됨). bcv.cv 인증서 체인 문제로 requests 기본 검증으로는 SSL 실패(verify=False 필요, curl은 통과).",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "InteractiveWebStrategy",
+      "status": "success",
+      "notes": "src/parsers/cpv.py (render()). FCD = 'Depósitos em Divisas de Residentes' 행(바로 아래 'Depósitos de Emigrantes'는 별개 카테고리라 제외). 연도가 병합 셀+최근엔 '2026P'처럼 문자열 잠정치 표기라 forward-fill과 숫자 추출 둘 다 필요. 2010-12~2026-06, 179개월, 결측 없음."
+    }
+  },
+  {
+    "country_code": "CRI",
+    "country_name": "Costa Rica",
+    "data_type": "Interactive Web",
+    "source_url": "https://gee.bccr.fi.cr/indicadoreseconomicos/Cuadros/frmVerCatCuadro.aspx?idioma=1&CodCuadro=167",
+    "update_frequency": "Monthly",
+    "requires_js": false,
+    "notes": "gee.bccr.fi.cr(Indicadores Económicos 데이터 포털) 개별 통계표 두 개를 합산: CodCuadro=167(외화 저축예금, 1997~), CodCuadro=147(외화 당좌예금, 1987~). 정기예금(depósito a plazo en moneda extranjera) 통계표는 검색해봐도 존재하지 않음 (BCCR가 공개하는 외화예금 카테고리는 이 두 가지가 전부).",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "InteractiveWebStrategy",
+      "status": "success",
+      "notes": "src/parsers/cri.py (render()). 각 CodCuadro 페이지의 \"Exportar a Excel\" 버튼이 여는 URL(frmVerCatCuadro.aspx?CodCuadro=N&Idioma=1&Exportar=True)을 직접 GET하면 확장자만 .xls인 HTML 표가 나와 pandas.read_html로 파싱. 원자료가 1e8 배율로 스케일링되어 있어(화면 표시값과 대조해 확인) 나누어 보정. FCD=167+147, 1987-01~2026-06(167은 1997-01부터), 475개월, 결측 없음."
+    }
+  },
+  {
+    "country_code": "CUB",
+    "country_name": "Cuba",
+    "data_type": "No Standalone Source",
+    "source_url": null,
+    "update_frequency": null,
+    "requires_js": null,
+    "notes": "No Source URL provided; Banco Central de Cuba does not publish detailed public monetary statistics online (US embargo/data restrictions)",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "not_applicable",
+      "notes": "data_type=No Standalone Source, 확인된 개별 통계 소스 없음 -> 수집 대상 아님(NoSourceStrategy)"
+    }
+  },
+  {
+    "country_code": "CUW",
+    "country_name": "Curaçao",
+    "data_type": "PDF Bulletin",
+    "source_url": "https://www.centralbank.cw/publications/annual-reports-quarterly-bulletins",
+    "update_frequency": "Quarterly",
+    "requires_js": false,
+    "notes": "Publications>Annual Reports & Quarterly Bulletins; PDF bulletins listed directly, covers Curaçao and Sint Maarten (CBCS)",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "needs_research",
+      "notes": "403 Forbidden(봇 차단) statistics-dashboards/monetary-and-financial-statistics/breakdown-deposits-and-loans 페이지도 동일하게 Cloudflare 챌린지(403)로 막힘 -> 사이트 전역 차단으로 보임."
+    }
+  },
+  {
+    "country_code": "CXR",
+    "country_name": "Christmas Island",
+    "data_type": "No Standalone Source",
+    "source_url": null,
+    "update_frequency": null,
+    "requires_js": null,
+    "notes": "No central bank; Christmas Island is an Australian external territory, uses AUD, no separate banking statistics published",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "not_applicable",
+      "notes": "data_type=No Standalone Source, 확인된 개별 통계 소스 없음 -> 수집 대상 아님(NoSourceStrategy)"
+    }
+  },
+  {
+    "country_code": "CYM",
+    "country_name": "Cayman Islands (the)",
+    "data_type": "Interactive Web",
+    "source_url": "https://www.centralbank.ky/en/publications/monetary-and-financial-statistics",
+    "update_frequency": "Monthly",
+    "requires_js": false,
+    "notes": "Publications>Monetary and Financial Statistics; direct PDF/Excel table links",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "needs_research",
+      "notes": "centralbank.ky 접속 실패(SSL/연결 오류) -> 사이트 상태 재조사 필요"
+    }
+  },
+  {
+    "country_code": "CYP",
+    "country_name": "Cyprus",
+    "data_type": "No Standalone Source",
+    "source_url": "https://www.centralbank.cy/en/publications/monetary-and-financial-statistics",
+    "update_frequency": null,
+    "requires_js": null,
+    "notes": "No Source URL provided; Cyprus uses Euro, monetary statistics compiled via Central Bank of Cyprus/ECB framework",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "not_applicable",
+      "notes": "data_type=No Standalone Source, 확인된 개별 통계 소스 없음 -> 수집 대상 아님(NoSourceStrategy)"
+    }
+  },
+  {
+    "country_code": "CZE",
+    "country_name": "Czechia",
+    "data_type": "Interactive Web",
+    "source_url": "https://www.cnb.cz/arad/#/en/indicators",
+    "update_frequency": "Monthly",
+    "requires_js": true,
+    "notes": "ARAD 시계열 시스템(Angular SPA) > Statistical data > Monetary and financial statistics > Monetary statistics > A. Statistics of monetary developments in the CR > Deposits with MFIs(treeId=8165396). Instrument currency=All foreign currencies, Indicator characteristics=Levels로 필터링하면 거래상대 부문별 지표 3개(Financial institutions except MFIs/Households+NPISH/Non-financial corporations)가 거주자 외화예금 전체를 커버.",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "InteractiveWebStrategy",
+      "status": "success",
+      "notes": "src/parsers/cze.py (render()). REST API(/aradb/api/v13/indicators-data-by-codes)를 세션 밖에서 직접 호출하면 WAF가 차단해 Playwright로 실제 UI 조작(트리 탐색+필터+체크박스 3개+표보기 클릭)을 재현해 응답 가로챔. FCD=SMV10M108013+SMV10M107013+SMV10M106013(겹치지 않는 3개 거주자 부문, 정부 부문은 이 통화 조합에 지표 자체 없음). 2002-01~2026-06, 294개월, 결측 없음, 단위 백만 CZK."
+    }
+  },
+  {
+    "country_code": "DEU",
+    "country_name": "Germany",
+    "data_type": "Interactive Web",
+    "source_url": "https://www.bundesbank.de/dynamic/action/en/statistics/time-series-databases/time-series-databases/745582/745582?tsId=BBBEK1.M.",
+    "update_frequency": "Monthly",
+    "requires_js": true,
+    "notes": "Statistics>Time Series Databases; Bundesbank interactive database, requires JS for query/export",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "needs_research",
+      "notes": "Bundesbank 타임시리즈 페이지가 SPA라 데이터 없음, tsId(BBBEK1.M)가 이 지표인지도 불확실 -> Bundesbank 공식 REST API(api.statistiken.bundesbank.de)로 직접 조회 재조사 필요"
+    }
+  },
+  {
+    "country_code": "DJI",
+    "country_name": "Djibouti",
+    "data_type": "Interactive Web",
+    "source_url": "https://banque-centrale.dj/depots-des-banques/",
+    "update_frequency": "Quarterly",
+    "requires_js": true,
+    "notes": "BCD(Banque Centrale de Djibouti) 'Dépôts des banques' 페이지에 분기별/연도별 묶음 PDF가 게시됨. 각 PDF의 '3 - VENTILATION PAR DEVISES DES DEPOTS' 표에서 'Dollars des Etats-Unis (USD)' + 'Autres devises' 합 = FCD(FDJ는 자국통화라 제외). 2017년 이전(2009~2016)은 연차보고서(banque-centrale.dj/rapports-annuel-de-la-banque/)의 'Evolution/Composantes de la masse monétaire' 표(연간, 'Dépôts en devises'=FCD)로 보강.",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "InteractiveWebStrategy",
+      "status": "success",
+      "notes": "src/parsers/dji.py (render()). 표가 천단위 공백구분 숫자를 써서 텍스트만으론 숫자 경계가 모호하고(예: \"212 382 213 384\"), 파일마다 헤더/데이터 줄바꿈 레이아웃도 다름(최근 분기가 라벨보다 먼저 나오는 구형 포함) - pdfplumber 단어 좌표(x0)로 열을 정의하고 라벨 top 중간지점을 경계로 값을 배정해 해결. 2017-03~2025-12, 36개 분기, 결측 없음. + 연차보고서 12개(2013~2024 발행분, 5개년 롤링 윈도우 표)에서 2009~2016 연간 데이터 8개년 보강(년도별 최신 보고서 값 우선)."
+    }
+  },
+  {
+    "country_code": "DMA",
+    "country_name": "Dominica",
+    "data_type": "Interactive Web",
+    "source_url": "https://www.eccb-centralbank.org/statistics-category/monetary-and-financial-statistics/summarized-monetary-survey/a",
+    "update_frequency": "Annual",
+    "requires_js": true,
+    "notes": "No Source URL provided; ECCB regional central bank covers Dominica; see ECCB (row ATG)",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "InteractiveWebStrategy",
+      "status": "success",
+      "notes": "사용자가 제시한 SDMX REST API(sdmx.eccb-centralbank.org)는 DNS 미해석(존재하지 않는 도메인) 확인됨 -> 실제로는 eccb-centralbank.org의 'Interactive Database' 쿼리 폼(Laravel, CSRF+암호화 hidden 필드, 부트스트랩 모달 안 select2 멀티셀렉트)이 진짜 데이터 소스. Playwright로 모달 열기-> 국가 선택->'Foreign Currency Deposits' 지표 선택->제출 흐름 재현(src/parsers/_eccb_common.py 공용). start_date를 jQuery datepicker API로 2000-01-01로 설정해 2000~2025년(26개년) 연간 데이터 확보. 8개국(AIA/ATG/DMA/GRD/MSR/KNA/LCA/VCT) 공용 로직 검증 완료"
+    }
+  },
+  {
+    "country_code": "DNK",
+    "country_name": "Denmark",
+    "data_type": "Interactive Web",
+    "source_url": "https://nationalbanken.statbank.dk/DNPINDK",
+    "update_frequency": "Monthly",
+    "requires_js": true,
+    "notes": "Nationalbanken Statbank(구형 PC-Axis/StatBank5a, PxWeb API 없음) 테이블 DNPINDK: Domestic deposits in banks by instrument, data type, domestic sector, currency and maturity. Instrument=Deposits in total, Sector=All domestic sectors, Currency=Foreign currency in total로 필터링하면 거주자 전체 부문의 외화예금 시계열이 그대로 나옴(2003-01~현재, 월별).",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "InteractiveWebStrategy",
+      "status": "success",
+      "notes": "src/parsers/dnk.py (render()). 변수선택 폼과 결과 화면이 iframe 안에 있고, CSV 등 내보내기가 <select><option>이라 클릭이 아니라 select_option으로 선택해야 다운로드 이벤트가 발생 - Playwright로 전체 흐름 자동화. 2003-01~2026-06, 282개월, 결측 없음, 단위 DKK million."
+    }
+  },
+  {
+    "country_code": "DOM",
+    "country_name": "Dominican Republic (the)",
+    "data_type": "Direct Excel",
+    "source_url": "https://cdn.bancentral.gov.do/documents/estadisticas/sector-monetario-y-financiero/documents/balance_osd_pasivos_me.xlsx",
+    "update_frequency": "Monthly",
+    "requires_js": false,
+    "notes": "Balance sectorial de las OSD: Pasivos en ME (외화 부채). 거주자 외화예금 = 열3-9 합산 (비거주자 열2 제외). 단위: 백만 DOP.",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "DirectExcelStrategy",
+      "status": "success",
+      "notes": "BCRD 통계포털에서 Balance sectorial OSD Pasivos en ME xlsx 직접 다운로드. 거주자 외화예금(FCD) = 기타예금기관 + 기타금융회사 + 중앙정부 + 지방정부 + 공공비금융회사 + 기타비금융회사 + 가계. 2001-12~2026-06, 295개월 확보"
+    }
+  },
+  {
+    "country_code": "DZA",
+    "country_name": "Algeria",
+    "data_type": "Interactive Web",
+    "source_url": "https://www.bank-of-algeria.dz/bulletins-statistiques-2021/",
+    "update_frequency": "Quarterly",
+    "requires_js": false,
+    "notes": "bulletins-statistiques-{YYYY}/ 연도별 페이지에서 분기통계Bulletin PDF 링크 수집(TLS 인증서 체인 문제로 verify=False 필요)",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "InteractiveWebStrategy",
+      "status": "success",
+      "notes": "src/parsers/dza.py (render()). 2007~2025년 bulletins-statistiques-{YYYY}/ 페이지를 순회해 발견되는 PDF 56개 전부 다운로드, 각 PDF의 'G 3.4 Structure des dépôts' 표에서 'DÉPÔTS EN DEVISES'(외화예금) 열을 텍스트 정규식으로 추출(10억 DZD). indicator=foreign_currency_deposits 단일 지표만 산출(TD 미산출). 실측 검증: 2007-09~2021-01, 53개월. 2021년 이후 신규 bulletin 페이지 미발견(사이트가 최근 호를 더 이상 같은 URL 패턴에 게시하지 않는 것으로 추정) -> 최신 데이터 갱신 경로 추가 조사 필요"
+    }
+  },
+  {
+    "country_code": "ECU",
+    "country_name": "Ecuador",
+    "data_type": "No Standalone Source",
+    "source_url": null,
+    "update_frequency": null,
+    "requires_js": null,
+    "notes": "No Source URL provided; Ecuador is dollarized (uses USD), Banco Central del Ecuador publishes monetary statistics separately",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "not_applicable",
+      "notes": "data_type=No Standalone Source, 확인된 개별 통계 소스 없음 -> 수집 대상 아님(NoSourceStrategy)"
+    }
+  },
+  {
+    "country_code": "EGY",
+    "country_name": "Egypt",
+    "data_type": "Interactive Web",
+    "source_url": "https://www.cbe.org.eg/en/economic-research/time-series",
+    "update_frequency": "Monthly",
+    "requires_js": false,
+    "notes": "Economic Research>Time Series>Banking Surveys>Deposits in Local and Foreign Currency (xlsx 아카이브 2004-07~2023-06) + Monthly Statistical Bulletin financial-and-monetary-sector-{n}.xlsx 시트 'جدول3'(2023-07~최신). WAF는 일부 경로만 차단; media xlsx는 브라우저 UA GET으로 접근 가능",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "InteractiveWebStrategy",
+      "status": "success",
+      "notes": "cbe.org.eg WAF는 /robots.txt 등 일부 경로만 'Request Rejected'. 브라우저 UA로 Time Series xlsx(deposits-in-local-and-foreign-currency-monthly-june-2023.xlsx) + Monthly Statistical Bulletin 각 호 xlsx(financial-and-monetary-sector-{n}.xlsx, 시트 'جدول3') 다운로드 가능(Playwright 불필요). FCD=Non-Gov 'In Foreign Currencies' 총계 - Non-resident; TD=FCD+(Local total-Local non-resident). 정부·비거주자 제외. 아카이브(2004-07~2023-06)+bulletin 롤링(issue 번호 역산, 실측 최신호 349=2026-02) 병합. 2004-07~2026-02, 260개월 x 3지표(FCD/TD/FCD_TD_RATIO)=780행"
+    }
+  },
+  {
+    "country_code": "ERI",
+    "country_name": "Eritrea",
+    "data_type": "No Standalone Source",
+    "source_url": null,
+    "update_frequency": null,
+    "requires_js": null,
+    "notes": "No Source URL provided; Bank of Eritrea publishes limited public statistics online",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "not_applicable",
+      "notes": "data_type=No Standalone Source, 확인된 개별 통계 소스 없음 -> 수집 대상 아님(NoSourceStrategy)"
+    }
+  },
+  {
+    "country_code": "ESH",
+    "country_name": "Western Sahara",
+    "data_type": "No Standalone Source",
+    "source_url": null,
+    "update_frequency": null,
+    "requires_js": null,
+    "notes": "No central bank; Western Sahara disputed territory, no independent monetary authority",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "not_applicable",
+      "notes": "data_type=No Standalone Source, 확인된 개별 통계 소스 없음 -> 수집 대상 아님(NoSourceStrategy)"
+    }
+  },
+  {
+    "country_code": "ESP",
+    "country_name": "Spain",
+    "data_type": "Direct Excel",
+    "source_url": "https://www.bde.es/webbe/es/estadisticas/compartido/datos/csv/be0825.csv",
+    "update_frequency": "Quarterly",
+    "requires_js": false,
+    "notes": "Statistics Bulletin Table 8.25 'Main assets and liabilities of OMFIs, by currency' CSV, 통화별(EUR/USD/JPY/CHF/기타) 분해 포함. 페이지(sb_ifiescbs.html) 자체는 순수 정적 HTML(JS 렌더링 아님)이라 curl로 제목<->beXXYY 코드 매핑 추출 가능했음 - 이전 'needs_research' 판단은 재확인 결과 오판이었음",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "DirectExcelStrategy",
+      "status": "success",
+      "notes": "be0825.csv(가로형 SDMX 코드 헤더, DF_QESNAL20A1U62000{통화}E). U62000=거주 non-MFI 상대 예금(고객예금, 은행간 제외), Z01=전체통화(TD), EUR=유로. FCD=TD-EUR(개별 외화 합과 정확히 일치함을 실측 확인). 4행(설명 텍스트)에서 'Depósitos'+'no IFM residentes en España' 포함 열을 동적 탐색(고정 인덱스 미사용). 1997-Q3~2026-Q1 분기별, 115분기 x 3지표(FCD/TD/FCD_TD_RATIO)=345행. ECB SDMX(data-api.ecb.europa.eu) BSI 데이터플로우도 확인했으나 스페인 통화별 분해가 OFI 하위섹터(227A/B/C)에만 존재하고 가계/비금융법인 등 총예금에는 없어 미채택, BdE 자체 CSV가 더 적합"
+    }
+  },
+  {
+    "country_code": "EST",
+    "country_name": "Estonia",
+    "data_type": "Interactive Web",
+    "source_url": "https://statistika.eestipank.ee/#/en/p/900/r/936",
+    "update_frequency": "Monthly",
+    "requires_js": false,
+    "notes": "Eesti Pank statistics portal; 'Deposits > Stock of deposits by customer group, residence, currency and maturity' 보고서(현재까지 이어지는 report, andmestikId=806). Playwright 불필요, /spring/getReadSumma 직접 GET",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "InteractiveWebStrategy",
+      "status": "success",
+      "notes": "저장된 URL(p/1009/r/1015, andmestikId=873)은 실제로 'Archives' 하위 옛 보고서라 원천 데이터 자체가 2010년에 끝남(위젯 버그 아님) -> 같은 포털의 후속 보고서 'Deposits'(nodeID=900) > 'Stock of deposits by customer group, residence, currency and maturity'(nodeID=936, andmestikId=806)로 대체, 1997-01~현재 이어짐. 위젯이 실제 호출하는 /spring/getReadSumma(값)+/spring/getVeerud(기간) REST 엔드포인트를 넓은 날짜범위(VALIK1=RESIDENT,VALIK2=KOKKU,VALIK4=KOKKU)로 직접 GET(Playwright 불필요, 단 Accept: application/json 헤더 필수, 기본 헤더로는 XML 반환). TD=Residents/TOTAL(전체 통화), FCD=TD-자국통화열(2011-01 유로 전환 이전은 EEK, 이후는 EUR을 자국통화로 제외; EUR+EEK+USD+Other 합이 TOTAL과 일치함을 실측 확인). 1997-01~2026-06, 354개월 x 3지표(FCD/TD/FCD_TD_RATIO) = 1062행, 결측 없음"
+    }
+  },
+  {
+    "country_code": "ETH",
+    "country_name": "Ethiopia",
+    "data_type": "No Standalone Source",
+    "source_url": null,
+    "update_frequency": null,
+    "requires_js": null,
+    "notes": "No Source URL provided; National Bank of Ethiopia has limited public online statistics",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "not_applicable",
+      "notes": "data_type=No Standalone Source, 확인된 개별 통계 소스 없음 -> 수집 대상 아님(NoSourceStrategy)"
+    }
+  },
+  {
+    "country_code": "FIN",
+    "country_name": "Finland",
+    "data_type": "Interactive Web",
+    "source_url": "https://api.boffsaopendata.fi/v4/observations/MFI_PUBL",
+    "update_frequency": "Monthly",
+    "requires_js": false,
+    "notes": "Suomen Pankki 공개 API 포털(portal.boffsaopendata.fi) 'Timeseries API v4', 데이터셋 MFI_PUBL. API 키 불필요, GET /v4/observations/MFI_PUBL?seriesName=...",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "InteractiveWebStrategy",
+      "status": "success",
+      "notes": "저장된 URL(mfi-balance-sheet/tables/)은 사이트 개편으로 404, 현재 대시보드(dashboards/loans-and-deposits2)는 Power BI 임베드라 직접 스크래핑 불가 -> 같은 데이터를 제공하는 공개 REST API(api.boffsaopendata.fi, Azure API Management, 키 불필요) 사용. ECB SDMX BSI도 검토했으나 FI의 CURRENCY_TRANS=Z06(비유로) 분해가 227A/227B/227C(OFI 하위섹터)에만 존재하고 BS_COUNT_SECTOR=2000(비MFI 전체)에는 없어 기각(실측 확인). MFI_PUBL 시리즈명은 17개 점(.) 구분 차원 코드: TD='M.A.0.A.L20.A.A.U6.2000.ZZ.Z01.A.A.0.A.0.A.0'(Deposit liabilities, Domestic, Non-MFIs, All currencies combined), FCD=동일 키에서 통화 코드만 Z06(All currencies except EUR)로 교체. TD 1998-01~2026-06(342개월), FCD 2003-01~2026-06(282개월), FCD_TD_RATIO는 둘 다 있는 기간만 계산. 총 906행, 결측 없음(FCD 시작 이전 구간은 TD만 존재)"
+    }
+  },
+  {
+    "country_code": "FJI",
+    "country_name": "Fiji",
+    "data_type": "Interactive Web",
+    "source_url": "https://www.rbf.gov.fj/statistics/economic-and-financial-statistics/",
+    "update_frequency": "Monthly",
+    "requires_js": false,
+    "notes": "Statistics>Economic and Financial Statistics; direct table/PDF links",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "failed",
+      "notes": "rbf.gov.fj에서 '2.7 Commercial Banks Deposit Components'(부문별), '1.1 Depository Corporations Survey'(Broad Money 구성) 2개 파일 확인했으나 통화별(외화) 예금 분해 없음 -> 다른 표 번호 재조사 필요"
+    }
+  },
+  {
+    "country_code": "FLK",
+    "country_name": "Falkland Islands (the) [Malvinas]",
+    "data_type": "No Standalone Source",
+    "source_url": null,
+    "update_frequency": null,
+    "requires_js": null,
+    "notes": "No central bank; Falkland Islands uses Falkland pound pegged to GBP, no separate monetary survey published",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "not_applicable",
+      "notes": "data_type=No Standalone Source, 확인된 개별 통계 소스 없음 -> 수집 대상 아님(NoSourceStrategy)"
+    }
+  },
+  {
+    "country_code": "FRA",
+    "country_name": "France",
+    "data_type": "Interactive Web",
+    "source_url": "https://www.banque-france.fr/en/statistics",
+    "update_frequency": "Monthly",
+    "requires_js": true,
+    "notes": "Statistics section; Banque de France, part of Eurosystem/ECB statistics framework, requires JS",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "failed",
+      "notes": "유로존 국가로 외화예금(FCD) 데이터가 공식적으로 존재하지 않음. Banque de France Webstat, CEIC Data, IMF DSBB 모두 외화예금 구분 데이터 제공 안 함. M1/M2/M3 통화공급량만 EUR 합산으로 제공."
+    }
+  },
+  {
+    "country_code": "FRO",
+    "country_name": "Faroe Islands (the)",
+    "data_type": "No Standalone Source",
+    "source_url": null,
+    "update_frequency": null,
+    "requires_js": null,
+    "notes": "No Source URL provided; part of Denmark (Kingdom), uses Danish krone; Faroese banking data limited",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "not_applicable",
+      "notes": "data_type=No Standalone Source, 확인된 개별 통계 소스 없음 -> 수집 대상 아님(NoSourceStrategy)"
+    }
+  },
+  {
+    "country_code": "FSM",
+    "country_name": "Micronesia (Federated States of)",
+    "data_type": "No Standalone Source",
+    "source_url": null,
+    "update_frequency": null,
+    "requires_js": null,
+    "notes": "No central bank; Micronesia uses USD, no standalone central bank",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "not_applicable",
+      "notes": "data_type=No Standalone Source, 확인된 개별 통계 소스 없음 -> 수집 대상 아님(NoSourceStrategy)"
+    }
+  },
+  {
+    "country_code": "GAB",
+    "country_name": "Gabon",
+    "data_type": "No Standalone Source",
+    "source_url": null,
+    "update_frequency": null,
+    "requires_js": null,
+    "notes": "No Source URL provided; BEAC (regional central bank for CEMAC) covers Gabon",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "not_applicable",
+      "notes": "data_type=No Standalone Source, 확인된 개별 통계 소스 없음 -> 수집 대상 아님(NoSourceStrategy)"
+    }
+  },
+  {
+    "country_code": "GBR",
+    "country_name": "United Kingdom of Great Britain and Northern Ireland (the)",
+    "data_type": "Interactive Web",
+    "source_url": "https://www.bankofengland.co.uk/statistics/tables#m4",
+    "update_frequency": "Monthly",
+    "requires_js": false,
+    "notes": "Statistics>Tables, 'A7.1 - Liquid assets outside M4' 표의 'Foreign currency deposits at UK MFIs' 열",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "InteractiveWebStrategy",
+      "status": "success",
+      "notes": "requires_js=false로 정정: SPA처럼 보이지만 실제 데이터는 IADB(boeapps/database) 옛 ASP 쿼리 엔드포인트에서 옴, Playwright 불필요. EC 코드 LPMVYAY='FCD from private sector'(사전조사가 제시한 VSUC/VSUF/VSUG/VWNI는 전부 오답으로 확인, 같은 표의 다른 열들이었음). fromshowcolumns.asp?SeriesCodes=LPMVYAY,LPMVRJX,LPMVRJV(콤마로 여러 시리즈 한 번에 조회, LPM 접두어 필수)로 <table id=stats-table> HTML을 정규식 파싱. FCD=VYAY, TD=VYAY+VRJX(sterling retail deposits)+VRJV(sterling wholesale M4 liabilities), 옛 CSV export(_iadb-fromshowcolumns.asp?csv.x=yes)는 현재 'Invalid series code' 에러로 막혀있어 미사용. 1986-09~2026-06, 478개월 x 3지표=1434행"
+    }
+  },
+  {
+    "country_code": "GEO",
+    "country_name": "Georgia",
+    "data_type": "Interactive Web",
+    "source_url": "https://nbg.gov.ge/en/statistics/statistics-data",
+    "update_frequency": "Monthly",
+    "requires_js": false,
+    "notes": "Statistics Data>Monetary and Financial Statistics>M2.1 Money Aggregates and Monetary Ratios 옆 다운로드 아이콘으로 xlsx 제공. API: /gw/api/ct/statistics/categories/15/data (Accept-Language: en 필수), 파일은 /fm/{path}",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "InteractiveWebStrategy",
+      "status": "success",
+      "notes": "Next.js SPA. Accept-Language: en으로 /gw/api/ct/statistics/categories/15/data 에서 code=M2.1 항목의 file 경로 조회 후 https://nbg.gov.ge/fm/{urlencoded path} 로 xlsx 다운로드(Playwright 불필요). 시트 'Monetary Ratios-eng': FCD=col 'Deposits in Foreign Currency', TD=col 'Deposits, Total', FCD_TD_RATIO=FCD/TD*100 (= 표의 'Dollarization Ratio of Deposits, Included in Broad Money, %' 와 일치). 단위 Million GEL. 1995-10~2026-06, 369개월 x 3지표"
+    }
+  },
+  {
+    "country_code": "GGY",
+    "country_name": "Guernsey",
+    "data_type": "No Standalone Source",
+    "source_url": null,
+    "update_frequency": null,
+    "requires_js": null,
+    "notes": "No Source URL provided; Guernsey uses Guernsey pound pegged to GBP, no independent central bank",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "not_applicable",
+      "notes": "data_type=No Standalone Source, 확인된 개별 통계 소스 없음 -> 수집 대상 아님(NoSourceStrategy)"
+    }
+  },
+  {
+    "country_code": "GHA",
+    "country_name": "Ghana",
+    "data_type": "Interactive Web",
+    "source_url": "https://www.bog.gov.gh/economic-data/monetary-survey/",
+    "update_frequency": "Monthly",
+    "requires_js": false,
+    "notes": "Economic Data>Monetary Survey; wpDataTables Export(Excel/CSV)와 동일 데이터를 admin-ajax.php?action=get_wdtable&table_id=22 로 수집. Variables 라벨이 'Money Supply Component_Foreign currency deposits ...' 형태로 지저분하게 나열",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "InteractiveWebStrategy",
+      "status": "success",
+      "notes": "bog.gov.gh SSL 체인 오류로 verify=False 필요. 페이지에서 nonce 취득 후 POST /wp-admin/admin-ajax.php?action=get_wdtable&table_id=22 (action/table_id는 쿼리스트링에 있어야 함, body만내면 빈 응답). length=-1로 전체 수신. Variables 라벨 정규화 후 부분매칭: FCD='Foreign currency deposits', TD=Demand deposits + Savings & Time deposits + FCD (통화유통 제외; M2+-Currency 항등식 실측). 2022 중복 행은 비제로 월 많은 쪽 채택, 값 0.00은 미공시 스킵. 2000-01~2023-04, 단위 Million GHS"
+    }
+  },
+  {
+    "country_code": "GIB",
+    "country_name": "Gibraltar",
+    "data_type": "No Standalone Source",
+    "source_url": null,
+    "update_frequency": null,
+    "requires_js": null,
+    "notes": "No Source URL provided; Gibraltar uses Gibraltar pound pegged to GBP, part of UK overseas territory",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "not_applicable",
+      "notes": "data_type=No Standalone Source, 확인된 개별 통계 소스 없음 -> 수집 대상 아님(NoSourceStrategy)"
+    }
+  },
+  {
+    "country_code": "GIN",
+    "country_name": "Guinea",
+    "data_type": "Direct Excel",
+    "source_url": "https://www.bcrg-guinee.org/satistiques/series-statistiques/",
+    "update_frequency": "Monthly",
+    "requires_js": false,
+    "notes": "BCRG Bulletin Statistiques는 중단됨. 외화예금은 다음 경로로 계속 제공: (1) 현재 수집 중 — Statistiques>Séries statistiques(URL 오타 satistiques)>Situation Monétaire intégrée → Séries monétaires.xls, 시트 SMI 'Dépôts en devises'. (2) 분기 PDF — Rapport sur la Politique Monétaire (예: 2025 Q1에 Dépôts en devises 월별 시계열, ~2024년까지, 단위 GNF 십억). (3) 연간 PDF — Rapport Annuel (예: 2023 연차보고서 Comptes en devises / Dépôts en devises 연도별, 2023말 GNF 10,431.63억). PDF 두 경로는 pending_parsers에 todo 플래그(추후 구현).",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "DirectExcelStrategy",
+      "status": "success",
+      "notes": "구현됨(xls): 목록 페이지에서 Situation Monétaire/Séries monétaires .xls 탐색 후 다운로드(폴백 uploads/2020/02/Séries-monétaires.xls). 시트 SMI — FCD='Dépôts en devises', TD=Dépôts à vue gnf + Dépôts à terme gnf + FCD(통화유통 제외). 단위 milliards de GNF. 실측 2011-10~2023-08, 143개월×3지표. Bulletin 중단 이후 최신 보완용 PDF 2종(분기 통화정책보고서·연차보고서)은 pending_parsers[].status=todo (추후 PdfBulletinStrategy 파서 예정)."
+    },
+    "pending_parsers": [
+      {
+        "kind": "PDF",
+        "source": "Rapport sur la Politique Monétaire (분기)",
+        "status": "todo",
+        "notes": "통화정책 보고서. 예: 2025 Q1 호에 Dépôts en devises 월별 시계열 (2024년까지, 단위 GNF 십억). xls 공백 구간 보완용."
+      },
+      {
+        "kind": "PDF",
+        "source": "Rapport Annuel (연간)",
+        "status": "todo",
+        "notes": "연차보고서. 예: 2023 호에 Comptes en devises·Dépôts en devises 연도별 (2023말 GNF 10,431.63억). 연간 앵커·검증용."
+      }
+    ]
+  },
+  {
+    "country_code": "GLP",
+    "country_name": "Guadeloupe",
+    "data_type": "No Standalone Source",
+    "source_url": null,
+    "update_frequency": null,
+    "requires_js": null,
+    "notes": "No Source URL provided; Guadeloupe is French overseas department, uses Euro, data via Banque de France/IEDOM",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "not_applicable",
+      "notes": "data_type=No Standalone Source, 확인된 개별 통계 소스 없음 -> 수집 대상 아님(NoSourceStrategy)"
+    }
+  },
+  {
+    "country_code": "GMB",
+    "country_name": "Gambia (the)",
+    "data_type": "API",
+    "source_url": "https://app.datawarehousepro.com/go/cbg",
+    "update_frequency": "Quarterly",
+    "requires_js": false,
+    "notes": "CBG Data Warehouse(app.datawarehousepro.com/go/cbg). Monetary Survey 예금은 통화(외화) 분해 없음. Financial Sector>Commercial Banks>Financial soundness indicators>19.Foreign-currency-denominated liabilities to total liabilities (mnemonic=fcdlttlcb)가 거주자 외화 관련 최직접 지표. 18번은 외화대출 비율(보조). BOP Currency and deposits는 대외부문",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "ApiStrategy",
+      "status": "success",
+      "notes": "GET /guest/getMnemonicData/cbg/FIN/fcdlttlcb (경로: account/databank/mnemonic). 분기 비율(%%)을 FCD_TD_RATIO로 적재 — 정의는 외화표시부채/총부채(예금 전용 달러화율과 다를 수 있음). 메타 unit=mill. Of GMD 이나 값은 %%(2022Q4=34.62 등 사용자 제시 표본과 일치). 절대 FCD·TD 시계열 없음. 실측 2007Q3~2023Q3, 65분기. 18번 fcdlttlocb(외화대출/총대출)는 미수집"
+    }
+  },
+  {
+    "country_code": "GNB",
+    "country_name": "Guinea-Bissau",
+    "data_type": "No Standalone Source",
+    "source_url": null,
+    "update_frequency": null,
+    "requires_js": null,
+    "notes": "No Source URL provided; BCEAO (regional central bank for WAEMU) covers Guinea-Bissau",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "not_applicable",
+      "notes": "data_type=No Standalone Source, 확인된 개별 통계 소스 없음 -> 수집 대상 아님(NoSourceStrategy)"
+    }
+  },
+  {
+    "country_code": "GNQ",
+    "country_name": "Equatorial Guinea",
+    "data_type": "No Standalone Source",
+    "source_url": null,
+    "update_frequency": null,
+    "requires_js": null,
+    "notes": "No Source URL provided; BEAC (regional central bank for CEMAC) covers Equatorial Guinea",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "not_applicable",
+      "notes": "data_type=No Standalone Source, 확인된 개별 통계 소스 없음 -> 수집 대상 아님(NoSourceStrategy)"
+    }
+  },
+  {
+    "country_code": "GRC",
+    "country_name": "Greece",
+    "data_type": "Direct Excel",
+    "source_url": "https://www.bankofgreece.gr/en/statistics/monetary-and-banking-statistics/deposits",
+    "update_frequency": "Monthly",
+    "requires_js": false,
+    "notes": "Statistics>Monetary and Banking Statistics>Deposits. 거주자 민간(Corporations and Households) 통화별 예금 xls 3종 병합: Deposits_sector_98-00.xls(1998-2000, 드라크마/유로·유로지역/기타), Deposits_sector.xls(2001-2021), Deposits_sector_new.xls(2019~최신). Akamai 봇방어 — Accept-Encoding에 br 포함 필수",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "DirectExcelStrategy",
+      "status": "success",
+      "notes": "3파일 병합(RelatedDocuments). Akamai 403 회피: Accept-Encoding=gzip,deflate,br + 브라우저 Sec-Fetch 헤더. 시트 Stocks. 2001~: FCD=code 1.2.ν 'In other currencies', TD=1.2 민간 합계(유로+외화). 1998-2000(pre-euro): FCD=1.2.ε(유로·유로지역)+1.2.ν(기타), TD=1.2 (자국통화=드라크마). 겹침 구간은 신파일 우선. 단위 EUR millions. 1998-03~2026-06 민간 거주자 기준"
+    }
+  },
+  {
+    "country_code": "GRD",
+    "country_name": "Grenada",
+    "data_type": "Interactive Web",
+    "source_url": "https://www.eccb-centralbank.org/statistics-category/monetary-and-financial-statistics/summarized-monetary-survey/a",
+    "update_frequency": "Annual",
+    "requires_js": true,
+    "notes": "No Source URL provided; ECCB regional central bank covers Grenada; see ECCB (row ATG)",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "InteractiveWebStrategy",
+      "status": "success",
+      "notes": "사용자가 제시한 SDMX REST API(sdmx.eccb-centralbank.org)는 DNS 미해석(존재하지 않는 도메인) 확인됨 -> 실제로는 eccb-centralbank.org의 'Interactive Database' 쿼리 폼(Laravel, CSRF+암호화 hidden 필드, 부트스트랩 모달 안 select2 멀티셀렉트)이 진짜 데이터 소스. Playwright로 모달 열기-> 국가 선택->'Foreign Currency Deposits' 지표 선택->제출 흐름 재현(src/parsers/_eccb_common.py 공용). start_date를 jQuery datepicker API로 2000-01-01로 설정해 2000~2025년(26개년) 연간 데이터 확보. 8개국(AIA/ATG/DMA/GRD/MSR/KNA/LCA/VCT) 공용 로직 검증 완료"
+    }
+  },
+  {
+    "country_code": "GRL",
+    "country_name": "Greenland",
+    "data_type": "No Standalone Source",
+    "source_url": null,
+    "update_frequency": null,
+    "requires_js": null,
+    "notes": "No Source URL provided; part of Denmark (Kingdom), uses Danish krone; Greenlandic banking data limited",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "not_applicable",
+      "notes": "data_type=No Standalone Source, 확인된 개별 통계 소스 없음 -> 수집 대상 아님(NoSourceStrategy)"
+    }
+  },
+  {
+    "country_code": "GTM",
+    "country_name": "Guatemala",
+    "data_type": "Interactive Web",
+    "source_url": "https://www.banguat.gob.gt/page/agregados-monetarios",
+    "update_frequency": "Monthly",
+    "requires_js": false,
+    "notes": "Agregados Monetarios; direct table links, Banco de Guatemala",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "InteractiveWebStrategy",
+      "status": "success",
+      "notes": "agregados-monetarios 페이지 내 pim10.xls 링크, col0=연도, col4='MEDIOS DE PAGO(M2)-MONEDA EXTRANJERA'(연간)"
+    }
+  },
+  {
+    "country_code": "GUF",
+    "country_name": "French Guiana",
+    "data_type": "No Standalone Source",
+    "source_url": null,
+    "update_frequency": null,
+    "requires_js": null,
+    "notes": "No Source URL provided; French Guiana is French overseas department, uses Euro, data via Banque de France/IEDOM",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "not_applicable",
+      "notes": "data_type=No Standalone Source, 확인된 개별 통계 소스 없음 -> 수집 대상 아님(NoSourceStrategy)"
+    }
+  },
+  {
+    "country_code": "GUM",
+    "country_name": "Guam",
+    "data_type": "No Standalone Source",
+    "source_url": null,
+    "update_frequency": null,
+    "requires_js": null,
+    "notes": "No central bank; Guam is US territory, uses USD, part of US Federal Reserve statistics",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "not_applicable",
+      "notes": "data_type=No Standalone Source, 확인된 개별 통계 소스 없음 -> 수집 대상 아님(NoSourceStrategy)"
+    }
+  },
+  {
+    "country_code": "GUY",
+    "country_name": "Guyana",
+    "data_type": "Interactive Web",
+    "source_url": "https://www.bankofguyana.org.gy/bog/research-publications/statistical-abstract",
+    "update_frequency": "Monthly",
+    "requires_js": false,
+    "notes": "Research Publications>Statistical Abstract; direct table/PDF links, Bank of Guyana",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "needs_research",
+      "notes": "저장된 URL(bog3/...)이 404 -> 사이트 구조 개편 추정, 최신 경로 재조사 필요"
+    }
+  },
+  {
+    "country_code": "HKG",
+    "country_name": "Hong Kong",
+    "data_type": "Direct Excel",
+    "source_url": "https://www.hkma.gov.hk/eng/data-publications-and-research/data-and-statistics/economic-financial-data-for-hong-kong/#financialSector",
+    "update_frequency": "Monthly",
+    "requires_js": false,
+    "notes": "Economic and Financial Data for Hong Kong>Financial Sector. Monthly Statistical Bulletin Table 2.2.1 Money supply (T020201.xls) — HK$/F.C./Total 분해. 이전 'Foreign currency reserve assets' 매칭은 외환보유고로 오탐",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "DirectExcelStrategy",
+      "status": "success",
+      "notes": "T020201.xls 시트 'T2.2.1 (new series)'+'(old series)'. M2 F.C.=FCD, M2 Total=TD (HK$+F.C. 항등 확인; 단위 HK$ million). 표는 외화 swap 예금 조정(HK$ 포함/F.C. 제외). old는 1997-03까지, 이후 new 시리즈. 실측 1984-12~2026-06"
+    }
+  },
+  {
+    "country_code": "HMD",
+    "country_name": "Heard Island and McDonald Islands",
+    "data_type": "No Standalone Source",
+    "source_url": null,
+    "update_frequency": null,
+    "requires_js": null,
+    "notes": "No central bank; Heard Island and McDonald Islands is an uninhabited Australian external territory",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "not_applicable",
+      "notes": "data_type=No Standalone Source, 확인된 개별 통계 소스 없음 -> 수집 대상 아님(NoSourceStrategy)"
+    }
+  },
+  {
+    "country_code": "HND",
+    "country_name": "Honduras",
+    "data_type": "Direct Excel",
+    "source_url": "https://www.bch.hn/estadisticas-y-publicaciones-economicas/sector-monetario/panorama-financiero",
+    "update_frequency": "Monthly",
+    "requires_js": true,
+    "notes": "Sector Monetario>Panorama Financiero (SharePoint). Panorama de las Sociedades de Depósito.xls — DSA 내 Depósitos transferibles/Otros depósitos 를 MN·ME로 분해. 상업은행·기타 예금기관 통합. 구 URL agregados_monetarios.php 는 404",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "DirectExcelStrategy",
+      "status": "success",
+      "notes": "Playwright로 목록 렌더 후 'Sociedades de Depósito' xls 선택(폴백 LIBPANORAMA FINANCIERO 경로). 시트 socdep: FCD=transferibles ME+otros depósitos ME, TD=예금 MN+ME 합(통화·증권 제외). 단위 millones de lempiras. DSA 항등 확인. 실측 2001-12~2026-05 (초기 연말 위주→이후 월별)"
+    }
+  },
+  {
+    "country_code": "HRV",
+    "country_name": "Croatia",
+    "data_type": "Direct Excel",
+    "source_url": "https://www.hnb.hr/en/statistics/statistical-data/financial-sector/other-monetary-financial-institutions/aggregated-balance-sheet-of-omfis",
+    "update_frequency": "Monthly",
+    "requires_js": false,
+    "notes": "OMFIs 예금: 현행 D6(부문·통화별 총예금) + 아카이브 구 D8(외화예금, ~2022-12). 유로 도입(2023-01) 전 FCD는 구 D8 필수(현행 D6 역사는 유로를 국내통화로 재분류). 아카이브: statistics/archive/esa-2010-until-31-12-2022. A1 유로지역 통화량 기여 표는 비대상",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "DirectExcelStrategy",
+      "status": "success",
+      "notes": "아카이브 e-d8/e-d7/e-d6.xlsx(EUR): FCD=D8 Total(1+2), TD=D6 demand+D7 kuna+D8 FC (백만 EUR). ~2022-12. 현행 e-d6: FCD=B Total(외화), TD=TOTAL(A+B); 2023-01~ (유로 도입 후 외화=비유로). 고정환율 7.53450은 HNB EUR 시트 반영. 실측 아카이브 1993-12~2022-12 + 현행 2023-01~"
+    }
+  },
+  {
+    "country_code": "HTI",
+    "country_name": "Haiti",
+    "data_type": "PDF Bulletin",
+    "source_url": "https://www.brh.ht/statistiques/monnaie/",
+    "update_frequency": "Monthly",
+    "requires_js": false,
+    "notes": "Statistiques>Monnaie>Bilan consolidé des banques commerciales (Table 20R). 연간 bilanbcmannuel.pdf + 월간 bilanconsolidemensuel.pdf. 민간부문 부채 하 Dépôts en gourdes / Dépôts en dollars(외화, 구르드 환산). 상업은행만 포함",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "PdfBulletinStrategy",
+      "status": "success",
+      "notes": "Table 20R PDF 텍스트 파싱. FCD=Dépôts en dollars, TD=gourdes+dollars(=Engagements secteur privé 항등). 단위 millions de gourdes(달러예금도 구르드 표시). 연간 헤더 연도 그대로 사용(1961 후 2006~2025 등 공백 가능)+월간 보강. PDF 천단위 공백 제거 후 파싱"
+    }
+  },
+  {
+    "country_code": "HUN",
+    "country_name": "Hungary",
+    "data_type": "Direct Excel",
+    "source_url": "https://statisztika.mnb.hu/timeseries/data-10957",
+    "update_frequency": "Monthly",
+    "requires_js": false,
+    "notes": "MNB Statistics>Balance sheets of MFIs and monetary aggregates (0708-monstatpubl-enxls.xls). Table 3.2 consolidated MFI liabilities: resident deposits HUF vs foreign currency. 구 mnb.hu 금리 페이지와 무관",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "DirectExcelStrategy",
+      "status": "success",
+      "notes": "xls 시트 Table 3.2: FCD=중앙정부 FC+기타거주자 overnight FC+agreed maturity FC, TD=Deposits of residents 총액. 단위 HUF billions, 월말. 1998-01~2026-06 (파일 갱신월 기준)"
+    }
+  },
+  {
+    "country_code": "IDN",
+    "country_name": "Indonesia",
+    "data_type": "Direct Excel",
+    "source_url": "https://www.bi.go.id/en/statistik/ekonomi-keuangan/seki/Default.aspx",
+    "update_frequency": "Monthly",
+    "requires_js": false,
+    "notes": "SEKI>Monetary Sector>I. MONEY AND BANKING. I.21 demand + I.22 saving + I.23 time deposits (Rupiah & Valas). TABEL1_21/22/23.xls",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "DirectExcelStrategy",
+      "status": "success",
+      "notes": "I.21+I.22+I.23 xls: 상단 'Rupiah'/'Valas' 총계 행 합산. FCD=Valas(demand+saving+time), TD=(Rupiah+Valas) 합. 단위 Miliar Rp. 시트 연대 병합(1.xx_2 메모 제외). 연도 헤더가 비-1월에 붙는 경우 월 순서 wrap으로 보정. 실측 2002-01~2026-06 연속 294개월, 2026-06 FCD≈1,606.2조 Rp (OJK DPK Valas 일치)"
+    }
+  },
+  {
+    "country_code": "IMN",
+    "country_name": "Isle of Man",
+    "data_type": "No Standalone Source",
+    "source_url": null,
+    "update_frequency": null,
+    "requires_js": null,
+    "notes": "No Source URL provided; Isle of Man uses GBP, has own Treasury/Financial Services Authority, no separate central bank monetary survey",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "not_applicable",
+      "notes": "data_type=No Standalone Source, 확인된 개별 통계 소스 없음 -> 수집 대상 아님(NoSourceStrategy)"
+    }
+  },
+  {
+    "country_code": "IND",
+    "country_name": "India",
+    "data_type": "PDF Bulletin",
+    "source_url": "https://rbi.org.in/Scripts/AnnualPublications.aspx?head=Handbook%20of%20Statistics%20on%20Indian%20Economy",
+    "update_frequency": "Annual",
+    "requires_js": false,
+    "notes": "RBI Handbook of Statistics: Table 140 Non-Resident Deposits Outstanding (Rupees) FCNR(B)=FCD; Table 41 SCB Select Aggregates Aggregate Deposits=TD. End-March, ₹ Crore. NRE/NRO는 루피 계좌라 FCD 제외. WSS/dataful은 보조 참고.",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "PdfBulletinStrategy",
+      "status": "success",
+      "notes": "Handbook 목록에서 Table 140/41 PDF URL 자동 해석. FCD=FCNR(B) ₹, TD=Aggregate Deposits ₹ (동일 통화). period=YYYY-03. 실측 2008-03~2026-03 연 19개, 2025-03 FCD=280788 / TD=22580601 crore (ratio≈1.24%), 2026-03 FCNR(B) $33.8bn(표139)과 정합"
+    }
+  },
+  {
+    "country_code": "IOT",
+    "country_name": "British Indian Ocean Territory (the)",
+    "data_type": "No Standalone Source",
+    "source_url": null,
+    "update_frequency": null,
+    "requires_js": null,
+    "notes": "No central bank; British Indian Ocean Territory is uninhabited UK territory, no monetary authority",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "not_applicable",
+      "notes": "data_type=No Standalone Source, 확인된 개별 통계 소스 없음 -> 수집 대상 아님(NoSourceStrategy)"
+    }
+  },
+  {
+    "country_code": "IRL",
+    "country_name": "Ireland",
+    "data_type": "Interactive Web",
+    "source_url": "https://www.centralbank.ie/statistics/data-and-analysis/credit-and-banking-statistics/bank-balance-sheets",
+    "update_frequency": "Monthly",
+    "requires_js": true,
+    "notes": "Statistics>Data and analysis>Credit and Banking Statistics>Bank Balance Sheets; requires JS, Central Bank of Ireland",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "failed",
+      "notes": "Table A.11.1(Deposits from Irish Private Sector) 다운로드 확인했으나 부문/상품별 분해만 있고 통화별(EUR vs FX) 분해 없음 -> FCD 항목 없음"
+    }
+  },
+  {
+    "country_code": "IRN",
+    "country_name": "Iran (Islamic Republic of)",
+    "data_type": "Interactive Web",
+    "source_url": "https://www.cbi.ir/category/3392.aspx",
+    "update_frequency": "Monthly",
+    "requires_js": false,
+    "notes": "Category page; direct table/PDF links, Central Bank of Iran",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "needs_research",
+      "notes": "cbi.ir 카테고리 페이지에 파일 링크 없음(목록에서 개별 게시물 진입 필요, JS 또는 다단계 내비게이션 추정) -> 재조사 필요"
+    }
+  },
+  {
+    "country_code": "IRQ",
+    "country_name": "Iraq",
+    "data_type": "Direct Excel",
+    "source_url": "https://cbi.iq/news/view/94",
+    "update_frequency": "Monthly",
+    "requires_js": false,
+    "notes": "CBI \"Key Financial Indicators\" xlsx, linked from https://cbi.iq/news/view/94 (실제 파일명은 발행 때마다 바뀌어 render()가 페이지를 스크레이핑해 현재 링크를 찾음). Money Supply 섹션의 'Of which: Deposits component of M2'(=M2-통화발행고, Table 17과 대조 검증됨) 행을 TD로, 'Foreign currency deposits' 행(그 하위 항목)을 FCD로 사용. 2003-12(TD)/2004-12(FCD)부터 현재까지 자동 수집됨. 1991~2003 구간은 별도 'Combined Historical Document' PDF(스캔된 수십 년치 표)로만 존재해 기계 판독이 신뢰할 수 없어 하프매뉴얼(웹 대시보드 수동 입력) 대상.",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "InteractiveWebStrategy",
+      "status": "success",
+      "notes": "irq.py render()로 뉴스 페이지에서 최신 xlsx 링크를 찾아 다운로드/파싱. 1991-2003 구간은 half-manual (web/src/lib/manualUpdateCountries.ts)."
+    }
+  },
+  {
+    "country_code": "ISL",
+    "country_name": "Iceland",
+    "data_type": "Direct Excel",
+    "source_url": "https://databank.is/report/monetary?page=FINSTATS.MONETARY.DEPOSITS.TABLE",
+    "update_frequency": "Monthly",
+    "requires_js": false,
+    "notes": "CBI Databank monetary>Deposits. UI Excel 버튼은 JS이나 실제 URL은 /api/translation/en 키 FINSTATS.MONETARY.DEPOSITS.EXCEL → sedlabanki.is/library. 시트 III Deposits by currencies.",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "DirectExcelStrategy",
+      "status": "success",
+      "notes": "번역 API(FINSTATS.MONETARY.DEPOSITS.EXCEL)→sedlabanki library xlsx. 시트 III: FCD=Foreign currencies, TD=Deposits total (m.kr. ISK). 월말 연속 1993-09~2026-06 (394개월). 2026-06 FCD≈410696 / TD≈3672834 (ratio≈11.18%). UI Excel 버튼은 JS이나 수집은 직링크"
+    }
+  },
+  {
+    "country_code": "ISR",
+    "country_name": "Israel",
+    "data_type": "API",
+    "source_url": "https://edge.boi.gov.il/FusionDataBrowser/",
+    "update_frequency": "Monthly",
+    "requires_js": false,
+    "notes": "BOI Fusion Edge SDMX MAG: FCD=DD1YF+OTBDF (FC in/out of broad money), TD=NC(DDI+D1Y+OTBDI)+FCD. 단위 백만 NIS. MAG_A028 TD는 M2 time deposits(총예금 아님).",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "ApiStrategy",
+      "status": "success",
+      "notes": "SDMX CSV 5시리즈 합산. FCD=FC BM포함+BM제외, TD=NC·FC 예금 전 구간 합. 월별 백만 NIS. 실측 공통기간 2007-03~2026-04, 2026-03 FCD≈398412 / TD≈2236363 (ratio≈17.8%). MAG_A028 time deposits는 분모로 미사용"
+    }
+  },
+  {
+    "country_code": "ITA",
+    "country_name": "Italy",
+    "data_type": "Interactive Web",
+    "source_url": "https://www.bancaditalia.it/pubblicazioni/moneta-banche/index.html",
+    "update_frequency": "Monthly",
+    "requires_js": false,
+    "notes": "Pubblicazioni>Moneta e banche; direct table/PDF links, Banca d'Italia",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "needs_research",
+      "notes": "bancaditalia.it 페이지에 파일 링크/테이블 없음(개별 발간물 페이지로 재진입 필요) -> 재조사 필요"
+    }
+  },
+  {
+    "country_code": "JAM",
+    "country_name": "Jamaica",
+    "data_type": "Direct Excel",
+    "source_url": "https://boj.org.jm/statistics/financial-sector/commercial-banks/",
+    "update_frequency": "Monthly",
+    "requires_js": false,
+    "notes": "BOJ Commercial Banks>FS.CB.17 Commercial Banks' Deposit Balances by Currency. https://boj.org.jm/wp-content/uploads/2020/09/FS.CB.17.xls",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "DirectExcelStrategy",
+      "status": "success",
+      "notes": "FS.CB.17.xls: FCD=Foreign Currency, TD=Total (Local+Foreign), J$ Millions, 월말. 실측 2000-01~2026-06 (318개월). 2026-06 FCD≈764211 / TD≈2143669 (ratio≈35.65%, 파일 Deposit Dollarisation과 정합)"
+    }
+  },
+  {
+    "country_code": "JEY",
+    "country_name": "Jersey",
+    "data_type": "Interactive Web",
+    "source_url": "https://www.boi.org.il/en/BankingSupervision/Data/Pages/DataTable.aspx?Chapter=Chapter+V+-+Deposits&Years=2013-2017+",
+    "update_frequency": "Monthly",
+    "requires_js": true,
+    "notes": "Note: URL appears to be mismatched (Bank of Israel), Jersey has no independent central bank, uses GBP; Jersey Financial Services Commission publishes limited statistics",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "needs_research",
+      "notes": "source_url이 이스라엘 중앙은행(boi.org.il) 페이지로 되어있음(Jersey와 무관, 원본 데이터 오류로 추정) -> 실제 Jersey Financial Services Commission 통계 경로로 재조사 필요"
+    }
+  },
+  {
+    "country_code": "JOR",
+    "country_name": "Jordan",
+    "data_type": "Direct Excel",
+    "source_url": "https://statisticaldb.cbj.gov.jo/?node=Z3FiWjk0Yk9WbjlCUFFnUmJUSmdCQT09",
+    "update_frequency": "Monthly",
+    "requires_js": false,
+    "notes": "CBJ Statistical DB Depository Corporations: Deposits in Foreign Currency / Deposits According to Depositor and Type. UI Excel 버튼은 JS POST(/getExcelFile).",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "DirectExcelStrategy",
+      "status": "success",
+      "notes": "POST /getExcelFile (dismissTOU 세션). FCD=FC deposits Total Deposits, TD=all deposits Total Deposits (Million J.D.). Monthly 시트. 실측 2006-12~2026-06 (235개월). 2026-06 FCD≈10696.9 / TD≈51102.0 (ratio≈20.93%)"
+    }
+  },
+  {
+    "country_code": "JPN",
+    "country_name": "Japan",
+    "data_type": "API",
+    "source_url": "https://www.stat-search.boj.or.jp/",
+    "update_frequency": "Semi-annual",
+    "requires_js": false,
+    "notes": "BOJ Time-Series API MD10 Amounts Outstanding of Deposits by Depositor (Domestically Licensed Banks). FCD=Foreign Currency Deposits, TD=Total deposits. 単位 億円. API key 불필요.",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "ApiStrategy",
+      "status": "success",
+      "notes": "getDataCode db=MD10: FCD=DLDDLKY45090_DLDD3DBTTL12, TD=DLDDLKY45090_DLDD3DBTTL (총예금). 정기예금(TTL8)은 분모 미사용. FH 데이터로 Q2/Q4 0 제외. 실측 1998-06~2026-03 반기, 2026-03 FCD=299357 / TD=10312429 (億円, ratio≈2.90%)"
+    }
+  },
+  {
+    "country_code": "KAZ",
+    "country_name": "Kazakhstan",
+    "data_type": "Direct Excel",
+    "source_url": "https://nationalbank.kz/en/depositoryorganizationsdeposits/depozity-v-depozitnyh-organizaciyah-",
+    "update_frequency": "Monthly",
+    "requires_js": false,
+    "notes": "NBRK Depository Organizations Deposits by sector/currency. Excel: .../excel. FCD=In FC, TD=Deposits-total, mln tenge eop.",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "DirectExcelStrategy",
+      "status": "success",
+      "notes": "가로 시계열 xlsx: FCD=In FC, TD=Deposits-total (mln KZT). 실측 1997-12~2026-06 (343개월). 2026-06 FCD≈9,895,646 / TD≈50,135,442 (ratio≈19.74%)"
+    }
+  },
+  {
+    "country_code": "KEN",
+    "country_name": "Kenya",
+    "data_type": "Direct CSV",
+    "source_url": "https://www.centralbank.go.ke/uploads/monetary_and_finance_statistics/18143394_Depository%20Corporation%20Survey%20Old%20-%20CSV.csv",
+    "update_frequency": "Monthly",
+    "requires_js": false,
+    "notes": "CBK Depository Corporation Survey CSV (사용자 제보, 2026-08-19). 'Old'라는 이름과 달리 1995-12부터 최신월까지 매달 갱신되는 메인 소스. FCD는 직접 행으로 제공, TD=M2-M0+FCD.",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "DirectExcelStrategy",
+      "status": "success",
+      "notes": "KNBS Chapter 4 교차 방식(8 periods)에서 CBK CSV 직접 파싱으로 전면 교체(2026-08-19). 'Foreign currency deposits (of residents in Money) (FCDs)' 행 직접 사용, TD=M2-M0+FCD. 실측 366 periods 연속 무공백(1995-12~2026-05). 2026-05 ratio≈23.16%, 기존 2024-12 ratio≈22.24%와 정합적."
+    }
+  },
+  {
+    "country_code": "KGZ",
+    "country_name": "Kyrgyzstan",
+    "data_type": "Direct Excel",
+    "source_url": "https://www.nbkr.kg/index1.jsp?item=124&lang=ENG",
+    "update_frequency": "Monthly",
+    "requires_js": false,
+    "notes": "NBKR Banking Statistics: Deposits in commercial banks by end of period. Stock (not newly accepted flow).",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "DirectExcelStrategy",
+      "status": "success",
+      "notes": "페이지 DOC xls 링크 해석. 시트 1.total deposits: FCD=FC volume, TD=Total volume (ths soms). 실측 1996-01~2026-06 (366개월). 2026-06 ratio≈29.05% (안내 2026-05 29%와 정합)"
+    }
+  },
+  {
+    "country_code": "KHM",
+    "country_name": "Cambodia",
+    "data_type": "Direct Excel",
+    "source_url": "https://www.nbc.gov.kh/english/economic_research/monetary_and_financial_statistics_data.php",
+    "update_frequency": "Monthly",
+    "requires_js": false,
+    "notes": "NBC Monetary and Financial Statistics: Deposits with Deposit Money Banks xlsx (17.depositwithdepositmoneybank*.xlsx).",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "DirectExcelStrategy",
+      "status": "success",
+      "notes": "페이지에서 최신 depositwithdepositmoneybank xlsx 해석. FCD=FC Total, TD=Grand Total (Billion KHR). 실측 1996-12~2026-05 (342개월). 2026-05 ratio≈87.34%"
+    }
+  },
+  {
+    "country_code": "KIR",
+    "country_name": "Kiribati",
+    "data_type": "No Standalone Source",
+    "source_url": null,
+    "update_frequency": null,
+    "requires_js": null,
+    "notes": "No central bank; Kiribati uses Australian dollar, no independent monetary authority",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "not_applicable",
+      "notes": "data_type=No Standalone Source, 확인된 개별 통계 소스 없음 -> 수집 대상 아님(NoSourceStrategy)"
+    }
+  },
+  {
+    "country_code": "KNA",
+    "country_name": "Saint Kitts and Nevis",
+    "data_type": "Interactive Web",
+    "source_url": "https://www.eccb-centralbank.org/statistics-category/monetary-and-financial-statistics/summarized-monetary-survey/a",
+    "update_frequency": "Annual",
+    "requires_js": true,
+    "notes": "Note: URL appears to be mismatched (National Bank of Kyrgyz Republic); Saint Kitts and Nevis covered by ECCB regional central bank",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "InteractiveWebStrategy",
+      "status": "success",
+      "notes": "사용자가 제시한 SDMX REST API(sdmx.eccb-centralbank.org)는 DNS 미해석(존재하지 않는 도메인) 확인됨 -> 실제로는 eccb-centralbank.org의 'Interactive Database' 쿼리 폼(Laravel, CSRF+암호화 hidden 필드, 부트스트랩 모달 안 select2 멀티셀렉트)이 진짜 데이터 소스. Playwright로 모달 열기-> 국가 선택->'Foreign Currency Deposits' 지표 선택->제출 흐름 재현(src/parsers/_eccb_common.py 공용). start_date를 jQuery datepicker API로 2000-01-01로 설정해 2000~2025년(26개년) 연간 데이터 확보. 8개국(AIA/ATG/DMA/GRD/MSR/KNA/LCA/VCT) 공용 로직 검증 완료"
+    }
+  },
+  {
+    "country_code": "KOR",
+    "country_name": "Korea (the Republic of)",
+    "data_type": "API",
+    "source_url": "https://ecos.bok.or.kr/",
+    "update_frequency": "Monthly",
+    "requires_js": false,
+    "notes": "BOK ECOS StatisticSearch 104Y013 예금은행 총수신(말잔). FCD=BCB2 외화예금, TD=BCB1+BCB2 원화+외화예금 (십억원). sample 키 기간청크 또는 ECOS_API_KEY.",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "ApiStrategy",
+      "status": "success",
+      "notes": "ECOS API 104Y013: FCD=BCB2 외화예금, TD=BCB1+BCB2. sample 키 10개월 청크 조회. 실측 1995-01~2026-05 (377개월). 2026-05 ratio≈7.07%"
+    }
+  },
+  {
+    "country_code": "KWT",
+    "country_name": "Kuwait",
+    "data_type": "PDF Bulletin",
+    "source_url": "https://www.cbk.gov.kw/en/statistics-and-publication/bulletins-and-periodicals/monthly-monetary-statistical-bulletin",
+    "update_frequency": "Monthly",
+    "requires_js": false,
+    "notes": "CBK Monthly Monetary Statistical Bulletin PDF. Table 15-1 Residents Deposits By Type: FCD=Private In Foreign Currency, TD=Private Total (Million KD).",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "PdfBulletinStrategy",
+      "status": "success",
+      "notes": "월보 목록 페이지가 페이지네이션(9p)이라 기본 뷰는 최근 ~12건만 노출됨을 확인 → get-list?...&showAll=yes 엔드포인트로 전체 아카이브(2019-01~현재, ~90건)를 한번에 받아 병합하도록 수정(2026-08-19). Table15-1 Residents private deposits: FCD=In Foreign Currency, TD=Private Total. 개선 후 실측 73기간(2000-04, 2014-2019 연말 앵커 + 2020-01~2026-06 대부분 연속), 2026-06 ratio≈5.45%"
+    }
+  },
+  {
+    "country_code": "LAO",
+    "country_name": "Lao People's Democratic Republic (the)",
+    "data_type": "Direct Excel",
+    "source_url": "https://www.bol.gov.la/en/Money_and_Banking",
+    "update_frequency": "Monthly",
+    "requires_js": false,
+    "notes": "BOL Money and Banking: Other Depository corporations Survey_Lao PDR.xlsx (sheet ODC). FCD=LAO_FOST_FX_XDC, TD=LAO_FOST_XDC (billion KIP).",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "DirectExcelStrategy",
+      "status": "success",
+      "notes": "/statistics/Other Depository corporations Survey_Lao PDR.xlsx. FCD=FOST_FX, TD=FOST. 실측 2009-12~2026-05 (198개월). 2026-05 ratio≈70.08%"
+    }
+  },
+  {
+    "country_code": "LBN",
+    "country_name": "Lebanon",
+    "data_type": "Interactive Web",
+    "source_url": "https://www.bdl.gov.lb/keyfiguressub.php?docId=97&code=3&filecode=321",
+    "update_frequency": "Monthly",
+    "requires_js": true,
+    "notes": "BDL Key Figures: Deposits of Residents in Foreign Currencies / Total Deposits. Cloudflare bot protection blocks automated access.",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "InteractiveWebStrategy",
+      "status": "failed",
+      "notes": "Playwright 포함 자동화 접근 시 Cloudflare challenge 미통과(403/Just a moment). 예금 시계열 엑셀 경로 미확보. 수동 다운로드 또는 API/키 확보 전까지 failed."
+    }
+  },
+  {
+    "country_code": "LBR",
+    "country_name": "Liberia",
+    "data_type": "PDF Bulletin",
+    "source_url": "https://www.cbl.org.lr/general/all-publications?keys=&field_document_type_target_id%5B%5D=194&items_per_page=25",
+    "update_frequency": "Monthly",
+    "requires_js": false,
+    "notes": "CBL Monthly Economic Review: commercial bank deposits by USD/LRD and Total Deposits converted to LRD. 기존 /publications/document-type/monthly-economic-review 페이지는 페이지네이션이 없어 최근 몇 건만 노출 → 사용자 제보로 all-publications?field_document_type_target_id[]=194 (페이지네이션 있음, 2015-01까지)로 전환(2026-08-19).",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "PdfBulletinStrategy",
+      "status": "success",
+      "notes": "MER PDF 114건(2015-01~2026-05) 수집. FCD=TD(converted LRD)−(Demand+Time&Sav+Other LRD), TD=Total Deposits converted to LRD. 2015-2016년치는 표 포맷이 달라 파싱 안 됨(자동 skip). 개선 후 실측 96개월(2017-08~2026-05). 라이베리아는 실제로 극도로 달러화된 경제(ratio 대체로 60~100%)라 이 범위를 벗어나는 값(2018-07, 2020-04, 2023-08, 2024-10 — pdfplumber가 페이지 내 서로 다른 두 표를 한 텍스트 스트림으로 합쳐 컬럼이 어긋난 경우)은 이상치로 보고 드롭. 2026-05 ratio≈87.45%"
+    }
+  },
+  {
+    "country_code": "LBY",
+    "country_name": "Libya",
+    "data_type": "Interactive Web",
+    "source_url": "https://cbl.gov.ly/en/",
+    "update_frequency": "Monthly",
+    "requires_js": false,
+    "notes": "Central Bank of Libya homepage; statistics section has monetary survey publications, site navigation required",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "needs_research",
+      "notes": "cbl.gov.ly 홈페이지 로드는 되나 파일/테이블 링크 없음(내비게이션 진입 필요) -> 재조사 필요"
+    }
+  },
+  {
+    "country_code": "LCA",
+    "country_name": "Saint Lucia",
+    "data_type": "Interactive Web",
+    "source_url": "https://www.eccb-centralbank.org/statistics-category/monetary-and-financial-statistics/summarized-monetary-survey/a",
+    "update_frequency": "Annual",
+    "requires_js": true,
+    "notes": "No Source URL provided; ECCB regional central bank covers Saint Lucia; see ECCB (row ATG)",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "InteractiveWebStrategy",
+      "status": "success",
+      "notes": "사용자가 제시한 SDMX REST API(sdmx.eccb-centralbank.org)는 DNS 미해석(존재하지 않는 도메인) 확인됨 -> 실제로는 eccb-centralbank.org의 'Interactive Database' 쿼리 폼(Laravel, CSRF+암호화 hidden 필드, 부트스트랩 모달 안 select2 멀티셀렉트)이 진짜 데이터 소스. Playwright로 모달 열기-> 국가 선택->'Foreign Currency Deposits' 지표 선택->제출 흐름 재현(src/parsers/_eccb_common.py 공용). start_date를 jQuery datepicker API로 2000-01-01로 설정해 2000~2025년(26개년) 연간 데이터 확보. 8개국(AIA/ATG/DMA/GRD/MSR/KNA/LCA/VCT) 공용 로직 검증 완료"
+    }
+  },
+  {
+    "country_code": "LIE",
+    "country_name": "Liechtenstein",
+    "data_type": "No Standalone Source",
+    "source_url": null,
+    "update_frequency": null,
+    "requires_js": null,
+    "notes": "No Source URL provided; Liechtenstein uses Swiss franc, no independent central bank, banking data via Swiss National Bank/local FMA",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "not_applicable",
+      "notes": "data_type=No Standalone Source, 확인된 개별 통계 소스 없음 -> 수집 대상 아님(NoSourceStrategy)"
+    }
+  },
+  {
+    "country_code": "LKA",
+    "country_name": "Sri Lanka",
+    "data_type": "Direct Excel",
+    "source_url": "https://www.cbsl.gov.lk/en/statistics/statistical-tables/financial-sector",
+    "update_frequency": "Quarterly",
+    "requires_js": false,
+    "notes": "CBSL Table2.0 Banking Sector Liabilities: FCY Deposits / Total Deposits (Rs. Mn, quarterly).",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "DirectExcelStrategy",
+      "status": "success",
+      "notes": "Table2.0_*.xlsx Liabilities & Capital. FCD=FCY Deposits, TD=Deposits. 실측 2022-03~2026-03 (17분기). 2026-03 ratio≈19.84%"
+    }
+  },
+  {
+    "country_code": "LSO",
+    "country_name": "Lesotho",
+    "data_type": "Interactive Web",
+    "source_url": "https://centralbank.org.ls/statistics/",
+    "update_frequency": "Monthly",
+    "requires_js": false,
+    "notes": "Statistics; direct table/PDF links, Central Bank of Lesotho",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "failed",
+      "notes": "centralbank.org.ls/statistics 페이지에 정적 HTML 표 2개 확인(Broad Money, Net Foreign Assets 등)했으나 외화예금(FCD) 행 없음, 데이터도 2024-05 이후 갱신 안 됨"
+    }
+  },
+  {
+    "country_code": "LTU",
+    "country_name": "Lithuania",
+    "data_type": "Direct Excel",
+    "source_url": "https://www.lb.lt/en/deposits-by-currency",
+    "update_frequency": "Monthly",
+    "requires_js": false,
+    "notes": "BoL deposits-by-currency (residents non-MFIs). Full history via ?export=csv (2004-04~); xlsx is short window only. FCD=TD*(100-domestic%); domestic=LTL pre-2015 else EUR.",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "DirectExcelStrategy",
+      "status": "success",
+      "notes": "CSV export full history 2004-04~. TD=total EUR mn; FCD from 100-LTL% (pre-euro) / 100-EUR% (from 2015-01). UI filters same series."
+    }
+  },
+  {
+    "country_code": "LUX",
+    "country_name": "Luxembourg",
+    "data_type": "No Standalone Source",
+    "source_url": null,
+    "update_frequency": null,
+    "requires_js": null,
+    "notes": "No Source URL provided; Luxembourg uses Euro, monetary statistics compiled via Banque centrale du Luxembourg/ECB framework",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "not_applicable",
+      "notes": "data_type=No Standalone Source, 확인된 개별 통계 소스 없음 -> 수집 대상 아님(NoSourceStrategy)"
+    }
+  },
+  {
+    "country_code": "LVA",
+    "country_name": "Latvia",
+    "data_type": "Interactive Web",
+    "source_url": "https://statdb.bank.lv/lb/Data.aspx?id=243&lang=en",
+    "update_frequency": "Monthly",
+    "requires_js": true,
+    "notes": "id=243 = '01 MFI balance sheet (excluding central bank)', 'DEPOSITS (total)' 행의 Residents>Latvia>Euro/Foreign currency 열. 2026-08-20 사용자 확인: 표가 DevExpress ASP.NET PivotGrid(가상 스크롤, XHR/API 백엔드 없음)라 자동 스크레이핑 불가 확인 — half_manual로 전환, Period를 원하는 달로 맞추고 xlsx 내보내기 → 웹 대시보드 업로드 버튼으로 반영(web/src/lib/lvaImport.ts). 내보내기 파일 1개당 상세 통화분해가 있는 기간은 1개뿐이라 매달 반복 필요.",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "needs_research",
+      "notes": "웹 대시보드의 half_manual 업로드 기능으로 대체(dollarization-pipeline 자동 파이프라인 대상 아님). 실측(2026-06): Euro=21,881.6 / Foreign currency=1,310.2 / Latvia total(TD)=23,191.8 백만유로, ratio≈5.65%."
+    }
+  },
+  {
+    "country_code": "MAC",
+    "country_name": "Macao",
+    "data_type": "Direct Excel",
+    "source_url": "https://cdn.amcm.gov.mo/uploads/media/research_and_stats/stats/monetary_and_financial_statistics_time_series/2_Resident_Deps_and_Domestic_Credit_104.xlsx",
+    "update_frequency": "Monthly",
+    "requires_js": false,
+    "notes": "Research and Statistics>Monetary and Financial Statistics Time Series>Section 2 Resident Time Deposits by Maturity and Currency, direct Excel download, AMCM",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "DirectExcelStrategy",
+      "status": "success",
+      "notes": "sheet='Resident Deposits', header row13(year/month/residentDepositsTotal/MOP/HKD/RMB/USD/Others), value=Total-MOP"
+    }
+  },
+  {
+    "country_code": "MAF",
+    "country_name": "Saint Martin (French part)",
+    "data_type": "No Standalone Source",
+    "source_url": null,
+    "update_frequency": null,
+    "requires_js": null,
+    "notes": "No deposit-specific data found; IEDOM (regional issuing institute covering Guadeloupe, Martinique, French Guiana, Réunion, Mayotte, St-Barthélemy, St-Martin, St-Pierre-et-Miquelon) only publishes 'Encours de crédit' (credit outstanding) and business climate surveys per territory; no separate deposits/currency breakdown for St-Martin found on iedom.fr",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "not_applicable",
+      "notes": "data_type=No Standalone Source, 확인된 개별 통계 소스 없음 -> 수집 대상 아님(NoSourceStrategy)"
+    }
+  },
+  {
+    "country_code": "MAR",
+    "country_name": "Morocco",
+    "data_type": "Direct Excel",
+    "source_url": "https://www.bkam.ma/Statistiques/Statistiques-monetaires/Series-statistiques-monetaires",
+    "update_frequency": "Monthly",
+    "requires_js": false,
+    "notes": "BAM 'Séries statistiques monétaires' 페이지의 'AGRÉGATS DE MONNAIE' xlsx(문서ID가 개정마다 바뀌어 매번 페이지 스크레이핑) 단일 파일에 2001-12부터 전체 월간 시계열이 있음. FCD='Dépôts en devises'(은행 예치 요구불+정기 외화예금). TD=Monnaie scripturale(자국통화 요구불예금)+Placements à vue(저축성예금)+Comptes à terme(정기예금)+Dépôts en devises+Autres dépôts (OPCVM 지분/레포/NCD 제외).",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "InteractiveWebStrategy",
+      "status": "success",
+      "notes": "src/parsers/mar.py: 기존 PDF 분기보+월보 결합 방식(2024-09~2025-12, 15개월, 결측 있음)을 폐기하고 단일 xlsx 소스로 전환. 실측 2001-12~2026-06 (295개월, 885행)."
+    }
+  },
+  {
+    "country_code": "MCO",
+    "country_name": "Monaco",
+    "data_type": "No Standalone Source",
+    "source_url": null,
+    "update_frequency": null,
+    "requires_js": null,
+    "notes": "No central bank; Monaco uses Euro via Banque de France/Eurosystem monetary union agreement, no independent monetary statistics published for Monaco specifically",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "not_applicable",
+      "notes": "data_type=No Standalone Source, 확인된 개별 통계 소스 없음 -> 수집 대상 아님(NoSourceStrategy)"
+    }
+  },
+  {
+    "country_code": "MDA",
+    "country_name": "Moldova (the Republic of)",
+    "data_type": "Interactive Web",
+    "source_url": "https://www.bnm.md/bdi/pages/reports/dpmc/DPMC11.xhtml?id=0&lang=en",
+    "update_frequency": "Monthly",
+    "requires_js": true,
+    "notes": "Half-manual: BNM DPMC11 Monetary Survey JSF export (report.xlsx). FCD=deposits in FC; TD=FCD+sight/term domestic. Set MDA_REPORT_XLSX or ~/Downloads/report.xlsx.",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "InteractiveWebStrategy",
+      "status": "success",
+      "notes": "하프매뉴얼. DPMC11 period config→xlsx. parse()/render() local file. Dashboard half-manual flag. 2000-12~ 월간 가능."
+    }
+  },
+  {
+    "country_code": "MDG",
+    "country_name": "Madagascar",
+    "data_type": "PDF Bulletin",
+    "source_url": "https://www.banky-foibe.mg/vente_bulletin-de-bfm",
+    "update_frequency": "Annual",
+    "requires_js": false,
+    "notes": "IMF FSSA has FCD/TD 2008-2015 ratio-only; BFM AR has devises stock without paired TD series for automation.",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "PdfBulletinStrategy",
+      "status": "failed",
+      "notes": "IMF FSAP 2008-2015 비율만 확인, FCD+TD 절대액 결합 시계열 미확보. BFM 최신 월별 예금 통화분해 자동 수집 경로 없음."
+    }
+  },
+  {
+    "country_code": "MDV",
+    "country_name": "Maldives",
+    "data_type": "API",
+    "source_url": "https://database.mma.gov.mv/api/docs",
+    "update_frequency": "Monthly",
+    "requires_js": false,
+    "notes": "MMA Statistics API Bearer token (MMA_API_TOKEN). ODC deposits 2414-2419. FCD=FC transferable+other; TD=all deposits. MVR million.",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "ApiStrategy",
+      "status": "success",
+      "notes": "api/series?ids=2414,2416,2417,2419. Auth Bearer. 1980s/90s~latest monthly. Deposit-only dollarization (not series 2307 broad-money ratio)."
+    }
+  },
+  {
+    "country_code": "MEX",
+    "country_name": "Mexico",
+    "data_type": "API",
+    "source_url": "https://www.banxico.org.mx/SieInternet/consultarDirectorioInternetAction.do?sector=19&idCuadro=CF664&accion=consultarCuadro&locale=es",
+    "update_frequency": "Monthly",
+    "requires_js": false,
+    "notes": "Banxico CF664: demand+time deposits by currency. SF129082/118/224/260. Optional BANXICO_TOKEN for full history.",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "ApiStrategy",
+      "status": "success",
+      "notes": "CF664 HTML 최근 3개월 스크랩 (Cuentas activas demand+time FC/total). BANXICO_TOKEN 있으면 SIE-API 2011-04~ 전체. 실측 2026-03~2026-05. 2026-05 ratio≈9.86%"
+    }
+  },
+  {
+    "country_code": "MHL",
+    "country_name": "Marshall Islands (the)",
+    "data_type": "Direct Excel",
+    "source_url": "https://aric.adb.org/database/economic-financial-indicators-result?mode=excel&cty=169&frq=3&predefined=16&prec=3",
+    "update_frequency": "Monthly",
+    "requires_js": false,
+    "notes": "Data>Monetary and Financial Sectors>Monthly (Broad Money, Credit, Capital Adequacy); direct Excel download, ADB Asia Regional Integration Center (Marshall Islands has no own central bank/currency, uses USD)",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "needs_research",
+      "notes": "ARIC(ADB) export URL이 실제로는 HTML 페이지 반환(mode=excel 파라미터가 세션/폼 기반 export라 단순 GET으로 파일 획득 불가) -> 실제 export 메커니즘 재조사 필요"
+    }
+  },
+  {
+    "country_code": "MKD",
+    "country_name": "Republic of North Macedonia",
+    "data_type": "Interactive Web",
+    "source_url": "https://nbstat.nbrm.mk/pxweb/en/MS%20i%20KS/MS%20i%20KS__MS__Monetarni%20i%20kreditni%20agregati/1_DepozitiOstanatiInstiMesecniEN.px/",
+    "update_frequency": "Monthly",
+    "requires_js": true,
+    "notes": "NBRNM PXWeb deposits M4: I.TOTAL DEPOSITS vs B.in foreign currency.",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "InteractiveWebStrategy",
+      "status": "success",
+      "notes": "Playwright multi-select (values 0+8) → tableViewLayout2 HTML 파싱. API v1 불가(500/CF). 실측 2016-07~2026-06 (120개월). 2026-06 ratio≈38.32% (FCD pure FC, FX-clause 제외)."
+    }
+  },
+  {
+    "country_code": "MLI",
+    "country_name": "Mali",
+    "data_type": "No Standalone Source",
+    "source_url": null,
+    "update_frequency": null,
+    "requires_js": null,
+    "notes": "No Source URL provided; BCEAO (regional central bank for WAEMU) covers Mali, uses same statistics portal as other WAEMU countries (Benin, Burkina Faso, etc.)",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "not_applicable",
+      "notes": "data_type=No Standalone Source, 확인된 개별 통계 소스 없음 -> 수집 대상 아님(NoSourceStrategy)"
+    }
+  },
+  {
+    "country_code": "MLT",
+    "country_name": "Malta",
+    "data_type": "No Standalone Source",
+    "source_url": "https://www.centralbankmalta.org/monetary-and-banking",
+    "update_frequency": null,
+    "requires_js": null,
+    "notes": "Site protected by Cloudflare bot-detection (verification challenge), cannot access directly; Central Bank of Malta is part of Eurosystem, monetary/deposit statistics for Malta available via ECB Statistical Data Warehouse (SDW) as alternative",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "not_applicable",
+      "notes": "data_type=No Standalone Source, 확인된 개별 통계 소스 없음 -> 수집 대상 아님(NoSourceStrategy)"
+    }
+  },
+  {
+    "country_code": "MMR",
+    "country_name": "Myanmar",
+    "data_type": "PDF Bulletin",
+    "source_url": "https://www.cbm.gov.mm/content/2506",
+    "update_frequency": "Quarterly",
+    "requires_js": false,
+    "notes": "Statistics>Quarterly Financial Statistics Bulletin; PDF volumes by year/quarter, contains Central Bank Survey & monetary statistics; also Financial Statistics>Central Bank Survey submenu available. Original URL (bcm.mr) was wrong domain (Mauritania), corrected to cbm.gov.mm, Central Bank of Myanmar",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "needs_research",
+      "notes": "2016년 구버전 Quarterly Financial Statistics였고 통화별 예금 지표 없음 -> 최신 파일 재조사 필요"
+    }
+  },
+  {
+    "country_code": "MNE",
+    "country_name": "Montenegro",
+    "data_type": "Direct Excel",
+    "source_url": "https://www.cbcg.me/en/statistics/statistical-data/monetary-and-financial-statistics/monetary-financial-institutions",
+    "update_frequency": "Monthly",
+    "requires_js": false,
+    "notes": "CBCG MFI zip: Total deposits monthly; other-currency share year-end from CBCG reports.",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "DirectExcelStrategy",
+      "status": "success",
+      "notes": "zip xlsx Total deposits(2003~현재 월별, TD로 사용) + 연말 other-currency share(각 연도 Annual Report 'deposits in other currencies made up X% of total deposits' 문장에서 직접 확인: 2009=3.4,2010=3.32,2011=3.5,2012=4.0,2014=4.08,2015=6.9,2016=6.6,2017=7.06,2018=6.92,2019=7.10,2021=5.75,2022=5.12,2023=4.93,2024=4.76). 2026-08-20 사용자가 짚어준 publications 목록 페이지에서 cbm_annual_report_2003~2012+cbcg_annual_report_2014~2024 15개 보고서를 전수조사해 대폭 확장(2013,2020 보고서는 없거나 해당 문장 없음, 2003-2008은 문장형 요약이 없어 보류 — 2003년판엔 'Table 21 Deposits by Private Citizens'가 있지만 개인 부문만의 범위라 시스템 전체 TD와 정의가 달라 채택 안 함). 개선 후 실측 168개월(2009-01~2024-12, 2013/2020 구간은 공백)."
+    }
+  },
+  {
+    "country_code": "MNG",
+    "country_name": "Mongolia",
+    "data_type": "PDF Bulletin",
+    "source_url": "https://www.mongolbank.mn/documents/statistic/monetaryreview/",
+    "update_frequency": "Monthly",
+    "requires_js": false,
+    "notes": "BoM Monetary Review PDFs: foreign currency deposits % of total deposits.",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "PdfBulletinStrategy",
+      "status": "success",
+      "notes": "monetaryreview/YYYY/MMe.pdf 비율 문장 파싱. 절대액 없어 FCD=ratio,TD=100 합성 저장. 실측 2020-11~2022-05. 2022-03 ratio=23.8%. 2023+ 경로 404."
+    }
+  },
+  {
+    "country_code": "MNP",
+    "country_name": "Northern Mariana Islands (the)",
+    "data_type": "No Standalone Source",
+    "source_url": "https://ver1.cnmicommerce.com/divisions/central-statistics/",
+    "update_frequency": null,
+    "requires_js": null,
+    "notes": null,
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "not_applicable",
+      "notes": "data_type=No Standalone Source, 확인된 개별 통계 소스 없음 -> 수집 대상 아님(NoSourceStrategy)"
+    }
+  },
+  {
+    "country_code": "MOZ",
+    "country_name": "Mozambique",
+    "data_type": "Direct Excel",
+    "source_url": "https://www.bancomoc.mz/en/areas-of-expertise/statistics/statistical-domains-and-indicators/monetary-statistics/serie-longa-depositos-totais/",
+    "update_frequency": "Monthly",
+    "requires_js": false,
+    "notes": "Post-2007 serie-longa-depositos-totais xls (MN/ME by sector); pre-2007 panorama xls memo FCD. Million MZN.",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "DirectExcelStrategy",
+      "status": "success",
+      "notes": "FCD=Σ ME (SNF+IFNM+HH), TD=MN+ME. Pre-2007: |Total deposits| & |Total deposits in f/c| /1000 old MT. Through ~2020-05 on official long series."
+    }
+  },
+  {
+    "country_code": "MRT",
+    "country_name": "Mauritania",
+    "data_type": "Direct Excel",
+    "source_url": "https://bo.bcm.mr/sites/default/files/2026-02/Valeurs%20po.monetaire.xlsx",
+    "update_frequency": "Monthly",
+    "requires_js": false,
+    "notes": "Homepage>Valeurs PO Monétaires>direct xlsx download; no dedicated monetary statistics portal, BCM main site sections mostly 404; 수집 경로: bcm.mr homepage direct link",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "needs_research",
+      "notes": "기록된 xlsx URL(2026-02 게시분)이 404 -> BCM 사이트 구조상 파일 URL이 게시월마다 바뀜, 최신 파일 링크 재조사 필요"
+    }
+  },
+  {
+    "country_code": "MSR",
+    "country_name": "Montserrat",
+    "data_type": "Interactive Web",
+    "source_url": "https://www.eccb-centralbank.org/statistics-category/monetary-and-financial-statistics/summarized-monetary-survey/a",
+    "update_frequency": "Annual",
+    "requires_js": true,
+    "notes": "ECCB regional central bank statistics portal>Monetary and Financial Sector; no Montserrat-specific direct file; 수집 경로: eccb-centralbank.org/statistics",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "InteractiveWebStrategy",
+      "status": "success",
+      "notes": "사용자가 제시한 SDMX REST API(sdmx.eccb-centralbank.org)는 DNS 미해석(존재하지 않는 도메인) 확인됨 -> 실제로는 eccb-centralbank.org의 'Interactive Database' 쿼리 폼(Laravel, CSRF+암호화 hidden 필드, 부트스트랩 모달 안 select2 멀티셀렉트)이 진짜 데이터 소스. Playwright로 모달 열기-> 국가 선택->'Foreign Currency Deposits' 지표 선택->제출 흐름 재현(src/parsers/_eccb_common.py 공용). start_date를 jQuery datepicker API로 2000-01-01로 설정해 2000~2025년(26개년) 연간 데이터 확보. 8개국(AIA/ATG/DMA/GRD/MSR/KNA/LCA/VCT) 공용 로직 검증 완료"
+    }
+  },
+  {
+    "country_code": "MTQ",
+    "country_name": "Martinique",
+    "data_type": "Interactive Web",
+    "source_url": "https://www.iedom.fr/Statistiques?lang=en",
+    "update_frequency": "Monthly",
+    "requires_js": true,
+    "notes": "IEDOM regional statistics portal for French overseas departments (Martinique); interactive charts, no direct file; 수집 경로: iedom.fr/Statistiques",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "needs_research",
+      "notes": "iedom.fr 통계 페이지가 SPA(카테고리 목록 UI)라 직접 파일/테이블 없음 -> 세부 지표 페이지 경로 재조사 필요(MYT/NCL/PYF 동일 사이트)"
+    }
+  },
+  {
+    "country_code": "MUS",
+    "country_name": "Mauritius",
+    "data_type": "PDF Bulletin",
+    "source_url": "https://www.bom.mu/publications-and-statistics/statistics/monetary-and-financial-statistics/depository-corporation-survey",
+    "update_frequency": "Monthly",
+    "requires_js": false,
+    "notes": "BoM 'Depository Corporation Survey' 목록 페이지를 ?page=0..N 페이지네이션으로 끝까지 순회해 'Monetary Developments: <Month> <Year>' 제목의 게시물만 수집(파일명 패턴이 시기별로 제각각이라 목록 스크레이핑 필수, 추측 다운로드 방식 폐기). 표 'COMPONENTS AND SOURCES OF BROAD MONEY LIABILITIES': FCD='Foreign Currency Deposits' 행. TD는 시기별 라벨이 달라 2가지 방식 - 신형(~2021+): 'II. Deposit Liabilities' 총계 그대로. 구형(~2008-2018): 'Transferable Deposits'+'Savings Deposits'+'Time Deposits'+'Foreign Currency Deposits' 직접 합산(총계행 'Quasi-Money Liabilities' 라벨은 OCR로 자주 깨져 신뢰 안 함).",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "PdfBulletinStrategy",
+      "status": "success",
+      "notes": "src/parsers/mus.py: 2012~2020년은 표가 이미지로 스캔되어 있어(페이지2 텍스트 추출 불가) pytesseract OCR(psm 6) 폴백 필요 - 라벨 자체가 깨져 못 읽는 파일은 안전하게 스킵(숫자 줄 순서 추정 방식은 채택 안 함, 잘못된 값이 조용히 들어갈 위험). 2008-2011/2021+는 텍스트 추출 가능. 실측 2008-05~2026-06, 522행/174개월(전체 213개 발행본 중 OCR 라벨 인식 실패분 제외)."
+    }
+  },
+  {
+    "country_code": "MWI",
+    "country_name": "Malawi",
+    "data_type": "Direct Excel",
+    "source_url": "https://www.rbm.mw/Home/GetContentFile/?ContentID=63649",
+    "update_frequency": "Monthly",
+    "requires_js": false,
+    "notes": "Home>What's New>Monetary Survey Jan 1975-Jun 2026>direct file download; 수집 경로: rbm.mw homepage direct link",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "DirectExcelStrategy",
+      "status": "success",
+      "notes": "sheet='Depository Corporations Survey', row3=날짜 헤더(col B~), row29='Foreign currency denominated deposits'. 2026-08-19 사용자 제보로 RBM Annual Reports(rbm.mw/Publications/AnnualReports/, JS 페이지네이션) 부록 'Table N: Commercial Banks: Assets and Liabilities' 병합 — 2018년판(2012-2018 커버)+2025년판(2019-2025 커버) 딱 2개 보고서로 2012-2025 전체 커버(7개년 롤링 컬럼이라 중간 연도 리포트는 불필요). TD='1.4 Private sector deposits', FCD='1.4.3 Foreign Currency deposits'. 'Commercial Banks' 범위가 DCS('Depository Corporations', RBM 포함)보다 살짝 좁아 2018년 값이 정확히 일치하진 않음(연차보고서 ratio 19.19% vs DCS 19.82%, 근접) — 그래서 DCS가 커버하는 2018-04 이후는 DCS 우선, 그 이전만 연차보고서 사용. 개선 후 실측 105개월(2012-12~2026-06, 2013-2018 구간은 연말 관측만)."
+    }
+  },
+  {
+    "country_code": "MYS",
+    "country_name": "Malaysia",
+    "data_type": "API",
+    "source_url": "https://storage.data.gov.my/finsector/money_aggregates.csv",
+    "update_frequency": "Monthly",
+    "requires_js": false,
+    "notes": "data.gov.my Monetary Aggregates (BNM): m2_deposit_fx = FCD; TD = demand+saving+fixed+fx+other deposits (RM million). api.bnm.gov.my/public/msb/1.3 Open API는 항상 최신 1개월 스냅샷만 반환(연월 지정 불가)해 과거 확장에 못 씀. 1998-01~2012-12는 BNM 'Monthly Statistical Bulletin' 2012년 12월호(직전 발행본, 다음달부터 data.gov.my 시작)에 첨부된 '1.3 Monetary Aggregates' 구형 XLS로 보강 - 이 표 하나가 1969~ 연간, 1998-01~ 월간 전체 누적 시계열을 담고 있어 발행본을 여러 개 긁을 필요 없음.",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "ApiStrategy",
+      "status": "success",
+      "notes": "money_aggregates.csv: FCD=m2_deposit_fx, TD=sum(m1_deposit_demand,m2_deposit_saving,m2_deposit_fixed,m2_deposit_fx,m2_deposit_other). + src/parsers/mys.py _render_historical(): bnm.gov.my 발행본 페이지에서 1.3.xls 링크 스크레이핑(bnm.gov.my가 requests 기본 헤더 조합을 403 차단해 User-Agent만 남긴 세션으로 우회) 후 xlrd로 파싱, 1998-01~2012-12 보강. 실측 1998-01~2026-02 (334개월, 1002행)."
+    }
+  },
+  {
+    "country_code": "MYT",
+    "country_name": "Mayotte",
+    "data_type": "Interactive Web",
+    "source_url": "https://www.iedom.fr/Statistiques?lang=en",
+    "update_frequency": "Monthly",
+    "requires_js": true,
+    "notes": "IEDOM regional statistics portal for French overseas departments (Mayotte); interactive charts, no direct file; 수집 경로: iedom.fr/Statistiques",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "needs_research",
+      "notes": "iedom.fr 통계 페이지가 SPA(카테고리 목록 UI)라 직접 파일/테이블 없음 -> 세부 지표 페이지 경로 재조사 필요(MTQ와 동일 사이트)"
+    }
+  },
+  {
+    "country_code": "NAM",
+    "country_name": "Namibia",
+    "data_type": "Direct Excel",
+    "source_url": "https://www.bon.com.na/Economic-information/Statistical-information/Monetary-and-fincancial-statistics.aspx",
+    "update_frequency": "Monthly",
+    "requires_js": false,
+    "notes": "BoN Set of Table xlsx Table II.5: Total Deposits + In foreign currency rows.",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "DirectExcelStrategy",
+      "status": "success",
+      "notes": "Set of Table 연도별 xlsx Table II.5: FCD=sum(In foreign currency), TD=Total Deposits (N$ million). 실측 2013-01~2025-12. 2025-12 ratio≈7.00% (2025-07부터 other-FC 잔액 급감은 원표 반영)."
+    }
+  },
+  {
+    "country_code": "NCL",
+    "country_name": "New Caledonia",
+    "data_type": "Interactive Web",
+    "source_url": "https://www.iedom.fr/Statistiques?lang=en",
+    "update_frequency": "Monthly",
+    "requires_js": true,
+    "notes": "IEDOM regional statistics portal for French overseas territories (New Caledonia); interactive charts, no direct file; 수집 경로: iedom.fr/Statistiques",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "needs_research",
+      "notes": "iedom.fr 통계 페이지가 SPA(카테고리 목록 UI)라 직접 파일/테이블 없음 -> 세부 지표 페이지 경로 재조사 필요(MTQ와 동일 사이트)"
+    }
+  },
+  {
+    "country_code": "NER",
+    "country_name": "Niger (the)",
+    "data_type": "PDF Bulletin",
+    "source_url": "https://www.bceao.int/en/statistiques",
+    "update_frequency": "Quarterly",
+    "requires_js": false,
+    "notes": "BCEAO (regional central bank for WAEMU incl. Niger); statistics section with PDF bulletins; 수집 경로: bceao.int statistics page",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "needs_research",
+      "notes": "BCEAO Monthly Statistical Bulletin(61p) 확인했으나 영문 키워드 미검출(프랑스어 표기 가능성) -> 프랑스어 키워드(depots en devises)로 재검색 필요"
+    }
+  },
+  {
+    "country_code": "NFK",
+    "country_name": "Norfolk Island",
+    "data_type": "No Standalone Source",
+    "source_url": null,
+    "update_frequency": null,
+    "requires_js": null,
+    "notes": "No central bank; Norfolk Island is an Australian external territory using AUD, no separate monetary statistics source found; 수집 경로: N/A",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "not_applicable",
+      "notes": "data_type=No Standalone Source, 확인된 개별 통계 소스 없음 -> 수집 대상 아님(NoSourceStrategy)"
+    }
+  },
+  {
+    "country_code": "NGA",
+    "country_name": "Nigeria",
+    "data_type": "API",
+    "source_url": "https://statistics.cbn.gov.ng/data-browser",
+    "update_frequency": "Monthly",
+    "requires_js": false,
+    "notes": "CBN Data Browser Table 25 Commercial & Non Interest Banks Analytical BS: FCD + Demand + Time/Savings deposits.",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "ApiStrategy",
+      "status": "success",
+      "notes": "POST /data-browser/search-data-by-table tableId=25 (1048 Demand, 1054 Time&Savings, 1063 FCD). TD=Demand+TS+FCD (₦ million). 실측 2005-01~2019-12 (DB 상 시계열 종료). 2020+ 분기 Bulletin A.4.2 xlsx 공개 경로 미확보."
+    }
+  },
+  {
+    "country_code": "NIC",
+    "country_name": "Nicaragua",
+    "data_type": "PDF Bulletin",
+    "source_url": "https://www.bcn.gob.ni/sites/default/files/documentos/macroeconomic_yearbook_2009.pdf",
+    "update_frequency": "Annual",
+    "requires_js": false,
+    "notes": "bcn.gob.ni 사이트 전체가 Radware Captcha로 차단됨(Playwright 헤드리스로 접근 시 캡차 페이지만 나옴, 'Base de Datos Estadísticos'/'Indicadores Monetarios Mensuales' 등 전부 동일). 우회 방법 못 찾음.",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": "PdfBulletinStrategy",
+      "status": "needs_research",
+      "notes": "이전 버전은 seed/연구인용 비율(TD=100 가짜 분모 또는 미검증 2차출처 절대값)을 실측처럼 저장했으나 지적을 받아 DB에서 삭제하고(2026-08-18) 파서를 빈 결과로 되돌림. 사이트 전체가 봇 차단이라 재개 어려움."
+    }
+  },
+  {
+    "country_code": "NIU",
+    "country_name": "Niue",
+    "data_type": "No Standalone Source",
+    "source_url": null,
+    "update_frequency": null,
+    "requires_js": null,
+    "notes": "Niue uses NZD, no independent central bank; monetary statistics fall under RBNZ/NZ Treasury, no dedicated Niue monetary source found; 수집 경로: N/A",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "not_applicable",
+      "notes": "data_type=No Standalone Source, 확인된 개별 통계 소스 없음 -> 수집 대상 아님(NoSourceStrategy)"
+    }
+  },
+  {
+    "country_code": "NLD",
+    "country_name": "Netherlands (the)",
+    "data_type": "Interactive Web",
+    "source_url": "https://www.dnb.nl/en/statistics/data-search/#/",
+    "update_frequency": "Monthly",
+    "requires_js": true,
+    "notes": "Statistics>Data search portal; interactive time series search tool covering monetary statistics; 수집 경로: dnb.nl/en/statistics/data-search",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "needs_research",
+      "notes": "dnb.nl 통계 검색 SPA 포털, 단순 페이지 로드로 데이터 없음 -> 검색 인터랙션 자동화 필요"
+    }
+  },
+  {
+    "country_code": "NOR",
+    "country_name": "Norway",
+    "data_type": "Interactive Web",
+    "source_url": "https://www.norges-bank.no/en/topics/statistics/",
+    "update_frequency": "Monthly",
+    "requires_js": true,
+    "notes": "Topics>Statistics>Norges Bank's data portal; interactive statistics portal; 수집 경로: norges-bank.no/en/topics/statistics",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "needs_research",
+      "notes": "topics/statistics 개요 페이지일 뿐 실제 데이터 없음 -> 세부 통계 페이지 경로 재조사 필요"
+    }
+  },
+  {
+    "country_code": "NPL",
+    "country_name": "Nepal",
+    "data_type": "Direct Excel",
+    "source_url": "https://www.nrb.org.np/category/monthly-statistics/",
+    "update_frequency": "Monthly",
+    "requires_js": false,
+    "notes": "NRB monthly banking xlsx C8: DEPOSITS total + Foreign under deposit types.",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "DirectExcelStrategy",
+      "status": "success",
+      "notes": "Monthly Statistics xlsx sheet C8: FCD=sum(Foreign under deposits), TD=DEPOSITS (NPR mn, all BFIs). 실측 약 2024-07~2026-07 + 2021-07 연차 폴백. 최신 ratio≈3.06%."
+    }
+  },
+  {
+    "country_code": "NRU",
+    "country_name": "Nauru",
+    "data_type": "No Standalone Source",
+    "source_url": null,
+    "update_frequency": null,
+    "requires_js": null,
+    "notes": "Nauru uses AUD, no independent central bank; no dedicated monetary statistics portal found; 수집 경로: N/A",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "not_applicable",
+      "notes": "data_type=No Standalone Source, 확인된 개별 통계 소스 없음 -> 수집 대상 아님(NoSourceStrategy)"
+    }
+  },
+  {
+    "country_code": "NZL",
+    "country_name": "New Zealand",
+    "data_type": "Direct Excel",
+    "source_url": "https://www.rbnz.govt.nz/-/media/project/sites/rbnz/files/statistics/series/l-s/s10/hs10m.xlsx",
+    "update_frequency": "Monthly",
+    "requires_js": true,
+    "notes": "RBNZ 'Registered banks' balance sheet'(HS10) xlsx, 'Data' 시트. F열 'C1. Deposits (NZD)'=자국통화예금, G열 'C2. Deposits (FX)'=FCD. TD=C1+C2.",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "PdfBulletinStrategy",
+      "status": "success",
+      "notes": "src/parsers/nzl.py: rbnz.govt.nz는 Cloudflare JS 챌린지로 requests 직접 다운로드가 403(챌린지 HTML)만 반환 -> Playwright로 파일 URL에 goto()하면 챌린지 통과 후 바로 다운로드가 시작되는 걸 이용(page.expect_download로 감쌈, 별도 쿠키 이식 불필요). 과거의 정책비율(2.7%) 추정치 폴백을 폐기하고 실측 데이터로 전환. 2016-12~2026-06 (115개월, 345행)."
+    }
+  },
+  {
+    "country_code": "OMN",
+    "country_name": "Oman",
+    "data_type": "PDF Bulletin",
+    "source_url": "https://cbo.gov.om/Pages/QuarterlyBulletins.aspx",
+    "update_frequency": "Quarterly",
+    "requires_js": false,
+    "notes": "CBO Quarterly Bulletin: Breakdown of Private Sector Deposits (Total Deposits RO/FC/Total). Absolute OMR mn FCD+TD; ratio=FCD/TD*100. Filename tokens Mar/March/Jun/June/Sep/Sept/Dec/December + optional En/EN.",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "PdfBulletinStrategy",
+      "status": "success",
+      "notes": "QB PDF private-sector Total Deposits last trio. Multi-issue merge. Pre-2021 scanned QBs via OCR when needed."
+    }
+  },
+  {
+    "country_code": "PAK",
+    "country_name": "Pakistan",
+    "data_type": "Direct Excel",
+    "source_url": "https://www.sbp.org.pk/assets/document/BroadMoney_M2_Arch.xls",
+    "update_frequency": "Weekly",
+    "requires_js": false,
+    "notes": "SBP 'Broad Money (M2)' 아카이브 xls, 시대별 시트(M2_FY70-FY90 ... FY23 to onwards)에 1969-06부터 현재까지 전체 시계열. TD=Demand+Time+RFCD(Resident Foreign Currency Deposits) deposits, FCD=RFCD. RFCD는 1991년 이전 시트엔 항목만 있고 값이 비어 있어 그 이전은 자동 제외. sbp.org.pk가 기본 requests 헤더를 403 차단해 브라우저형 UA/Referer 필요.",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "PdfBulletinStrategy",
+      "status": "success",
+      "notes": "src/parsers/pak.py: 기존 FE-25 USD 환산 추정치 방식을 폐기하고 사용자가 지목한 단일 xls(로컬통화 원본, 환산 불필요)로 전환. 시트별 헤더/라벨 행 위치가 달라 'Currency in Circulation' 라벨을 앵커로 삼아 상대적으로 탐색. 원자료는 주간(금/토 마감)이라 (연,월)별 마지막 관측치로 월간 리샘플링. 실측 1991-03~2026-08 (426개월, 1278행)."
+    }
+  },
+  {
+    "country_code": "PAN",
+    "country_name": "Panama",
+    "data_type": "No Standalone Source",
+    "source_url": null,
+    "update_frequency": null,
+    "requires_js": null,
+    "notes": "Panama uses USD, no independent central bank; Superintendencia de Bancos publishes limited statistics",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "not_applicable",
+      "notes": "data_type=No Standalone Source, 확인된 개별 통계 소스 없음 -> 수집 대상 아님(NoSourceStrategy)"
+    }
+  },
+  {
+    "country_code": "PCN",
+    "country_name": "Pitcairn",
+    "data_type": "No Standalone Source",
+    "source_url": null,
+    "update_frequency": null,
+    "requires_js": null,
+    "notes": "Pitcairn uses NZD, no independent central bank; no dedicated monetary statistics source",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "not_applicable",
+      "notes": "data_type=No Standalone Source, 확인된 개별 통계 소스 없음 -> 수집 대상 아님(NoSourceStrategy)"
+    }
+  },
+  {
+    "country_code": "PER",
+    "country_name": "Peru",
+    "data_type": "API",
+    "source_url": "https://estadisticas.bcrp.gob.pe/estadisticas/series/api/PN00217MM/json",
+    "update_frequency": "Monthly",
+    "requires_js": false,
+    "notes": "BCRP: Depósitos MN (S/) + Depósitos ME (US$)×FX promedio.",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "ApiStrategy",
+      "status": "success",
+      "notes": "PN00217MM+PN00224MM×PN01210PM. FCD=ME_USD*FX, TD=MN+FCD (S/ mn). 실측 2021-08~2026-05. 2026-05 ratio≈29.2%. 2026-08-19 사용자 제보로 2021년 이전 구간을 BCRP Annual Report 부록('MONETARY ACCOUNTS OF THE DEPOSITORY INSTITUTIONS', 2020년판=Appendix 60)으로 보강 — TD='IV. Monetary liabilities with private sector', FCD='B. Quasi money in foreign currency', 표 자체가 예금취급기관 전체 통화성부채를 자국통화/외화로 나눈 것이라 월별 시리즈와 개념 동일(이전엔 'Liquidez'(유동성) 연간 시리즈로 임시 프록시했으나 이 실제 예금 데이터로 교체). 2020년판 부록 하나가 2011-2020 10개년 롤링 컬럼을 담고 있어 그것만으로 충분. 목록 페이지는 Incapsula 챌린지(플레이키 — 같은 요청도 통과/실패 랜덤)라 Playwright로 목록 페이지 방문 후 같은 브라우저 컨텍스트의 request API로 PDF를 받아야 하고, 실패 시 최대 4회 재시도. PDF 자체가 pdfplumber 추출 시 줄 단위로 문자가 뒤집혀 나오는 손상 포맷이라 줄 전체를 reverse해 복원 후 앵커 토큰('IV.', 'B.'+'Quasi money'+'foreign'+'currency') 기준으로 파싱. 개선 후 실측 68개 기간(2011-Annual~2026-05)."
+    }
+  },
+  {
+    "country_code": "PHL",
+    "country_name": "Philippines (the)",
+    "data_type": "Direct Excel",
+    "source_url": "https://www.bsp.gov.ph/SitePages/Statistics/BSFinancialStatements.aspx?TabId=1",
+    "update_frequency": "Monthly",
+    "requires_js": false,
+    "notes": "BSP PBS Balance Sheet (historical_frp 3.xlsx) rows 54/60 deposit liabilities + DCS dcs.xls FCD-Residents for pre-2008.",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "DirectExcelStrategy",
+      "status": "success",
+      "notes": "FRP: FCD=Foreign Currency deposit liab, TD=total deposit liab (PHP mn). DCS fills 2001–2008. Monthly."
+    }
+  },
+  {
+    "country_code": "PLW",
+    "country_name": "Palau",
+    "data_type": "No Standalone Source",
+    "source_url": null,
+    "update_frequency": null,
+    "requires_js": null,
+    "notes": "Palau uses USD, no central bank; no dedicated monetary statistics source",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "not_applicable",
+      "notes": "data_type=No Standalone Source, 확인된 개별 통계 소스 없음 -> 수집 대상 아님(NoSourceStrategy)"
+    }
+  },
+  {
+    "country_code": "PNG",
+    "country_name": "Papua New Guinea",
+    "data_type": "PDF Bulletin",
+    "source_url": "https://www.bankpng.gov.pg/",
+    "update_frequency": "Annual",
+    "requires_js": true,
+    "notes": "BPNG 사이트가 Cloudflare 관리형 챌린지로 차단됨(Playwright 헤드리스로도 통과 안 됨, 확인함). 기계 판독 가능한 공식 FCD/TD 소스를 찾지 못함.",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "PdfBulletinStrategy",
+      "status": "needs_research",
+      "notes": "이전 버전은 S&P Global 등 2차 인용 비율을 TD=100(가짜 분모)/FCD=비율 형태로 저장해 실측 데이터처럼 보이게 했으나, BPNG 원출처가 아니고 TD가 조작된 값이라는 지적을 받아 DB에서 삭제하고(2026-08-18) 파서를 빈 결과 반환으로 되돌림. BPNG 접근 가능해지거나 진짜 공개 소스 발견 전까지 수집 안 함."
+    }
+  },
+  {
+    "country_code": "POL",
+    "country_name": "Poland",
+    "data_type": "PDF Bulletin",
+    "source_url": "https://nbp.pl/en/statistic-and-financial-reporting/monetary-and-financial-statistics/archives/banking-system-assets-and-liabilities/",
+    "update_frequency": "Annual",
+    "requires_js": true,
+    "notes": "nbp.pl 전체가 Incapsula로 막혀 있음(일반 requests/헤드리스 Playwright/WebFetch/Wayback 스냅샷 전부 동일한 'Pardon Our Interruption' 챌린지 페이지만 반환, 확인함). static.nbp.pl 파일 서빙 서브도메인 자체는 안 막혀 있으나(200) 목록 페이지를 못 읽어 실제 xlsx 파일명을 알 수 없음. 2002년 이전은 사용자 확인으로는 연도별 엑셀 파일을 이 아카이브 페이지에서 받아야 함.",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "PdfBulletinStrategy",
+      "status": "needs_research",
+      "notes": "이전 버전은 IMF/BIS 인용 비율을 TD=100(가짜 분모)/FCD=비율 형태로 저장해 실측 데이터처럼 보이게 했으나 NBP 원출처가 아니라는 지적을 받아 DB에서 삭제하고(2026-08-18) 파서를 빈 결과 반환으로 되돌림. nbp.pl Incapsula 우회 방법을 찾거나 사용자가 실제 파일 URL을 알려주면 재개 가능."
+    }
+  },
+  {
+    "country_code": "PRI",
+    "country_name": "Puerto Rico",
+    "data_type": "No Standalone Source",
+    "source_url": null,
+    "update_frequency": null,
+    "requires_js": null,
+    "notes": "Puerto Rico uses USD, part of US Federal Reserve System; no standalone central bank",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "not_applicable",
+      "notes": "data_type=No Standalone Source, 확인된 개별 통계 소스 없음 -> 수집 대상 아님(NoSourceStrategy)"
+    }
+  },
+  {
+    "country_code": "PRK",
+    "country_name": "Korea (the Democratic People's Republic of)",
+    "data_type": "No Standalone Source",
+    "source_url": null,
+    "update_frequency": null,
+    "requires_js": null,
+    "notes": "No public monetary statistics available; Central Bank of DPRK does not publish data; North Korean won not internationally convertible",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "not_applicable",
+      "notes": "data_type=No Standalone Source, 확인된 개별 통계 소스 없음 -> 수집 대상 아님(NoSourceStrategy)"
+    }
+  },
+  {
+    "country_code": "PRT",
+    "country_name": "Portugal",
+    "data_type": "Interactive Web",
+    "source_url": "https://bpstat.bportugal.pt",
+    "update_frequency": "Monthly",
+    "requires_js": true,
+    "notes": "BPstat statistical database; part of Eurosystem/ECB monetary union",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "needs_research",
+      "notes": "BPstat(Banco de Portugal) SPA 데이터포털, 단순 로드로 테이블/파일 없음 -> 검색 API 재조사 필요"
+    }
+  },
+  {
+    "country_code": "PRY",
+    "country_name": "Paraguay",
+    "data_type": "PDF Bulletin",
+    "source_url": "https://www.bcp.gov.py/web/institucional/estadisticas-monetarias-y-financieras",
+    "update_frequency": "Annual",
+    "requires_js": true,
+    "notes": "BCP 사이트는 Cloudflare 때문에 requests/networkidle 대기로는 403(도메인 자체는 domcontentloaded로는 통과). 'Anexo Estadístico' 다운로드 링크를 확인했으나 실제로는 보험(Seguros) 통계 파일이라 무관(사이트 링크 라벨링 오류로 보임). 'Boletines Estadístico-Financieros'는 Superintendencia de Bancos 산하 외부 링크로 연결돼 추가 확인 필요.",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": "PdfBulletinStrategy",
+      "status": "needs_research",
+      "notes": "이전 버전은 seed/연구인용 비율(TD=100 가짜 분모 또는 미검증 2차출처 절대값)을 실측처럼 저장했으나 지적을 받아 DB에서 삭제하고(2026-08-18) 파서를 빈 결과로 되돌림. 통화별 예금 분해가 있는 정확한 표를 아직 못 찾음."
+    }
+  },
+  {
+    "country_code": "PSE",
+    "country_name": "Palestine, State of",
+    "data_type": "Interactive Web",
+    "source_url": "https://www.pma.ps/en/Statistics//TimeSeriesData",
+    "update_frequency": "Monthly",
+    "requires_js": true,
+    "notes": "Statistics>Time Series Data; Palestine Monetary Authority",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "needs_research",
+      "notes": "pma.ps TimeSeriesData 페이지에 테이블/파일 없음(SPA 추정) -> 재조사 필요"
+    }
+  },
+  {
+    "country_code": "PYF",
+    "country_name": "French Polynesia",
+    "data_type": "Interactive Web",
+    "source_url": "https://www.ieom.fr/Polynesie-francaise?lang=en",
+    "update_frequency": "Monthly",
+    "requires_js": true,
+    "notes": "IEOM regional central bank for French Pacific territories (CFP franc)",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "needs_research",
+      "notes": "ieom.fr 페이지에 테이블/파일 없음(MTQ/MYT/NCL와 동일 IEDOM 계열, SPA 추정) -> 재조사 필요"
+    }
+  },
+  {
+    "country_code": "QAT",
+    "country_name": "Qatar",
+    "data_type": "Interactive Web",
+    "source_url": "https://www.qcb.gov.qa/en/pages/publication.aspx?indexselect=1",
+    "update_frequency": "Monthly",
+    "requires_js": true,
+    "notes": "QCB 'Publications' > 'Banks Monthly Statement'(메뉴 클릭으로만 로드, URL 파라미터로는 안 됨 - Playwright 필요) HTML 표. 'Customer Deposits' 행의 'Grand Total FC'/'Grand Total Total' 열. 2012-08 이전(2007-2011)은 표 형식이 완전히 달라 미지원.",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "PdfBulletinStrategy",
+      "status": "success",
+      "notes": "src/parsers/qat.py: 가짜 seed 데이터 폐기 후 재구축. 실측 2012-08~2026-06 (167개월, 501행)."
+    }
+  },
+  {
+    "country_code": "REU",
+    "country_name": "Réunion",
+    "data_type": "No Standalone Source",
+    "source_url": null,
+    "update_frequency": null,
+    "requires_js": null,
+    "notes": "Réunion is French overseas department; uses EUR, ECB/Eurosystem monetary policy; no separate statistics",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "not_applicable",
+      "notes": "data_type=No Standalone Source, 확인된 개별 통계 소스 없음 -> 수집 대상 아님(NoSourceStrategy)"
+    }
+  },
+  {
+    "country_code": "ROU",
+    "country_name": "Romania",
+    "data_type": "Interactive Web",
+    "source_url": "https://www.bnr.ro/report?cid=572&type=2&dfrom=01-01-2007&dto=14-08-2026",
+    "update_frequency": "Monthly",
+    "requires_js": false,
+    "notes": "BNR report cid=572 deposits by sector/currency. Auto GET with dfrom/dto. Resident non-gov G+S+I; FCD=euro+other FX overnight+term.",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "InteractiveWebStrategy",
+      "status": "success",
+      "notes": "HTML table IFMDL_* codes. TD=G+S+I, FCD=Σ{G,S,I}{O,T}{E,X}. RON mn. 2007-01~latest monthly. dto=today each run."
+    }
+  },
+  {
+    "country_code": "RUS",
+    "country_name": "Russian Federation (the)",
+    "data_type": "Interactive Web",
+    "source_url": "https://www.cbr.ru/eng/statistics/macro_itm/dkfs/",
+    "update_frequency": "Monthly",
+    "requires_js": true,
+    "notes": "Statistics>Macroeconomic Statistics>Monetary and Financial Statistics",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "InteractiveWebStrategy",
+      "status": "success",
+      "notes": "survey_dc_new_e.xlsx(Depository Corporations Survey), row12~14 'Deposits of .../in foreign currency' 3개 항목 합산, 월별 307개월"
+    }
+  },
+  {
+    "country_code": "RWA",
+    "country_name": "Rwanda",
+    "data_type": "Direct Excel/CSV Download",
+    "source_url": "https://www.bnr.rw/mstat",
+    "update_frequency": "Monthly",
+    "requires_js": false,
+    "notes": "BNR mstat DCS xlsx monthly + NISR yearbook June series.",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "DirectExcelStrategy",
+      "status": "success",
+      "notes": "BNR /mstat Depository corp survey rolling monthly (FCD/TD) + NISR Yearbook 2018–24 June (TD/FC deposits) + /documents/Depository_corporation_survey_<Mon>_<year>.xlsx 예측 가능한 URL을 최근 24개월치 직접 프로브(2026-08-19 추가, /mstat이 '최신 3건'만 노출해 파이프라인 미실행 구간이 누락되는 문제를 보완). 개선 후 실측 28기간(2018-06~2026-06, 2024-12~현재 거의 연속). 2024-06≈38.25%. 2026-08-19: bnr.rw/anreports에 Annual Report 18건(Table 3 MONETARY AGGREGATES DEVELOPMENTS, Jun-15~) 추가 확인됐으나 Angular SPA라 탭 클릭 후에도 PDF 링크가 DOM에 노출 안 됨 — 자동화 실패, half_manual로 전환(web/src/lib/manualUpdateCountries.ts, Supabase RLS 화이트리스트에도 RWA 추가 완료)."
+    }
+  },
+  {
+    "country_code": "SAU",
+    "country_name": "Saudi Arabia",
+    "data_type": "PDF Bulletin",
+    "source_url": "http://www.sama.gov.sa/en-US/EconomicReports/Pages/MonthlyStatistics.aspx",
+    "update_frequency": "Monthly",
+    "requires_js": false,
+    "notes": "Economic Reports>Monthly Statistics; PDF bulletin",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "needs_research",
+      "notes": "저장된 URL이 404"
+    }
+  },
+  {
+    "country_code": "SDN",
+    "country_name": "Sudan (the)",
+    "data_type": "PDF Bulletin",
+    "source_url": "https://cbos.gov.sd/en/publication-type/annual-reports",
+    "update_frequency": "Annual",
+    "requires_js": false,
+    "notes": "CBOS 연차보고서 목록(2002~2018만 존재, 2019년 이후 미발간)을 순회. 각 보고서의 'Deposits in Local/Foreign Currency by the end of <Y1> and <Y2>' 표(제목 문구가 연도별로 조금씩 다름) 'Grand Total' 행 = 그 해 총예금. FCD=Foreign Grand Total, TD=Local+Foreign Grand Total (SDG million, 2007년 이전은 화폐개혁 전 구 디나르 표시라 스케일 다름).",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "PdfBulletinStrategy",
+      "status": "success",
+      "notes": "src/parsers/sdn.py: 연차보고서(pdftotext -layout, 구형 PDF의 (cid:NN) 폰트 깨짐 문제로 pdfplumber 대신 사용) + 분기공보(periodicals-publications?field_publication_type_tid_i18n=44, 슬러그가 'Nth-quarter-YYYY'/'quarter-N-YYYY'/'NYYYY' 등 제각각) 'Money Supply' 표(아랍어 공보 안에도 표 라벨은 영문)의 가장 오른쪽 열(=그 공보 자신의 분기)만 취함. 분기공보 PDF는 대부분 아랍어 파일명뿐이라 모든 연도 페이지에 공통으로 걸린 조직도 PDF만 제외하고 첫 PDF를 씀. 2009-2018년 분기공보는 표가 스캔 이미지라 미스캔(OCR 미적용, 해당 구간은 연차보고서로 보완됨). 실측 2003-2022, 42개 기간(연간+분기 혼합), 126행."
+    }
+  },
+  {
+    "country_code": "SEN",
+    "country_name": "Senegal",
+    "data_type": "No Standalone Source",
+    "source_url": null,
+    "update_frequency": null,
+    "requires_js": null,
+    "notes": "No Source URL provided; BCEAO (regional central bank for WAEMU)",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "not_applicable",
+      "notes": "data_type=No Standalone Source, 확인된 개별 통계 소스 없음 -> 수집 대상 아님(NoSourceStrategy)"
+    }
+  },
+  {
+    "country_code": "SGP",
+    "country_name": "Singapore",
+    "data_type": "API",
+    "source_url": "https://www.mas.gov.sg/statistics/monthly-statistical-bulletin/i-4-commercial-banks-deposits-and-balances-excluding-s$ncds",
+    "update_frequency": "Monthly",
+    "requires_js": false,
+    "notes": "MSB Table I.4 Commercial Banks: Deposits and Balances (excluding S$NCDs); TOTAL DEPOSITS - IN FOREIGN CURRENCIES/IN S$/TOTAL 행 사용. 은행권 전체(거주자+비거주자) 외화예금이며 resident-only 세분화는 아님.",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "ApiStrategy",
+      "status": "success",
+      "notes": "src/parsers/sgp.py: 과거 CSV(www.mas.gov.sg/-/media/.../msb-historical/money-and-banking--i4--monthly.csv, 1991-01~2021-06) + 라이브 페이지 내부 JSON API(www.mas.gov.sg/api/v1/MAS/chart/table_i_4_..., 2021-07~현재, 최근 약 5년 롤링) 병합. 둘 다 requests+브라우저 UA/Referer만으로 200 (WAF 차단 없음, 이전 needs_research 메모의 'service unavailable'은 다른 구 URL/세션 조건이었던 것으로 보임). 1991-01~2026-06 월별 1278행(FCD/TD/FCD_TD_RATIO) 확인, 2023-12/2024-03 값이 사전 조사 표본치와 근사 일치."
+    }
+  },
+  {
+    "country_code": "SGS",
+    "country_name": "South Georgia and the South Sandwich Islands",
+    "data_type": "No Standalone Source",
+    "source_url": null,
+    "update_frequency": null,
+    "requires_js": null,
+    "notes": "South Georgia and South Sandwich Islands uninhabited except research stations; no economy or central bank",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "not_applicable",
+      "notes": "data_type=No Standalone Source, 확인된 개별 통계 소스 없음 -> 수집 대상 아님(NoSourceStrategy)"
+    }
+  },
+  {
+    "country_code": "SHN",
+    "country_name": "Saint Helena, Ascension and Tristan da Cunha",
+    "data_type": "Interactive Web",
+    "source_url": "https://www.sainthelena.gov.sh/statistical-updates-benefits-and-exchange-rates/",
+    "update_frequency": "Monthly",
+    "requires_js": true,
+    "notes": "Statistical Updates>Exchange Rates; Bank of St Helena has no central bank, uses SHP pegged to GBP",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "needs_research",
+      "notes": "sainthelena.gov.sh 접속 거부(연결 거부) -> 사이트 상태 재조사 필요"
+    }
+  },
+  {
+    "country_code": "SJM",
+    "country_name": "Svalbard and Jan Mayen",
+    "data_type": "No Standalone Source",
+    "source_url": null,
+    "update_frequency": null,
+    "requires_js": null,
+    "notes": "Svalbard and Jan Mayen use NOK, part of Norway; no separate central bank or statistics",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "not_applicable",
+      "notes": "data_type=No Standalone Source, 확인된 개별 통계 소스 없음 -> 수집 대상 아님(NoSourceStrategy)"
+    }
+  },
+  {
+    "country_code": "SLB",
+    "country_name": "Solomon Islands",
+    "data_type": "Interactive Web",
+    "source_url": "http://www.cbsi.com.sb/",
+    "update_frequency": "Monthly",
+    "requires_js": true,
+    "notes": "Data & Statistics>Key Indicators; Central Bank of Solomon Islands homepage with exchange rates and monetary statistics",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "failed",
+      "notes": "홈페이지 테이블은 환율(Exchange rate) 위젯일 뿐 예금 통계 아님 -> 통계 섹션 별도 재조사 필요"
+    }
+  },
+  {
+    "country_code": "SLE",
+    "country_name": "Sierra Leone",
+    "data_type": "Interactive Web",
+    "source_url": "https://bsl.gov.sl/Publications.html",
+    "update_frequency": "Quarterly",
+    "requires_js": false,
+    "notes": "Bank of Sierra Leone(BSL) 분기별 Monetary Policy Report PDF 부록 'Table 4: Monetary Survey'에서 Demand deposit/Quasi money/o.w. Foreign currency deposit 추출",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "InteractiveWebStrategy",
+      "status": "success",
+      "notes": "www.bsl.gov.sl은 DNS 오류지만 www. 없는 https://bsl.gov.sl 은 정상 응답(브라우저 UA 헤더 필요, 아니면 커넥션 리셋). 안내된 Open Data for Africa 포털(cb-sierraleone.opendataforafrica.org)은 Cloudflare 봇 챌린지로 requests/Playwright 모두 차단되어 자동화 불가 확인. Publications.html에 아카이브된 분기별 Monetary Policy Report PDF들의 부록 'Monetary Survey' 표(약 절반의 보고서에만 존재)에서 FCD(o.w. Foreign currency deposit)와 TD(Demand deposit+Quasi money)를 직접 추출. FCD/TD 비율 32~51%로 BSL 자체 Financial Stability Report 2022의 서술('FX 예금 비중이 2022년 중 36%→51%로 급등')과 정합. 2022년 8월 리디노미네이션(구 SLL->신 SLE, 1000:1) 전후 표 단위('Billions'/'Millions of Leones')는 수치적으로 동일해 별도 환산 불필요(2022Q1 M2 값이 양쪽 보고서에서 동일함을 교차 확인). 2026-08-19 사용자 제보로 'Annual Report and Statement of Accounts'(Publications.html에 정적 링크로 존재, hover처럼 보여도 JS 불필요) PDF도 추가 소스로 병합 — 부록 'Table N: Monetary Survey'가 MPR과 동일 항목이지만 헤더가 분기번호 대신 월-연도(Dec-12 등)라 Dec/Mar/Jun/Sep→Q4/Q1/Q2/Q3 매핑, 행 라벨도 'o.w.' 접두어 없이 그냥 'Foreign Currency Deposits'라 폴백 매칭 추가. 2013~2015년판 3개는 텍스트 추출 성공, 2016/2017년판은 스캔 이미지라 실패(자동 skip). 개선 후 실측 30개 분기(2012Q4~2026Q1, 다만 2016Q1~2021Q2 공백 있음 — 해당 연차보고서가 이미지 PDF이거나 목록에 없음)."
+    }
+  },
+  {
+    "country_code": "SLV",
+    "country_name": "El Salvador",
+    "data_type": "Interactive Web",
+    "source_url": "https://estadisticas.bcr.gob.sv/serie/panorama-de-las-sociedades-de-depositos",
+    "update_frequency": "Monthly",
+    "requires_js": true,
+    "notes": "Estadisticas>Panorama de las Sociedades de Depósitos; El Salvador uses USD",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "InteractiveWebStrategy",
+      "status": "success",
+      "notes": "Playwright 렌더링, 라벨/값 분리 테이블에서 '3.4.1 Depósitos Transferibles en Moneda Extranjera' 행 추출, 월별 12개월"
+    }
+  },
+  {
+    "country_code": "SMR",
+    "country_name": "San Marino",
+    "data_type": "No Standalone Source",
+    "source_url": null,
+    "update_frequency": null,
+    "requires_js": null,
+    "notes": "San Marino uses EUR, part of Eurozone via agreement with Italy/EU; no separate central bank",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "not_applicable",
+      "notes": "data_type=No Standalone Source, 확인된 개별 통계 소스 없음 -> 수집 대상 아님(NoSourceStrategy)"
+    }
+  },
+  {
+    "country_code": "SOM",
+    "country_name": "Somalia",
+    "data_type": "Interactive Web",
+    "source_url": "https://centralbank.gov.so/",
+    "update_frequency": "Monthly",
+    "requires_js": true,
+    "notes": "Annual Statistical Bulletin and Financial Access Survey Reports; Central Bank of Somalia",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "needs_research",
+      "notes": "centralbank.gov.so 홈페이지에 테이블/파일 없음 -> 통계 섹션 경로 재조사 필요"
+    }
+  },
+  {
+    "country_code": "SPM",
+    "country_name": "Saint Pierre and Miquelon",
+    "data_type": "PDF Bulletin",
+    "source_url": "https://www.iedom.fr/Saint-Pierre-et-Miquelon",
+    "update_frequency": "Annual",
+    "requires_js": false,
+    "notes": "IEDOM regional office; Saint Pierre and Miquelon uses EUR, annual economic reports",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "needs_research",
+      "notes": "1페이지짜리 요약 PDF였고 상세 통화별 예금 데이터 없음 -> IEDOM 상세 통계표 재조사 필요"
+    }
+  },
+  {
+    "country_code": "SRB",
+    "country_name": "Serbia",
+    "data_type": "Direct Excel",
+    "source_url": "https://www.nbs.rs/export/sites/NBS_site/documents/statistika/monetarni_sektor/SBMS04.xlsx",
+    "update_frequency": "Monthly",
+    "requires_js": false,
+    "notes": "Statistics>Monetary Statistics; National Bank of Serbia; Table 1.1.4 Consolidated Balance Sheet of the Banking System (xlsx)",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "DirectExcelStrategy",
+      "status": "success",
+      "notes": "이전에 기록된 봇 차단(\"Pristup je blokiran\")은 재현되지 않음: requests에 일반 브라우저 UA/Accept 헤더만 실으면(base.download() 기본값) nbs.rs는 200 정상 응답. mon_stat/ 페이지가 PDF Bulletin 외에 테이블별 xlsx도 별도 게시하므로 그쪽(SBMS04.xlsx, Table 1.1.4)을 직접 다운로드해 사용, PDF/OCR/Playwright/Wayback 불필요. FCD='Foreign currency deposits' 열(정부 제외 전 거주부문, FX-indexed 미포함 순수 외화예금), TD=Dinar sight+Dinar time+FCD(=M3-통화). 연간 1999~2025 + 월간 2004-01~현재(2026-06) 단일 파일에 모두 포함. 최신월 ratio 53.45%로 IMF 2025 Article IV 스팟체크(≈57.45%)와 같은 자릿수(다른 부문 정의 추정)."
+    }
+  },
+  {
+    "country_code": "SSD",
+    "country_name": "South Sudan",
+    "data_type": "Interactive Web",
+    "source_url": "https://boss.gov.ss/monetary-statistics/",
+    "update_frequency": "Monthly",
+    "requires_js": true,
+    "notes": "Monetary Statistics page; Bank of South Sudan",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "failed",
+      "notes": "boss.gov.ss의 'Depository Corporations Survey' xlsx 다운로드 및 확인 완료했으나 Broad Money Liabilities가 통화별로 분해되지 않음(Currency/Transferable/Other deposits만) -> FCD 항목 없음"
+    }
+  },
+  {
+    "country_code": "STP",
+    "country_name": "Sao Tome and Principe",
+    "data_type": "Direct Excel",
+    "source_url": "https://www.bcstp.st/Upload/New_DOC/ES/Dep%C3%B3sitos%20Banc%C3%A1rios%20por%20moeda%20e%20tipo_2018-2026.xlsx",
+    "update_frequency": "Monthly",
+    "requires_js": false,
+    "notes": "BCSTP 사이트 개편으로 구 URL 404였음. 'Banco Central > Estatísticas Monetárias e Financeiras' 페이지(https://www.bcstp.st/Banco-Central?x=wOgqPO8BlRrdHdPOd1+EuA==&z=s2EMS9Lp8bmsW27kZKr0Ow==)에서 매월 갱신되는 'Depósitos Bancários por moeda e tipo_2018-2026.xlsx' 직접 다운로드 발견. 시트 'DEPÓSITOS BANCÁRIOS'에 거주자 예금을 자국통화/외화로 분해(월별, 2018-01~).",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "DirectExcelStrategy",
+      "status": "success",
+      "notes": "src/parsers/stp.py: FCD=행 '(1.2) Moeda Estrangeira'(거주자 외화예금), TD=행 '(1) Residentes'(거주자 총예금, MN+ME). 월별 2018-01~2026-05, 101개월x3지표=303행 확인. 2018년 재화폐화(1000 STD=1 STN) 이후 파일이라 단위 불연속 없음. FCD/TD 비율 19~27% 범위로 IMF Article IV 추정치(2025년 약 24.9%)와 대체로 부합. 2026-08-19 사용자 제보로 'Agregados Monetários_2001-2026.xlsx'(통화총량, 2001-12부터) 추가 병합 — TD=M3-Moeda em Circulação, FCD=Depósitos em Moeda Estrangeira. 이 파일은 거주자 한정이 아니라 은행 시스템 전체 기준이라 개념이 약간 다름(2018-01 교차검증: 이 파일 28.9% vs 상세파일 26.6%) — 2018-01 이전 구간에만 보조로 쓰고 겹치는 달은 상세 파일(거주자 기준) 우선. 개선 후 실측 294개월 연속 무공백(2001-12~2026-05)."
+    }
+  },
+  {
+    "country_code": "SUR",
+    "country_name": "Suriname",
+    "data_type": "Interactive Web",
+    "source_url": "https://web.archive.org/web/2/https://www.cbvs.sr/images/content/statistieken/Database/MonetaryStatistics.xlsx",
+    "update_frequency": "Monthly",
+    "requires_js": true,
+    "notes": "cbvs.sr 도메인 전체(HTML/정적 자산 포함, www/www3 서브도메인 모두)가 Cloudflare 봇 체크로 완전 차단되어(raw requests 및 안티디텍션 Playwright headless 모두 실패) Wayback Machine에 아카이빙된 CBvS 원본 'MonetaryStatistics.xlsx'(Depository Corporations Survey + Dollarization Ratios 시트)를 대신 사용. IMF SDMX(MFS_DC/MFS_ODC)에는 TD는 있으나 통화별 구분(FCD)이 Suriname에 대해 보고되지 않아 미사용.",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "InteractiveWebStrategy",
+      "status": "success",
+      "notes": "src/parsers/sur.py: web.archive.org CDX API로 cbvs.sr의 'MonetaryStatistics.xlsx' 최신 성공 스냅샷을 조회 후 다운로드(503 재시도 로직 포함, 실패 시 다음으로 최신인 스냅샷으로 폴백). 시트 '3. Dep. Corp. Survey_DCS'의 Transferable+Other deposits 합계=TD, 시트 '5-2. Dollarization Ratios'의 'Deposit (1)' 행(%)=FCD/TD 비율, FCD=TD*ratio/100. 2026-08-13 확인: 2006-01~2026-05월 월별 데이터(720행), 2017-08 검증치 FCD=10808.77/TD=15574.48/ratio=69.40%가 사전 조사치(FCD=10797.2)와 근사 일치."
+    }
+  },
+  {
+    "country_code": "SVK",
+    "country_name": "Slovakia",
+    "data_type": "Interactive Web",
+    "source_url": "https://nbs.sk/en/statistics/financial-institutions/banks/statistical-data-of-monetary-financial-institutions/deposits/",
+    "update_frequency": "Monthly",
+    "requires_js": false,
+    "notes": "Statistics>Financial Institutions>Banks>Deposits, 'Deposits and loans received – sector break-down' (v5-12a form); page is plain server-rendered HTML, no JS needed; National Bank of Slovakia, part of Eurosystem",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "InteractiveWebStrategy",
+      "status": "success",
+      "notes": "src/parsers/svk.py: deposits 페이지 HTML에서 'sector break-down' 표의 (year,month)->파일 URL(신형 dokument/{uuid} 또는 구형 _img/.../v5-12a@YYYYMM.xls(x)) 을 추출해 각 월 파일을 파싱. 포맷 2세대: 2009-01~2011-12는 행 기반(SECTORS/Currency, 'EURO area - Domestic' TOTAL EUR/CM 행쌍), 2012-01~현재는 라벨 기반('Total deposits'/'Deposits in foreign currency' 행, Domestic 합계열은 'all sectors'/'euro area' 헤더 텍스트로 매 파일 동적 탐지 + EUR+FCD==TD 정합성 검증 후 채택). ECB SDMX BSI 확인: SK 거주자 전체 섹터(2000)는 CURRENCY_TRANS=Z01(전체 통화 합산)만 존재, EUR/외화 분해 없음 -> NBS 원천파일 직접 사용. nbs.sk WAF가 간헐적 403(정상 요청도) 반환해 재시도 로직 포함. 2026-08-13 확인: 2009-01~2026-06 중 188개월 파싱 성공(WAF로 22개월 스킵, 재실행 시 대부분 회수 가능), TD 3892만유로(2009)->8206만유로(2026-06), FCD_TD_RATIO 2.1~5.7% 범위로 안정적. 2005-2008(유로 도입 전 SKK/EUR/OFC 3통화 체계, 완전히 다른 레이아웃)는 범위 밖(알려진 공백)."
+    }
+  },
+  {
+    "country_code": "SVN",
+    "country_name": "Slovenia",
+    "data_type": "API",
+    "source_url": "https://px.bsi.si/pxweb/en/serije_ang/serije_ang__10_denar_mfi__70_OBVEZ_MFI/i1_6aae.px",
+    "update_frequency": "Monthly",
+    "requires_js": false,
+    "notes": "Bank of Slovenia PxWeb statistics portal (bsi.si/en/statistics/data-series > Money and Monetary Financial Institutions), table I1_6AAE; PDF Monthly Bulletin no longer needed as primary source",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "ApiStrategy",
+      "status": "success",
+      "notes": "BSI PxWeb v1 API (POST/JSON-stat2) at px.bsi.si/api/v1/en/serije_ang/10_denar_mfi/70_OBVEZ_MFI/i1_6aae.px, table 'Selected obligations of other MFIs - by sector (Total)'. Items 0-3 = domestic-currency deposits (overnight/short-term/long-term/redeemable at notice), items 4-7 = same in foreign currency; TD=sum(0..7), FCD=sum(4..7). Currency dim 0=SIT (has values only through 2006-12), 1=EUR (values only from 2007-01) - the two series hand off cleanly with no overlap/gap, matching BSI's own domestic/foreign redefinition at euro adoption. Monthly 2004-12 to present (259 periods as of 2026-08), FCD_TD_RATIO drops from ~33% (SIT era, non-SIT FX incl. legacy EUR/DEM holdings) to ~2-3% (EUR era, non-EUR FX) exactly at the 2007-01 changeover, consistent with expectations. ECB SDMX BSI dataflow checked first and ruled out: currency-denomination dimension (CURRENCY_TRANS) only has real data for the narrow captive-financial-institutions counterpart sector (227C), not for broad/total resident sectors, confirming prior research finding. Verified independently rather than trusting the PDF Bulletin nested-header lead, which is no longer needed."
+    }
+  },
+  {
+    "country_code": "SWE",
+    "country_name": "Sweden",
+    "data_type": "API",
+    "source_url": "https://api.scb.se/OV0104/v2beta/api/v2/tables/TAB2824/data",
+    "update_frequency": "Monthly",
+    "requires_js": false,
+    "notes": "SCB PxWebApi v2, table TAB2824 (MFI assets/liabilities by item and currency), 1998-01~present",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "ApiStrategy",
+      "status": "success",
+      "notes": "GET api.scb.se/OV0104/v2beta/api/v2/tables/TAB2824/data (PxWebApi v2, json-stat2). TD=K20500+K21400(v1+v2, resident deposits), FCD=same items v1(foreign currency). Verified 310 monthly obs, 1998-03~2026-06."
+    }
+  },
+  {
+    "country_code": "SWZ",
+    "country_name": "Eswatini",
+    "data_type": "Interactive Web",
+    "source_url": "https://www.centralbank.org.sz/statistics/",
+    "update_frequency": "Monthly",
+    "requires_js": true,
+    "notes": "Statistics page; Central Bank of Eswatini",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "needs_research",
+      "notes": "저장된 URL이 404(Page not found) -> Central Bank of Eswatini 사이트 개편으로 신규 경로 재조사 필요"
+    }
+  },
+  {
+    "country_code": "SXM",
+    "country_name": "Sint Maarten (Dutch part)",
+    "data_type": "No Standalone Source",
+    "source_url": null,
+    "update_frequency": null,
+    "requires_js": false,
+    "notes": "CBCS(Centrale Bank van Curaçao en Sint Maarten) 통화권. Sint Maarten 단독 FCD/TD 시계열은 공개 원자료 없음, IMF Selected Issues(2021)의 2020년 단일시점 예금 달러화율(58%)만 존재",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "failed",
+      "notes": "centralbank.cw 사이트 전역이 Cloudflare 챌린지(403)로 봇 차단됨(재확인됨). 설사 접근되더라도 CBCS 연차보고서·통계는 Curaçao+Sint Maarten 통합권 기준이라 Sint Maarten 단독 FCD/TD 원자료 표가 없음 -> IMF Article IV(2021) Selected Issues의 2020년 단일 관측치(예금 측 금융달러화율 58%)만 존재, 절대 FCD/TD 잔액도 시계열도 없어 파서 구현 대상 아님"
+    }
+  },
+  {
+    "country_code": "SYC",
+    "country_name": "Seychelles",
+    "data_type": "Direct Excel",
+    "source_url": "https://www.cbs.sc/Downloads/StaExcel/Monetary%20Survey.xlsx",
+    "update_frequency": "Monthly",
+    "requires_js": false,
+    "notes": "Statistics>Statistics Data 페이지의 'Monetary Survey' xlsx 직링크(StaExcel/Monetary Survey.xlsx), 시트 'Depository Corporation Survey'",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "DirectExcelStrategy",
+      "status": "success",
+      "notes": "src/parsers/syc.py. 이전 메모의 'SSL/연결 오류'는 cbs.sc 인증서 체인 결함(curl은 관대히 통과, Python 기본 verify=True만 실패) 때문으로 재확인, kor.py/jpn.py/twn.py와 동일하게 __RENDER__ + verify=False 우회로 해결(requires_js는 아님). 'Deposit Distribution.xlsx'(사전 조사가 주목한 파일)는 부문별(Private/Public) 분해만 있고 통화별 분해가 없어 기각, 대신 'Monetary Survey.xlsx'의 'Depository Corporation Survey' 시트 사용: FCD='Foreign Currency Deposits' 행, TD=Transferable+Fixed Term+Savings+FCD(4개 예금성 행, 라벨 텍스트로 동적 탐색). 실측 2025-01 FCD=10268.96/TD=25459.40(ratio=40.33%)로 사전 조사치와 일치. 2005-01~2026-06, 258개월 x 3지표(FCD/TD/FCD_TD_RATIO)=774행, 결측 없음, 단위 SCR million."
+    }
+  },
+  {
+    "country_code": "SYR",
+    "country_name": "Syrian Arab Republic",
+    "data_type": "No Standalone Source",
+    "source_url": null,
+    "update_frequency": null,
+    "requires_js": false,
+    "notes": "전쟁·제재·복수환율·2025년 화폐개혁으로 중앙은행 통계 장기 미공개. World Bank/IMF 문헌에 산발적 FCD/TD 비율만 존재(2000~2005 6개년 비율, 2011 TD 역산치, 2023 비율만)",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "failed",
+      "notes": "CEIC은 유료 구독 없이 실제 수치 비노출로 사용 불가. 시리아 중앙은행 자체 통계 페이지도 원자료 미공개(재조사 완료, 재확인됨). World Bank(2023 FCD/TD=69.4%, 절대액 없음), IMF Article IV 2006(2000~2005년 비율만), CEIC 역산(2011 TD=USD20.276bn x 15.8%=FCD 3.20bn) 등 산발적 단일시점 추정치만 존재하고 다운로드 가능한 시계열 원자료가 없어 파서 구현 대상 아님 -> 정기수집 대상에서 제외"
+    }
+  },
+  {
+    "country_code": "TCA",
+    "country_name": "Turks and Caicos Islands (the)",
+    "data_type": "No Standalone Source",
+    "source_url": null,
+    "update_frequency": null,
+    "requires_js": null,
+    "notes": "Turks and Caicos uses USD, no independent central bank",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "not_applicable",
+      "notes": "data_type=No Standalone Source, 확인된 개별 통계 소스 없음 -> 수집 대상 아님(NoSourceStrategy)"
+    }
+  },
+  {
+    "country_code": "TCD",
+    "country_name": "Chad",
+    "data_type": "PDF Bulletin",
+    "source_url": "https://www.beac.int/economie-stats/statistiques-monetaires/",
+    "update_frequency": "Monthly",
+    "requires_js": false,
+    "notes": "Statistiques Monétaires; BEAC regional central bank for CEMAC incl. Chad",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "needs_research",
+      "notes": "beac.int 페이지에서 받은 첫 PDF 링크가 손상되었거나 실제 PDF가 아님(방법론 노트 파일로 추정) -> 실제 통계표 링크 재조사 필요"
+    }
+  },
+  {
+    "country_code": "TGO",
+    "country_name": "Togo",
+    "data_type": "Interactive Web",
+    "source_url": "https://www.bceao.int/fr/content/la-base-des-donnees-economiques-et-financieres",
+    "update_frequency": "Monthly",
+    "requires_js": true,
+    "notes": "Base des Données Economiques et Financières; BCEAO regional central bank for WAEMU incl. Togo",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "needs_research",
+      "notes": "bceao.int 페이지에 통화정책 보고서 PDF만 존재(2022-2023년 구버전), 외화예금 관련 데이터 파일 없음 -> BCEAO 통계 포털 별도 경로 재조사 필요"
+    }
+  },
+  {
+    "country_code": "THA",
+    "country_name": "Thailand",
+    "data_type": "Interactive Web",
+    "source_url": "https://app.bot.or.th/BTWS_STAT/statistics/BOTWEBSTAT.aspx?reportID=7&language=ENG",
+    "update_frequency": "Monthly",
+    "requires_js": true,
+    "notes": "BOT 통계포털 EC_MB_004_S2 'Monetary Aggregates and Components'. TD=Broad Money-Currency outside DCs, FCD='Foreign Currency Deposits' 행 합계. ASP.NET 포스트백이라 Playwright로 From연월 드롭다운을 2003-01로 설정 후 CSV 내보내기 버튼 클릭.",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "PdfBulletinStrategy",
+      "status": "success",
+      "notes": "src/parsers/tha.py: 가짜 seed 데이터 폐기 후 재구축. 실측 2003-01~2026-06 (282개월, 846행)."
+    }
+  },
+  {
+    "country_code": "TJK",
+    "country_name": "Tajikistan",
+    "data_type": "PDF Bulletin",
+    "source_url": "https://nbt.tj/en/statistics/statistical_bulletin.php",
+    "update_frequency": "Monthly",
+    "requires_js": false,
+    "notes": "Statistics > Banking statistics bulletin (National Bank of Tajikistan). Each issue's Table 'Structure of outstanding savings (deposits) in credit financial institutions' has Total deposits / in domestic currency / in foreign currency rows -> TD/FCD.",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "PdfBulletinStrategy",
+      "status": "success",
+      "notes": "이전에 확인한 Monetary Survey/Financial Corporations Survey(집계 DEPOSITS 한 줄만 존재)는 막다른 길이었으나, nbt.tj/en/statistics/statistical_bulletin.php의 'Banking statistics bulletin' PDF(월간/연말호, 2011~현재)에서 통화별 예금 분해 표를 찾음. src/parsers/tjk.py가 목록 페이지를 순회하며 각 PDF의 'Структура остатков сбережений (депозитов) в кредитных...организациях' 표에서 Всего депозитов(TD)/в национальной валюте/в иностранной валюте(FCD) 행을 pdftotext -layout으로 파싱. 2024-12(TD 25.53bn TJS, FX share 39.5%)·2025-12(TD 33.90bn TJS, FX share 37.6%) 값이 NBT 보도자료(nbt.tj/en/news/576477/, nbt.tj/en/news/618354/)와 일치해 검증함. 2016~2019·2021~2026(진행중)은 월별 해상도, 2012~2015 및 2018은 해당 회보에 연말(12월) 스냅샷만 존재. 2020년 및 2011~2015년 일부 회보는 PDF 컬럼 간격이 좁아 숫자가 서로 들러붙어 신뢰할 수 없으므로(자릿수 상한 검증으로 걸러짐) 해당 연도는 결측으로 스킵함."
+    }
+  },
+  {
+    "country_code": "TKL",
+    "country_name": "Tokelau",
+    "data_type": "No Standalone Source",
+    "source_url": null,
+    "update_frequency": null,
+    "requires_js": null,
+    "notes": "Tokelau uses NZD, no independent central bank; administered by New Zealand",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "not_applicable",
+      "notes": "data_type=No Standalone Source, 확인된 개별 통계 소스 없음 -> 수집 대상 아님(NoSourceStrategy)"
+    }
+  },
+  {
+    "country_code": "TKM",
+    "country_name": "Turkmenistan",
+    "data_type": "No Standalone Source",
+    "source_url": null,
+    "update_frequency": null,
+    "requires_js": null,
+    "notes": "No public monetary statistics available from Central Bank of Turkmenistan",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "not_applicable",
+      "notes": "data_type=No Standalone Source, 확인된 개별 통계 소스 없음 -> 수집 대상 아님(NoSourceStrategy)"
+    }
+  },
+  {
+    "country_code": "TLS",
+    "country_name": "Timor-Leste",
+    "data_type": "Interactive Web",
+    "source_url": "https://bancocentral.tl/en/go/menu-side-left/konaba-bctl/",
+    "update_frequency": "Monthly",
+    "requires_js": true,
+    "notes": "Interactive statistics dashboard; Banco Central de Timor-Leste, uses USD",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "needs_research",
+      "notes": "bancocentral.tl 페이지에 환율(Exchange Rate) 파일만 존재, 외화예금 관련 파일 없음 -> 재조사 필요"
+    }
+  },
+  {
+    "country_code": "TON",
+    "country_name": "Tonga",
+    "data_type": "Interactive Web",
+    "source_url": "https://www.reservebank.to/",
+    "update_frequency": "Daily/Weekly",
+    "requires_js": true,
+    "notes": "Latest Statistics; National Reserve Bank of Tonga, exchange rates and liquidity data",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "needs_research",
+      "notes": "reservebank.to 홈페이지에 APR 계산기/해외송금 파일만 존재, 통화 통계 섹션 재조사 필요"
+    }
+  },
+  {
+    "country_code": "TTO",
+    "country_name": "Trinidad and Tobago",
+    "data_type": "Direct Excel",
+    "source_url": "https://www.central-bank.org.tt/resources-category/publications-and-research/all-reports/economic-datapack-report/",
+    "update_frequency": "Monthly",
+    "requires_js": false,
+    "notes": "'Economic DataPack' 목록 페이지 -> 최신 게시물 -> 게시물 하단 '... Data Downloadable Version' .xlsm(매달 파일명 바뀜, 예: edp-download-june-2026.xlsm). 'PAGE 14_MonAggs_Monthly' 시트에서 Foreign Currency Deposits(Commercial Banks) + (NFIs) = FCD, Demand+Savings+Time+FCD = TD.",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "InteractiveWebStrategy",
+      "status": "success",
+      "notes": "src/parsers/tto.py (render()). 목록 페이지에서 최신 게시물 링크 -> 게시물 페이지에서 xlsm 링크 순으로 2단계 스크레이핑. 1993-04~2026-04, 397개월, 결측 없음."
+    }
+  },
+  {
+    "country_code": "TUN",
+    "country_name": "Tunisia",
+    "data_type": "PDF Bulletin",
+    "source_url": "https://www.bct.gov.tn/bct/siteprod/page.jsp?id=76",
+    "update_frequency": "Quarterly",
+    "requires_js": false,
+    "notes": "BCT multi-PDF dépôts en devises; seed research midpoints.",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": "PdfBulletinStrategy",
+      "status": "needs_research",
+      "notes": "이전 버전은 seed/연구인용 비율(TD=100 가짜 분모 또는 미검증 2차출처 절대값)을 실측처럼 저장했으나 지적을 받아 DB에서 삭제하고(2026-08-18) 파서를 빈 결과로 되돌림. 진짜 공개 소스 확인 후 재구축 예정."
+    }
+  },
+  {
+    "country_code": "TUR",
+    "country_name": "Turkey",
+    "data_type": "PDF Bulletin",
+    "source_url": "https://www.tcmb.gov.tr/wps/wcm/connect/122c325c-6afd-4718-8573-49f75964ff34/Money_Bank.pdf?MOD=AJPERES",
+    "update_frequency": "Weekly",
+    "requires_js": false,
+    "notes": "TCMB Weekly Money and Banking Statistics(Money_Bank.pdf); EVDS API는 가입/API 키 필요해 미사용",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "PdfBulletinStrategy",
+      "status": "success",
+      "notes": "render()가 현재 발행본 + 동일 고정 URL의 Wayback Machine CDX 스냅샷을 순회. Table 2(신 포맷, ~2025-02+)의 'A. DEPOSITS>1. Residents>a.TRY/b.FX' 또는 Table 7(구 포맷, ~2024-09까지)의 'A.Residents'(TRY/FX x 예금은행/참여은행) 파싱. FCD=거주자 FX예금, TD=거주자 총예금(천 TRY). 실측 87개 주간 period, 2017-10~2026-07 확보(스냅샷 공백만큼 누락, 2025년이 가장 조밀). 2026-07-24 FCD=10,499,925,050천/TD=28,416,399,833천(ratio 36.95%)로 사전 조사치와 정확히 일치. 2022년 고점(~59%)에서 KKM 제도 도입 이후 완만히 하락해 2024~2026 35~40%대로 안정화되는 추세도 확인됨"
+    }
+  },
+  {
+    "country_code": "TUV",
+    "country_name": "Tuvalu",
+    "data_type": "No Standalone Source",
+    "source_url": null,
+    "update_frequency": null,
+    "requires_js": null,
+    "notes": "Tuvalu uses AUD, no independent central bank; National Bank of Tuvalu limited data",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "not_applicable",
+      "notes": "data_type=No Standalone Source, 확인된 개별 통계 소스 없음 -> 수집 대상 아님(NoSourceStrategy)"
+    }
+  },
+  {
+    "country_code": "TWN",
+    "country_name": "Taiwan (Province of China)",
+    "data_type": "Direct Excel",
+    "source_url": "https://www.cbc.gov.tw/public/data/OpenData/%E7%B6%93%E7%A0%94%E8%99%95/EF03M01.csv",
+    "update_frequency": "Monthly",
+    "requires_js": false,
+    "notes": "CBC OpenData 'All Currency Institutions Deposit' CSV (EF03M01), 1987M05~ 전 구간 단일 파일",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "DirectExcelStrategy",
+      "status": "success",
+      "notes": "CBC 인증서 결함(Missing Subject Key Identifier)으로 기본 SSL 검증 실패해 __RENDER__ + verify=False 우회(kor.py/jpn.py와 동일 패턴). FCD=기업및개인 외화예금, TD=합계, 단위 億元. 2023/2024/2025 연말 FCD/TD 비율(15.10/14.41/13.73%)이 사전 조사치와 근접해 검증."
+    }
+  },
+  {
+    "country_code": "TZA",
+    "country_name": "Tanzania, United Republic of",
+    "data_type": "PDF Bulletin",
+    "source_url": "https://www.bot.go.tz/Publications/Filter/1",
+    "update_frequency": "Monthly",
+    "requires_js": false,
+    "notes": "Filter/1 = Monthly Economic Review(월간). Filter/16은 결제시스템/무역 통계용으로 무관함을 확인. 목록 페이지 하나에 전체 발간호(2002~현재, ~280개)가 페이지네이션 없이 노출되며, 각 호의 'Money Supply and Its Main Components' 표에서 FCD/Other deposits/Currency in circulation/Transferable deposits/M3를 파싱. TD = Transferable + Other + FCD.",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "PdfBulletinStrategy",
+      "status": "success",
+      "notes": "src/parsers/tza.py, render(). 2026-02-18 발행 'Jan 26'호 Dec-25 열로 검증: FCD=13,381.1, TD=53,032.0, FCD_TD_RATIO=25.23% (사전 조사 수치와 일치). 실측 결과 FCD 200개월치(2002-08~2026-06, 결측 월 존재) 확보, TD/RATIO는 그중 192개월. 옛 호는 표 폰트 트래킹으로 라벨/숫자에 스퓨리어스 공백이 섞여(예: 'O ther deposits', '2 ,060.0') extract_text(x_tolerance=4) + 숫자 정규식을 선행 숫자 필수로 강화해 대응; 2013년 이전 다수 호는 해당 표 자체가 없거나 완전히 다른 벡터 레이아웃이라 조용히 스킵됨(결측 처리, 값 추측 안 함)."
+    }
+  },
+  {
+    "country_code": "UGA",
+    "country_name": "Uganda",
+    "data_type": "PDF Bulletin",
+    "source_url": "https://www.bou.or.ug/statistical_portal",
+    "update_frequency": "Quarterly",
+    "requires_js": true,
+    "notes": "BOU 신 사이트의 'Depository Corporations Survey' 데이터가 Power BI 임베드 대시보드로만 제공됨(단순 CSV/xlsx 다운로드 없음, bou.or.ug/api/power-bi/token으로 토큰 발급 후 wabi-north-europe-redirect.analysis.windows.net에서 리포트 렌더링). 자동 추출하려면 Power BI 리포트 내부의 export-to-csv 기능을 조작하거나 API를 역공학해야 함 - 미착수. 주의: 검색 중 'bouganda.com'이라는 사이트가 나왔는데 연락처 이메일이 @boauganda.online로 BOU를 사칭한 피싱/미러 사이트로 의심되어 사용하지 않음.",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": "PdfBulletinStrategy",
+      "status": "needs_research",
+      "notes": "이전 버전은 seed/연구인용 비율(TD=100 가짜 분모 또는 미검증 2차출처 절대값)을 실측처럼 저장했으나 지적을 받아 DB에서 삭제하고(2026-08-18) 파서를 빈 결과로 되돌림. 실제 데이터 위치(Power BI 대시보드)는 확인했으나 자동 추출 미구현."
+    }
+  },
+  {
+    "country_code": "UKR",
+    "country_name": "Ukraine",
+    "data_type": "Direct Excel/CSV Download",
+    "source_url": "https://bank.gov.ua/files/3.2-Deposits_e.xlsx",
+    "update_frequency": "Monthly",
+    "requires_js": false,
+    "notes": "NBU 3.2-Deposits_e.xlsx households by currency; full monthly series.",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "DirectExcelStrategy",
+      "status": "success",
+      "notes": "Full series 2002–live (xlsx 3.2.4.1 FCD=col11 TD=col1) + API tail. Re-download each run → quarterly auto-update. Seed 1995–2000 ratios."
+    }
+  },
+  {
+    "country_code": "UMI",
+    "country_name": "United States Minor Outlying Islands (the)",
+    "data_type": "No Standalone Source",
+    "source_url": null,
+    "update_frequency": null,
+    "requires_js": null,
+    "notes": null,
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "not_applicable",
+      "notes": "data_type=No Standalone Source, 확인된 개별 통계 소스 없음 -> 수집 대상 아님(NoSourceStrategy)"
+    }
+  },
+  {
+    "country_code": "URY",
+    "country_name": "Uruguay",
+    "data_type": "Direct Excel/CSV Download",
+    "source_url": "https://www.bcu.gub.uy/Servicios-Financieros-SSF/Series%20IF/Depositos.xlsx",
+    "update_frequency": "Monthly",
+    "requires_js": false,
+    "notes": "BCU Depositos.xlsx Total Sist. Banc. ME/Total full monthly.",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "DirectExcelStrategy",
+      "status": "success",
+      "notes": "Full monthly ~1998–live. Re-download xlsx each render() → auto-update."
+    }
+  },
+  {
+    "country_code": "USA",
+    "country_name": "United States of America (the)",
+    "data_type": "No Standalone Source",
+    "source_url": null,
+    "update_frequency": null,
+    "requires_js": null,
+    "notes": null,
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "not_applicable",
+      "notes": "data_type=No Standalone Source, 확인된 개별 통계 소스 없음 -> 수집 대상 아님(NoSourceStrategy)"
+    }
+  },
+  {
+    "country_code": "UZB",
+    "country_name": "Uzbekistan",
+    "data_type": "Direct Excel",
+    "source_url": "https://cbu.uz/en/statistics/dks/4320467/",
+    "update_frequency": "Monthly",
+    "requires_js": false,
+    "notes": "CBU 'Monetary aggregates' xlsx. Broad money(M2)=TD, 'Foreign currency deposits in national currency equivalent'=FCD. 영/러/우즈베크어 세 언어 버전 전부 2013-02 시작으로 동일 확인 - 그 이전 데이터는 CBU 사이트에 없음.",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "PdfBulletinStrategy",
+      "status": "success",
+      "notes": "src/parsers/uzb.py: 기존 다중 PDF+OCR+시드값 추측 방식을 폐기하고 사용자가 지목한 단일 xlsx로 전환. 실측 2013-02~2026-08 (163개월, 489행)."
+    }
+  },
+  {
+    "country_code": "VAT",
+    "country_name": "Holy See (the)",
+    "data_type": "No Standalone Source",
+    "source_url": null,
+    "update_frequency": null,
+    "requires_js": null,
+    "notes": null,
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "not_applicable",
+      "notes": "data_type=No Standalone Source, 확인된 개별 통계 소스 없음 -> 수집 대상 아님(NoSourceStrategy)"
+    }
+  },
+  {
+    "country_code": "VCT",
+    "country_name": "Saint Vincent and the Grenadines",
+    "data_type": "Interactive Web",
+    "source_url": "https://www.eccb-centralbank.org/statistics-category/monetary-and-financial-statistics/summarized-monetary-survey/a",
+    "update_frequency": "Annual",
+    "requires_js": true,
+    "notes": null,
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "InteractiveWebStrategy",
+      "status": "success",
+      "notes": "사용자가 제시한 SDMX REST API(sdmx.eccb-centralbank.org)는 DNS 미해석(존재하지 않는 도메인) 확인됨 -> 실제로는 eccb-centralbank.org의 'Interactive Database' 쿼리 폼(Laravel, CSRF+암호화 hidden 필드, 부트스트랩 모달 안 select2 멀티셀렉트)이 진짜 데이터 소스. Playwright로 모달 열기-> 국가 선택->'Foreign Currency Deposits' 지표 선택->제출 흐름 재현(src/parsers/_eccb_common.py 공용). start_date를 jQuery datepicker API로 2000-01-01로 설정해 2000~2025년(26개년) 연간 데이터 확보. 8개국(AIA/ATG/DMA/GRD/MSR/KNA/LCA/VCT) 공용 로직 검증 완료"
+    }
+  },
+  {
+    "country_code": "VEN",
+    "country_name": "Venezuela (Bolivarian Republic of)",
+    "data_type": "Direct Excel/CSV Download",
+    "source_url": "http://www.bcv.org.ve/estadisticas/balances-monetarios",
+    "update_frequency": "Monthly",
+    "requires_js": false,
+    "notes": "BCV 'Bancos Universales/Comerciales y de Desarrollo - Resumen del Balance Monetario Consolidado Mensual' xls. 시트 하나당 반년치(예: 'I Semestre 2026') 월별 데이터가 1999-07부터 현재까지 누적되어 있는 단일 파일. 'DEPOSITOS EN MONEDA NACIONAL'(자국통화)+'DEPOSITOS EN MONEDA EXTRANJERA'(외화, FCD)=TD. 2008/2018/2021년 세 차례 화폐개혁으로 절대값 스케일이 시기마다 다름(FCD_TD_RATIO는 영향 없음).",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "DirectExcelStrategy",
+      "status": "success",
+      "notes": "src/parsers/ven.py: 기존 추측성 다중 파일 스캔+시드값 방식을 폐기하고 사용자가 지목한 단일 xls로 전환. 라벨 위치가 연도별로 이동해(1999년 40/65행 vs 2026년 45/70행) 라벨 텍스트로 매번 검색. 실측 1999-07~2026-06 (291개월, 873행)."
+    }
+  },
+  {
+    "country_code": "VGB",
+    "country_name": "Virgin Islands (British)",
+    "data_type": "No Standalone Source",
+    "source_url": null,
+    "update_frequency": null,
+    "requires_js": null,
+    "notes": null,
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "not_applicable",
+      "notes": "data_type=No Standalone Source, 확인된 개별 통계 소스 없음 -> 수집 대상 아님(NoSourceStrategy)"
+    }
+  },
+  {
+    "country_code": "VIR",
+    "country_name": "Virgin Islands (U.S.)",
+    "data_type": "No Standalone Source",
+    "source_url": null,
+    "update_frequency": null,
+    "requires_js": null,
+    "notes": null,
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "not_applicable",
+      "notes": "data_type=No Standalone Source, 확인된 개별 통계 소스 없음 -> 수집 대상 아님(NoSourceStrategy)"
+    }
+  },
+  {
+    "country_code": "VNM",
+    "country_name": "Viet Nam",
+    "data_type": "PDF Bulletin",
+    "source_url": "https://dttktt.sbv.gov.vn/webcenter/portal/en/home/sbv/statistic/totalliq/tladwci",
+    "update_frequency": "Annual",
+    "requires_js": false,
+    "notes": "SBV의 실제 통계 페이지 'Total Liquidity & Deposits with Credit Institutions'를 찾음(sbv.gov.vn 메인 사이트에서 링크됨). 다만 데이터가 실제로 서빙되는 서브도메인 dttktt.sbv.gov.vn 자체가 이 환경에서 접속 자체가 안 됨(requests/Playwright/WebFetch 전부 connection timeout - WAF 차단이 아니라 네트워크 레벨 도달 불가로 보임, 베트남 국내 IP만 허용하는 것으로 추정).",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": "PdfBulletinStrategy",
+      "status": "needs_research",
+      "notes": "이전 버전은 seed/연구인용 비율(TD=100 가짜 분모 또는 미검증 2차출처 절대값)을 실측처럼 저장했으나 지적을 받아 DB에서 삭제하고(2026-08-18) 파서를 빈 결과로 되돌림. 실제 소스(dttktt.sbv.gov.vn)는 찾았으나 접속 불가라 보류 - 접속 가능한 환경/우회 방법 확인되면 재개."
+    }
+  },
+  {
+    "country_code": "VUT",
+    "country_name": "Vanuatu",
+    "data_type": "PDF Bulletin",
+    "source_url": "https://www.rbv.gov.vu/index.php/en/research-publications",
+    "update_frequency": "Quarterly",
+    "requires_js": false,
+    "notes": "RBV QER multi-PDF archive Table 7 Vatu/FC resident deposits.",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "PdfBulletinStrategy",
+      "status": "success",
+      "notes": "Multi-PDF QER archive (list+parse Table 7 rolling window/quarter). OCR fallback. Re-list pages each run → auto-update."
+    }
+  },
+  {
+    "country_code": "WLF",
+    "country_name": "Wallis and Futuna",
+    "data_type": "No Standalone Source",
+    "source_url": "https://www.ieom.fr/Wallis-et-Futuna?lang=en",
+    "update_frequency": null,
+    "requires_js": null,
+    "notes": null,
+    "adapter": {
+      "implemented": false,
+      "strategy_class": null,
+      "status": "not_applicable",
+      "notes": "data_type=No Standalone Source, 확인된 개별 통계 소스 없음 -> 수집 대상 아님(NoSourceStrategy)"
+    }
+  },
+  {
+    "country_code": "WSM",
+    "country_name": "Samoa",
+    "data_type": "Direct Excel",
+    "source_url": "https://cbs.gov.ws/media/A4-Structure-of-Money-Supply-7.xlsx",
+    "update_frequency": "Quarterly",
+    "requires_js": false,
+    "notes": "CBS 'Money and Banking' Table A-4 'Structure of Money Supply' (구성비 %표). 'Foreign currency deposits of residents' 행(%) × 17행 광의통화 절대값(Tala million)으로 FCD 역산. TD=광의통화×(1-통화발행고%). 분기, 회계연도(7월~6월) 기준.",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "PdfBulletinStrategy",
+      "status": "success",
+      "notes": "src/parsers/wsm.py: 가짜 seed 데이터 폐기 후 재구축. 최신분기(2026-03)는 원본 스프레드시트 자체 오류(FCD%=M1% 전체와 동일값)로 제외. 실측 2001-12~2025-12 (93개분기, 279행)."
+    }
+  },
+  {
+    "country_code": "YEM",
+    "country_name": "Yemen",
+    "data_type": "PDF Bulletin",
+    "source_url": "https://english.cby-ye.com/researchandstatistics",
+    "update_frequency": "Monthly",
+    "requires_js": false,
+    "notes": "CBY(아덴, 국제공인) Annual Report(연 1회) + Monetary and Financial Developments 월간지(2021-12부터 매월). 둘 다 'Table 1: Monetary Survey of Yemen' 사용. TD=Quasi-money+Demand deposits, FCD=Foreign currency deposits. 내전으로 아덴/사나 중앙은행 병존, 환율 체계도 갈라져 있어 연도 간 스케일/공식·시장환율 기준이 다를 수 있음.",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "PdfBulletinStrategy",
+      "status": "success",
+      "notes": "src/parsers/yem.py: 2026-08-19, Annual Report만 스크레이핑하던 것에 월간 'Monetary and Financial Developments' 소식지(~45건, 각 호의 마지막 컬럼=그 호 자신의 보고월)를 추가. DB에 남아있던 재현 불가능한 고아 데이터(2022-12/2023-12, 단위만 다른 중복값)는 삭제 후 이 방식으로 재수집. 실측 49 periods(10개 -Annual + 39개 실제 월간, 2021-12~2026-05, 일부 월 소식지 다운로드/파싱 실패로 공백 있음)."
+    }
+  },
+  {
+    "country_code": "ZAF",
+    "country_name": "South Africa",
+    "data_type": "PDF Bulletin",
+    "source_url": "https://www.resbank.co.za/en/home/what-we-do/statistics/releases",
+    "update_frequency": "Monthly",
+    "requires_js": false,
+    "notes": "SARB multi-doc private-sector FC deposits.",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "PdfBulletinStrategy",
+      "status": "success",
+      "notes": "Live SARB pub PDF/Excel list+parse. Seed 2026-04 (4.06%). Re-list each run → auto-update."
+    }
+  },
+  {
+    "country_code": "ZMB",
+    "country_name": "Zambia",
+    "data_type": "Direct Excel",
+    "source_url": "https://www.boz.zm/statistics/monetary-and-financial-statistics",
+    "update_frequency": "Weekly",
+    "requires_js": true,
+    "notes": "BoZ 'Fortnightly Time Series' xlsx, 'Comm. Banks Deposit Liabilities' 시트. 'Total Kwacha Liabilities to the Public'(자국통화)+\"Foreign currency Deposits ($'000)\"(외화, USD 표시)를 'K-USD Exchange Rates' 시트 환율로 콰차 환산 후 합산. 주간, 2014-01부터.",
+    "adapter": {
+      "implemented": true,
+      "strategy_class": "PdfBulletinStrategy",
+      "status": "success",
+      "notes": "src/parsers/zmb.py: 가짜 seed 데이터 폐기 후 재구축. 실측 2014-01~2026-08 (151개월, 453행, 매달 마지막 주 채택)."
+    }
+  },
+  {
+    "country_code": "ZWE",
+    "country_name": "Zimbabwe",
+    "data_type": "PDF Bulletin",
+    "source_url": "https://www.rbz.co.zw/index.php/publications-notices/publications/bank-supervision-annual-report",
+    "update_frequency": "Annual",
+    "requires_js": false,
+    "notes": "rbz.co.zw 사이트 전체가 Radware Captcha로 차단됨(Playwright 헤드리스로 접근 시 캡차 페이지만 나옴). 우회 방법 못 찾음. ZWL→ZiG 등 수차례 화폐개혁으로 절대값 시계열 자체도 불연속적이라 별도 주의 필요.",
+    "adapter": {
+      "implemented": false,
+      "strategy_class": "PdfBulletinStrategy",
+      "status": "needs_research",
+      "notes": "이전 버전은 seed/연구인용 비율(TD=100 가짜 분모 또는 미검증 2차출처 절대값)을 실측처럼 저장했으나 지적을 받아 DB에서 삭제하고(2026-08-18) 파서를 빈 결과로 되돌림. 사이트 전체가 봇 차단이라 재개 어려움."
+    }
+  }
+]

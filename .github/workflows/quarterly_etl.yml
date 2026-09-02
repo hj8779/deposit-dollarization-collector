@@ -1,0 +1,62 @@
+name: Quarterly ETL
+
+on:
+  schedule:
+    # 매 분기 1일 00:00 UTC (1월, 4월, 7월, 10월)
+    - cron: "0 0 1 1,4,7,10 *"
+  workflow_dispatch:
+    inputs:
+      countries:
+        description: "Optional ISO3 list (comma-separated). Empty = all success adapters."
+        required: false
+        default: ""
+      dry_run:
+        description: "If true, collect only (no Supabase write)"
+        required: false
+        default: "false"
+
+jobs:
+  run-etl:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    defaults:
+      run:
+        working-directory: dollarization-pipeline
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install system deps (tesseract for OCR fallback)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y tesseract-ocr poppler-utils
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          playwright install --with-deps chromium
+
+      - name: Init DB schema
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: python main.py --init-db
+
+      - name: Run ETL pipeline
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          ARGS=(--status success --only-with-parser)
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            ARGS+=(--dry-run)
+          fi
+          if [ -n "${{ github.event.inputs.countries }}" ]; then
+            ARGS+=(--countries "${{ github.event.inputs.countries }}")
+          fi
+          python main.py "${ARGS[@]}"

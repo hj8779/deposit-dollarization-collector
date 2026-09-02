@@ -1,0 +1,129 @@
+{
+  "finished_at": "2026-08-14T10:04:59",
+  "elapsed_sec": 537.9,
+  "dry_run": false,
+  "workers": 3,
+  "timeout_sec": 600.0,
+  "upsert_batch_size": 2,
+  "summary": {
+    "success": 10,
+    "empty": 0,
+    "fail": 0,
+    "timeout": 0,
+    "rows_collected": 1452,
+    "rows_upserted": 1452
+  },
+  "success": [
+    {
+      "country_code": "KWT",
+      "rows": 84
+    },
+    {
+      "country_code": "LBR",
+      "rows": 87
+    },
+    {
+      "country_code": "LKA",
+      "rows": 207
+    },
+    {
+      "country_code": "MAR",
+      "rows": 45
+    },
+    {
+      "country_code": "MDA",
+      "rows": 15
+    },
+    {
+      "country_code": "MKD",
+      "rows": 750
+    },
+    {
+      "country_code": "MUS",
+      "rows": 84
+    },
+    {
+      "country_code": "OMN",
+      "rows": 162
+    },
+    {
+      "country_code": "PHL",
+      "rows": 6
+    },
+    {
+      "country_code": "ROU",
+      "rows": 12
+    }
+  ],
+  "empty": [],
+  "fail": [],
+  "timeout": [],
+  "outcomes": [
+    {
+      "country_code": "KWT",
+      "status": "success",
+      "rows": 84,
+      "detail": null
+    },
+    {
+      "country_code": "LBR",
+      "status": "success",
+      "rows": 87,
+      "detail": null
+    },
+    {
+      "country_code": "LKA",
+      "status": "success",
+      "rows": 207,
+      "detail": null
+    },
+    {
+      "country_code": "MAR",
+      "status": "success",
+      "rows": 45,
+      "detail": null
+    },
+    {
+      "country_code": "MDA",
+      "status": "success",
+      "rows": 15,
+      "detail": null
+    },
+    {
+      "country_code": "MKD",
+      "status": "success",
+      "rows": 750,
+      "detail": null
+    },
+    {
+      "country_code": "MUS",
+      "status": "success",
+      "rows": 84,
+      "detail": null
+    },
+    {
+      "country_code": "OMN",
+      "status": "success",
+      "rows": 162,
+      "detail": null
+    },
+    {
+      "country_code": "PHL",
+      "status": "success",
+      "rows": 6,
+      "detail": null
+    },
+    {
+      "country_code": "ROU",
+      "status": "success",
+      "rows": 12,
+      "detail": null
+    }
+  ],
+  "notes": {
+    "success": "DataFrame 행 있음. 파서 내부 WARNING/부분 스킵이 있어도 성공으로 집계.",
+    "empty": "예외 없이 빈 결과. 파서가 실패를 삼키고 empty를 반환한 경우 포함.",
+    "fail": "collect 경로에서 ERROR 문자열이 반환된 경우만.",
+    "timeout": "하드 타임아웃으로 프로세스 kill."
+  }
+}

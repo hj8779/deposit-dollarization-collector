@@ -1,0 +1,41 @@
+"""Storage backends (Supabase PostgreSQL)."""
+
+from src.storage.supabase_store import (
+    count_metadata_rows,
+    count_rows,
+    count_rows_by_country,
+    ensure_table,
+    fetch_country_metadata,
+    fetch_sample,
+    format_deposit_summary,
+    get_engine,
+    is_expected_thin,
+    list_countries_with_rows,
+    load_frequency_map,
+    migrate_legacy_indicators,
+    normalize_frequency_bucket,
+    normalize_indicator,
+    summarize_deposit_data,
+    upsert_country_metadata,
+    upsert_long_format,
+)
+
+__all__ = [
+    "count_metadata_rows",
+    "count_rows",
+    "count_rows_by_country",
+    "ensure_table",
+    "fetch_country_metadata",
+    "fetch_sample",
+    "format_deposit_summary",
+    "get_engine",
+    "is_expected_thin",
+    "list_countries_with_rows",
+    "load_frequency_map",
+    "migrate_legacy_indicators",
+    "normalize_frequency_bucket",
+    "normalize_indicator",
+    "summarize_deposit_data",
+    "upsert_country_metadata",
+    "upsert_long_format",
+]
