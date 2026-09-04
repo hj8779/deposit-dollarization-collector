@@ -1,26 +1,30 @@
 """Kenya: Central Bank of Kenya "Depository Corporation Survey" CSV
 (centralbank.go.ke/uploads/monetary_and_finance_statistics/...).
 
-CBK가 두 CSV를 게시한다:
-  ..._Depository%20Corporation%20Survey%20Old%20-%20CSV.csv   ("1996-todate" — 실측 결과
-    실제로는 1995-12부터 최신월(확인 시점 2026-05)까지 매달 갱신되고 있어, 이름과 달리
-    가장 넓은 범위를 갖는 메인 소스)
-  ..._Depository%20Corporation%20Survey%20-%20CSV.csv          ("current exchange rate"
-    버전, A.CBK/B.기관별 섹션으로 재구성돼 FCD 절대값 행이 없고 M3-M2로만 역산 가능 — 검증용)
+CBK publishes two CSVs:
+  ..._Depository%20Corporation%20Survey%20Old%20-%20CSV.csv   ("1996-todate" — in practice
+    this is updated monthly from 1995-12 through the latest month (as of check 2026-05),
+    so despite its name it is actually the main source with the widest coverage)
+  ..._Depository%20Corporation%20Survey%20-%20CSV.csv          (the "current exchange rate"
+    version, restructured into A.CBK/B.by-institution sections with no absolute FCD row —
+    can only be backed out via M3-M2 — useful for validation)
 
-Old CSV 레이아웃: 라벨이 0열, 연도 헤더가 2행(연 첫 컬럼에만 값, forward-fill), 월 헤더가
-4행(Dec, Jan, Feb, ... 문자열). 필요한 행(0-idx, 라벨 매칭으로 찾음):
+Old CSV layout: labels in column 0, year header on row 2 (value only in the first column of
+each year, forward-filled), month header on row 4 (strings like Dec, Jan, Feb, ...). Rows
+needed (0-idx, located by label match):
   'Foreign currency deposits (of residents in Money) (FCDs)'  → FCD
   'Broad money supply ( M2 )'                                  → M2
-  'i) Money ( M0 )'                                            → M0 (통화발행잔액, 은행시재금
-                                                                  등 제외한 유통현금)
-TD(총예금, 자국통화+외화) = M2 − M0 + FCD
-  (M2−M0 = 자국통화 예금 전체[요구불+준화폐], 여기에 거주자 외화예금(FCD)을 더하면 전체
-  예금이 됨 — "current" CSV의 M3(=M2+FCD)에서 M0을 뺀 것과 동일).
+  'i) Money ( M0 )'                                            → M0 (currency in circulation,
+                                                                  excluding bank vault cash etc.)
+TD (total deposits, local currency + foreign currency) = M2 − M0 + FCD
+  (M2−M0 = all local-currency deposits [demand + quasi-money]; adding resident foreign-currency
+  deposits (FCD) yields total deposits — equivalent to taking the "current" CSV's
+  M3(=M2+FCD) and subtracting M0).
 
-실측 검증: 2026-05 FCD=1,397,034 / M2=4,959,184 / M0=323,871 → TD=6,032,347,
-ratio≈23.16% (KNBS Chapter 4 교차 방식으로 얻은 이전 실측 2024-12 ratio≈22.24%와 근접,
-같은 자릿수/단위대라 정합적). 단위 KSh Million."""
+Empirical check: 2026-05 FCD=1,397,034 / M2=4,959,184 / M0=323,871 → TD=6,032,347,
+ratio≈23.16% (close to the earlier 2024-12 ratio≈22.24% obtained via the KNBS Chapter 4
+cross-check method — consistent, being of the same order of magnitude/unit scale).
+Unit: KSh Million."""
 
 from __future__ import annotations
 
@@ -64,7 +68,7 @@ _MONTHS = {
 
 
 def parse(content: bytes, country_code: str) -> pd.DataFrame:
-    raise NotImplementedError("KEN는 render()로 CBK CSV를 받는다")
+    raise NotImplementedError("KEN fetches the CBK CSV via render()")
 
 
 def _empty() -> pd.DataFrame:
@@ -124,7 +128,7 @@ def render(target: dict) -> pd.DataFrame:
         text = resp.content.decode("latin-1")
         rows = list(csv.reader(StringIO(text)))
     except Exception as e:
-        logger.exception("[%s] CSV 다운로드/파싱 실패: %s", country_code, e)
+        logger.exception("[%s] CSV download/parse failed: %s", country_code, e)
         return _empty()
 
     fcd_row = _find_row(rows, r"Foreign currency deposits.*\(FCDs\)")
@@ -132,7 +136,7 @@ def render(target: dict) -> pd.DataFrame:
     m0_row = _find_row(rows, r"Money\s*\(\s*M0\s*\)")
     if fcd_row is None or m2_row is None or m0_row is None:
         logger.error(
-            "[%s] 필요한 행을 못 찾음 (fcd=%s, m2=%s, m0=%s)",
+            "[%s] required rows not found (fcd=%s, m2=%s, m0=%s)",
             country_code, fcd_row is not None, m2_row is not None, m0_row is not None,
         )
         return _empty()

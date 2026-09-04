@@ -1,6 +1,8 @@
 import { useMemo, useState } from "react";
-import { fetchCountrySummaries } from "../lib/db";
+import { useTranslation } from "react-i18next";
+import { fetchAllPeriods, fetchCountrySummaries } from "../lib/db";
 import { useEffectQuery } from "../lib/useEffectQuery";
+import { computeCountryFrequencyTags } from "../lib/frequencyCoverage";
 import {
   getManualInfo,
   isHalfManual,
@@ -13,15 +15,35 @@ interface Props {
   onSelectCountry: (countryCode: string) => void;
 }
 
+// Finest-to-coarsest, matching the annual ⊂ quarterly ⊂ monthly ⊂ higher
+// ladder — used both for filter-button ordering and for the "Freq" column
+// sort (a country's rank = its finest available tag).
 const FREQUENCY_ORDER: FrequencyBucket[] = [
+  "higher",
   "monthly",
   "quarterly",
   "semi_annual",
   "annual",
-  "higher",
   "other",
   "unknown",
 ];
+const FREQUENCY_RANK: Record<FrequencyBucket, number> = Object.fromEntries(
+  FREQUENCY_ORDER.map((f, i) => [f, i]),
+) as Record<FrequencyBucket, number>;
+
+function finestTag(tags: Set<FrequencyBucket> | undefined): FrequencyBucket {
+  if (!tags || tags.size === 0) return "unknown";
+  let best: FrequencyBucket = "unknown";
+  let bestRank = Infinity;
+  for (const tag of tags) {
+    const rank = FREQUENCY_RANK[tag];
+    if (rank < bestRank) {
+      bestRank = rank;
+      best = tag;
+    }
+  }
+  return best;
+}
 
 type SortKey =
   | "country_code"
@@ -33,7 +55,9 @@ type SortKey =
   | "manual";
 
 export function DbSummaryTable({ selectedCountry, onSelectCountry }: Props) {
+  const { t } = useTranslation();
   const { loading, data, error } = useEffectQuery(fetchCountrySummaries, []);
+  const { data: periods } = useEffectQuery(fetchAllPeriods, []);
   // Default to the flag column, flagged countries on top, so the list opens
   // with exactly what needs manual attention front and center.
   const [sortKey, setSortKey] = useState<SortKey>("manual");
@@ -43,10 +67,21 @@ export function DbSummaryTable({ selectedCountry, onSelectCountry }: Props) {
     () => new Set(),
   );
 
+  // Per-country set of every frequency a country's *actual* data supports
+  // (annual ⊂ quarterly ⊂ monthly ⊂ higher cascade — see frequencyCoverage.ts),
+  // not just its single declared `frequency_bucket`.
+  const tagsByCountry = useMemo(() => {
+    const declared = new Map((data ?? []).map((c) => [c.country_code, c.frequency_bucket]));
+    return computeCountryFrequencyTags(periods ?? [], declared);
+  }, [data, periods]);
+
   const availableFreqs = useMemo(() => {
-    const present = new Set((data ?? []).map((c) => c.frequency_bucket ?? "unknown"));
+    const present = new Set<FrequencyBucket>();
+    for (const tags of tagsByCountry.values()) {
+      for (const tag of tags) present.add(tag);
+    }
     return FREQUENCY_ORDER.filter((f) => present.has(f));
-  }, [data]);
+  }, [tagsByCountry]);
 
   function toggleFreq(freq: FrequencyBucket) {
     setSelectedFreqs((prev) => {
@@ -67,9 +102,14 @@ export function DbSummaryTable({ selectedCountry, onSelectCountry }: Props) {
         )
       : data;
     if (selectedFreqs.size > 0) {
-      filtered = filtered.filter((c) =>
-        selectedFreqs.has((c.frequency_bucket ?? "unknown") as FrequencyBucket),
-      );
+      filtered = filtered.filter((c) => {
+        const tags = tagsByCountry.get(c.country_code);
+        if (!tags || tags.size === 0) return selectedFreqs.has("unknown");
+        for (const tag of tags) {
+          if (selectedFreqs.has(tag)) return true;
+        }
+        return false;
+      });
     }
     return [...filtered].sort((a, b) => {
       if (sortKey === "manual") {
@@ -80,13 +120,19 @@ export function DbSummaryTable({ selectedCountry, onSelectCountry }: Props) {
         if (av !== bv) return (av - bv) * sortDir;
         return a.country_code < b.country_code ? -1 : a.country_code > b.country_code ? 1 : 0;
       }
+      if (sortKey === "frequency_bucket") {
+        const av = FREQUENCY_RANK[finestTag(tagsByCountry.get(a.country_code))];
+        const bv = FREQUENCY_RANK[finestTag(tagsByCountry.get(b.country_code))];
+        if (av !== bv) return (av - bv) * sortDir;
+        return a.country_code < b.country_code ? -1 : a.country_code > b.country_code ? 1 : 0;
+      }
       const av = a[sortKey] ?? "";
       const bv = b[sortKey] ?? "";
       if (av < bv) return -1 * sortDir;
       if (av > bv) return 1 * sortDir;
       return 0;
     });
-  }, [data, filter, selectedFreqs, sortKey, sortDir]);
+  }, [data, filter, selectedFreqs, sortKey, sortDir, tagsByCountry]);
 
   function toggleSort(key: SortKey) {
     if (key === sortKey) {
@@ -97,11 +143,11 @@ export function DbSummaryTable({ selectedCountry, onSelectCountry }: Props) {
     }
   }
 
-  if (loading) return <div className="panel">DB 요약 불러오는 중…</div>;
+  if (loading) return <div className="panel">{t("dbSummary.loading")}</div>;
   if (error) {
     return (
       <div className="panel error">
-        DB 요약을 불러오지 못했습니다: {error.message}
+        {t("dbSummary.errorLoading", { message: error.message })}
       </div>
     );
   }
@@ -112,16 +158,19 @@ export function DbSummaryTable({ selectedCountry, onSelectCountry }: Props) {
   return (
     <div className="panel">
       <div className="panel-header">
-        <h2>DB Summary</h2>
+        <h2>{t("dbSummary.title")}</h2>
         <span className="muted">
-          {data?.length ?? 0}개국 · 수동 {manualCount - halfManualCount} · 하프매뉴얼{" "}
-          {halfManualCount}
+          {t("dbSummary.summary", {
+            count: data?.length ?? 0,
+            manual: manualCount - halfManualCount,
+            half: halfManualCount,
+          })}
         </span>
       </div>
 
       <input
         className="filter-input"
-        placeholder="국가 코드/이름 검색…"
+        placeholder={t("dbSummary.filterPlaceholder")}
         value={filter}
         onChange={(e) => setFilter(e.target.value)}
       />
@@ -143,7 +192,7 @@ export function DbSummaryTable({ selectedCountry, onSelectCountry }: Props) {
             className="freq-tag freq-clear"
             onClick={() => setSelectedFreqs(new Set())}
           >
-            초기화
+            {t("dbSummary.clear")}
           </button>
         ) : null}
       </div>
@@ -153,19 +202,19 @@ export function DbSummaryTable({ selectedCountry, onSelectCountry }: Props) {
           <thead>
             <tr>
               <Th label="CC" onClick={() => toggleSort("country_code")} active={sortKey === "country_code"} dir={sortDir} />
-              <th>Country</th>
+              <th>{t("dbSummary.countryColumn")}</th>
               <Th label="Rows" onClick={() => toggleSort("rows")} active={sortKey === "rows"} dir={sortDir} />
               <Th label="Periods" onClick={() => toggleSort("periods")} active={sortKey === "periods"} dir={sortDir} />
               <Th label="Min" onClick={() => toggleSort("min_period")} active={sortKey === "min_period"} dir={sortDir} />
               <Th label="Max" onClick={() => toggleSort("max_period")} active={sortKey === "max_period"} dir={sortDir} />
               <Th label="Freq" onClick={() => toggleSort("frequency_bucket")} active={sortKey === "frequency_bucket"} dir={sortDir} />
-              <th>Indicators</th>
+              <th>{t("dbSummary.indicatorsColumn")}</th>
               <Th
                 label="⚠"
                 onClick={() => toggleSort("manual")}
                 active={sortKey === "manual"}
                 dir={sortDir}
-                title="소스 자체 차단/부재로 자동 수집이 불완전한 국가. 클릭하면 이 국가들을 위로 정렬합니다."
+                title={t("dbSummary.warnColumnTitle")}
               />
             </tr>
           </thead>
@@ -174,6 +223,7 @@ export function DbSummaryTable({ selectedCountry, onSelectCountry }: Props) {
               <SummaryRow
                 key={c.country_code}
                 country={c}
+                tags={tagsByCountry.get(c.country_code)}
                 selected={c.country_code === selectedCountry}
                 onSelect={() => onSelectCountry(c.country_code)}
               />
@@ -208,39 +258,52 @@ function Th({
 
 function SummaryRow({
   country,
+  tags,
   selected,
   onSelect,
 }: {
   country: CountrySummary;
+  tags: Set<FrequencyBucket> | undefined;
   selected: boolean;
   onSelect: () => void;
 }) {
+  const { t } = useTranslation();
   const info = getManualInfo(country.country_code);
   const half = info?.kind === "half_manual";
+  const dash = t("dbSummary.dash");
+  const sortedTags = FREQUENCY_ORDER.filter((f) => tags?.has(f));
   return (
     <tr
       className={`summary-row${selected ? " selected" : ""}${info ? " manual" : ""}${half ? " half-manual" : ""}`}
       onClick={onSelect}
     >
       <td className="mono">{country.country_code}</td>
-      <td>{country.country_name ?? "—"}</td>
+      <td>{country.country_name ?? dash}</td>
       <td className="num">{country.rows.toLocaleString()}</td>
       <td className="num">{country.periods.toLocaleString()}</td>
-      <td className="mono">{country.min_period ?? "—"}</td>
-      <td className="mono">{country.max_period ?? "—"}</td>
+      <td className="mono">{country.min_period ?? dash}</td>
+      <td className="mono">{country.max_period ?? dash}</td>
       <td>
-        <span className={`badge freq-${country.frequency_bucket ?? "unknown"}`}>
-          {country.frequency_bucket ?? "unknown"}
-        </span>
+        {sortedTags.length > 0 ? (
+          <span className="freq-badge-group">
+            {sortedTags.map((tag) => (
+              <span key={tag} className={`badge freq-${tag}`}>
+                {tag}
+              </span>
+            ))}
+          </span>
+        ) : (
+          <span className="badge freq-unknown">unknown</span>
+        )}
       </td>
-      <td className="mono small">{country.indicators || "—"}</td>
+      <td className="mono small">{country.indicators || dash}</td>
       <td>
         {info ? (
           <span
             className={`badge ${half ? "half-manual-badge" : "manual-badge"}`}
             title={info.reason}
           >
-            {half ? "◐ 하프" : "⚠ 수동"}
+            {half ? t("dbSummary.manualBadgeHalf") : t("dbSummary.manualBadgeFull")}
           </span>
         ) : null}
       </td>

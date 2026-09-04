@@ -9,10 +9,12 @@ without being able to load the archive listing page we don't have the actual xls
 filenames to guess at — NBP's file naming doesn't follow an obvious year-based
 convention we could brute-force.
 
-이전 버전은 IMF/BIS 등에서 인용한 몇 개 연도의 비율을 TD=100(가짜 분모)/FCD=비율 형태로
-저장해 실측 예금 데이터처럼 보이게 했으나 NBP 원출처가 아니고 TD가 조작된 값이라는 지적을
-받아 DB에서 삭제하고 파서를 빈 결과로 되돌림(2026-08-18). 사용자가 실제 파일 URL을
-확인해서 알려주면 바로 파서를 붙일 수 있음."""
+A previous version stored a few years of ratios cited from IMF/BIS etc. as
+TD=100 (a fake denominator)/FCD=ratio, making them look like actual deposit data.
+This was removed after review flagged that these weren't from the original NBP
+source and TD was a fabricated value, so the rows were deleted from the DB and the
+parser reverted to returning an empty result (2026-08-18). If the user confirms and
+provides the actual file URL, the parser can be wired up immediately."""
 
 from __future__ import annotations
 
@@ -22,7 +24,7 @@ FILE_URL = "__RENDER__"
 
 
 def parse(content: bytes, country_code: str) -> pd.DataFrame:
-    raise NotImplementedError("POL는 render()로 처리한다")
+    raise NotImplementedError("POL is handled via render()")
 
 
 def render(target: dict) -> pd.DataFrame:

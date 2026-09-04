@@ -59,7 +59,7 @@ _HEADERS = {
 
 
 def parse(content: bytes, country_code: str) -> pd.DataFrame:
-    raise NotImplementedError("AUT는 render()로 CSV 전체 시계열을 받는다")
+    raise NotImplementedError("AUT fetches the full CSV time series via render()")
 
 
 def _empty() -> pd.DataFrame:

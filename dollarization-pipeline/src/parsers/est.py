@@ -1,27 +1,37 @@
-"""Estonia: Eesti Pank(Bank of Estonia) statistics portal(statistika.eestipank.ee).
+"""Estonia: Eesti Pank (Bank of Estonia) statistics portal (statistika.eestipank.ee).
 
-원래 targets.json에 저장된 URL(#/en/p/1009/r/1015, andmestikId=873, 'Analytical accounts of
-monetary financial intitutions')은 사실 'Archives'(nodeID=891) 하위의 옛 보고서라 원천 데이터
-자체가 2004-01~2010-12로 끝나 있다(위젯 인터랙션 문제가 아니라 그 report가 실제로 2010년에
-멈춘 것). 같은 포털의 'Credit institutions statistics > Deposits'(nodeID=900) 아래
-'Stock of deposits by customer group, residence, currency and maturity'(nodeID=936,
-andmestikId=806)가 현재까지(1997-01~) 이어지는 후속 보고서이며 거주성(Residence)×통화
-(Currency: EUR/EEK/USD/Other) 축을 모두 갖고 있어 이걸 사용한다.
+The URL originally saved in targets.json (#/en/p/1009/r/1015, andmestikId=873,
+'Analytical accounts of monetary financial institutions') actually points to an
+old report under 'Archives' (nodeID=891), whose source data itself ends at
+2004-01~2010-12 (not a widget-interaction issue — that report genuinely stops in
+2010). The same portal's 'Credit institutions statistics > Deposits'
+(nodeID=900) section contains 'Stock of deposits by customer group, residence,
+currency and maturity' (nodeID=936, andmestikId=806), which is the successor
+report that continues to the present (1997-01~) and has both a
+Residence x Currency (EUR/EEK/USD/Other) breakdown, so we use that instead.
 
-Playwright로 위젯을 조작하는 대신, 브라우저 네트워크 탭에서 위젯이 실제로 호출하는
-`/spring/getReadSumma`(값) + `/spring/getVeerud`(기간 헤더) REST 엔드포인트를 직접
-넓은 날짜 범위로 GET한다(단일 요청, JS 불필요). 단, 기본 브라우저형 헤더(Accept: text/html...)로
-요청하면 서버가 JSON 대신 XML을 반환하므로 Accept: application/json을 명시해야 한다
-(BEL 파서와 동일한 함정) -> FILE_URL="__RENDER__" + render()로 처리.
+Rather than driving the widget with Playwright, we GET the REST endpoints the
+widget actually calls under the hood — `/spring/getReadSumma` (values) and
+`/spring/getVeerud` (period headers) — directly with a wide date range, seen in
+the browser's network tab (a single request, no JS needed). However, if the
+request uses default browser-style headers (Accept: text/html...) the server
+returns XML instead of JSON, so Accept: application/json must be set explicitly
+(the same gotcha as the BEL parser) -> handled via FILE_URL="__RENDER__" +
+render().
 
-쿼리 파라미터:
-    VALIK1=RESIDENT (거주자만), VALIK2=KOKKU (전체 고객군 합계), VALIK4=KOKKU (전체 만기 합계)
-    VALIK3을 생략하면(display all) 통화별로 행이 분리되어 나온다: TOTAL/EUR/EEK/USD/Other.
+Query parameters:
+    VALIK1=RESIDENT (residents only), VALIK2=KOKKU (all customer groups summed),
+    VALIK4=KOKKU (all maturities summed)
+    Omitting VALIK3 (display all) returns separate rows per currency:
+    TOTAL/EUR/EEK/USD/Other.
 
-TD = "Residents/TOTAL" 행(전체 통화 합계).
-FCD = TD - 그 시점의 '자국통화' 열. 에스토니아는 2011-01에 크룬(EEK)에서 유로(EUR)로 전환했으므로
-    2011-01 이전은 자국통화=EEK(그 열을 제외), 2011-01부터는 자국통화=EUR(그 열을 제외)로 계산한다.
-    (EUR+EEK+USD+Other의 합이 TOTAL과 소수점 반올림 오차 이내로 일치함을 실측 확인함.)
+TD = the "Residents/TOTAL" row (sum across all currencies).
+FCD = TD - the 'domestic currency' column at that point in time. Estonia
+    switched from the kroon (EEK) to the euro (EUR) in 2011-01, so before
+    2011-01 the domestic currency = EEK (excluded from the sum), and from
+    2011-01 onward the domestic currency = EUR (excluded from the sum).
+    (Empirically confirmed that EUR+EEK+USD+Other sums to TOTAL within
+    rounding error.)
 FCD_TD_RATIO = FCD/TD*100.
 """
 
@@ -39,14 +49,14 @@ _HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36",
     "Accept": "application/json",
 }
-_START_DATE = "31.01.1997"  # 소스 데이터 시작일(포털의 'Data available' 표시 기준)
-_EURO_ADOPTION_PERIOD = "2011-01"  # 이전=EEK가 자국통화, 이후=EUR가 자국통화
+_START_DATE = "31.01.1997"  # Source data start date (per the portal's 'Data available' indicator)
+_EURO_ADOPTION_PERIOD = "2011-01"  # Before = EEK is the domestic currency, after = EUR is the domestic currency
 
 _TAG_RE = re.compile(r"<[^>]+>")
 
 
 def parse(content: bytes, country_code: str) -> pd.DataFrame:
-    raise NotImplementedError("EST는 render()를 통해 처리한다 (Accept: application/json 헤더 + 2개 엔드포인트 필요)")
+    raise NotImplementedError("EST is handled via render() (requires the Accept: application/json header + 2 endpoints)")
 
 
 def _num(text: str) -> float:

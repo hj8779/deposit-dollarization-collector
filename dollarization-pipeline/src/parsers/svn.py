@@ -1,39 +1,48 @@
-"""Slovenia: Banka Slovenije(BSI) PxWeb 통계 데이터베이스(px.bsi.si), PxWeb API v1(POST/JSON-stat2).
+"""Slovenia: Banka Slovenije(BSI) PxWeb statistical database (px.bsi.si), PxWeb API v1 (POST/JSON-stat2).
 
-targets.json에 저장돼 있던 월간회보(Monthly Bulletin) PDF 경로는 이전 조사에서 169페이지의
-"Selected Liabilities of Other MFIs by Sector" 표에 거주지x상품유형x통화 3단 중첩 헤더가 있어
-단순 텍스트/표 파싱이 어렵다고 기록돼 있었으나, 같은 데이터가 BSI 자체 PxWeb 통계 포털
-(bsi.si/en/statistics/data-series -> "Money and Monetary Financial Institutions")에 훨씬 다루기
-쉬운 flat PxWeb 테이블로 공개돼 있어 PDF 경로를 쓸 필요가 없다.
+The Monthly Bulletin PDF path stored in targets.json was noted in an earlier investigation as
+hard to parse with plain text/table extraction, because the "Selected Liabilities of Other MFIs
+by Sector" table on page 169 has a three-level nested header of residency x product type x
+currency. However, the same data is published by the BSI's own PxWeb statistical portal
+(bsi.si/en/statistics/data-series -> "Money and Monetary Financial Institutions") as a much
+easier-to-handle flat PxWeb table, so there is no need to use the PDF path.
 
-테이블: I1_6AAE "Selected obligations of other Monetary Financial Institutions - by sector (Total)"
-    경로: /pxweb/en/serije_ang/serije_ang__10_denar_mfi__70_OBVEZ_MFI/i1_6aae.px
-    (형제 국가 SWE와 마찬가지로 PxWeb 계열이지만 BSI는 신형 PxWebApi v2가 아니라 구형 v1을 쓰므로
-    GET 쿼리스트링이 아니라 POST + JSON 쿼리 바디가 필요하다 -> FILE_URL="__RENDER__")
+Table: I1_6AAE "Selected obligations of other Monetary Financial Institutions - by sector (Total)"
+    Path: /pxweb/en/serije_ang/serije_ang__10_denar_mfi__70_OBVEZ_MFI/i1_6aae.px
+    (Like its sibling country SWE, this is on the PxWeb family, but BSI uses the older v1 rather
+    than the newer PxWebApi v2, so it needs a POST + JSON query body rather than a GET
+    querystring -> FILE_URL="__RENDER__")
 
-테이블 변수(차원):
-    Date: 2004M12 ~ 현재, 월간
-    Currency: 0=SIT(톨라르, 2007-01 이전 값만 존재), 1=EUR(2007-01 이후 값만 존재)
-        -> 두 계열은 날짜상 정확히 겹치지 않고(2006M12까지 SIT만, 2007M01부터 EUR만 값이 채워짐)
-           깔끔하게 이어붙일 수 있음을 실측 확인. 이는 BSI가 "국내통화"를 유로 전환 시점 기준으로
-           재정의했기 때문(2007 이전: 국내통화=SIT, 외화=SIT 제외 전체 / 2007 이후:
-           국내통화=EUR, 외화=EUR 제외 전체) - 과제에서 요구한 정의와 정확히 일치한다.
-    Frequency: 0=Monthly, 1=Annual (Monthly만 사용)
-    Items: "All domestic sectors"(거주자 부문 합계)의 예금 8종류가 국내통화/외화로 나뉘어 있음:
-        0 overnight(국내통화)       4 overnight(외화)
-        1 short-term(국내통화)      5 short-term(외화)
-        2 long-term(국내통화)       6 long-term(외화)
-        3 redeemable at notice(국내통화)  7 redeemable at notice(외화)
-        (8,9번 항목은 채무증권 발행분이라 예금이 아니므로 제외. 10번 "Liabilities to all domestic
-        sectors" 합계도 채무증권을 포함하므로 TD로 쓰지 않고 0~7을 직접 합산한다.)
+Table variables (dimensions):
+    Date: 2004M12 to present, monthly
+    Currency: 0=SIT (tolar, values exist only before 2007-01), 1=EUR (values exist only from
+        2007-01 onward)
+        -> Confirmed empirically that the two series do not overlap in time (only SIT is
+           populated through 2006M12, only EUR from 2007M01 onward), so they can be concatenated
+           cleanly. This is because the BSI redefined "domestic currency" at the point of euro
+           adoption (before 2007: domestic currency=SIT, foreign currency=everything except SIT
+           / after 2007: domestic currency=EUR, foreign currency=everything except EUR) -
+           which matches exactly the definition required for this project.
+    Frequency: 0=Monthly, 1=Annual (only Monthly is used)
+    Items: the 8 deposit types for "All domestic sectors" (the aggregate resident sector),
+        split into domestic-currency/foreign-currency pairs:
+        0 overnight (domestic currency)       4 overnight (foreign currency)
+        1 short-term (domestic currency)      5 short-term (foreign currency)
+        2 long-term (domestic currency)       6 long-term (foreign currency)
+        3 redeemable at notice (domestic currency)  7 redeemable at notice (foreign currency)
+        (Items 8 and 9 are issued debt securities, not deposits, so they are excluded. Item 10,
+        the "Liabilities to all domestic sectors" total, also includes debt securities, so it is
+        not used as TD; instead items 0-7 are summed directly.)
 
-    TD(총예금, 거주자) = items[0..7] 합
-    FCD(외화예금, 거주자) = items[4..7] 합
+    TD (total deposits, residents) = sum of items[0..7]
+    FCD (foreign-currency deposits, residents) = sum of items[4..7]
     FCD_TD_RATIO = FCD/TD*100
 
-값 단위는 원본 그대로(2006-12 이전은 Mio SIT, 2007-01 이후는 Mio EUR) 사용한다. 유로 전환 시점에
-단위가 바뀌므로 절대값 레벨 자체는 그 시점에서 불연속이지만(실제 통화 재표시이므로 불가피),
-FCD_TD_RATIO는 각 시점 내에서 동일 통화 단위로 계산되므로 영향받지 않는다.
+Values are used in their original units (Mio SIT before 2006-12, Mio EUR from 2007-01 onward).
+Because the unit changes at the point of euro adoption, the absolute level itself is
+discontinuous at that point (unavoidable, since it's a genuine currency redenomination), but
+FCD_TD_RATIO is computed within the same currency unit at each point in time, so it is
+unaffected.
 """
 
 from datetime import datetime, timezone
@@ -63,7 +72,7 @@ _QUERY = {
 
 
 def parse(content: bytes, country_code: str) -> pd.DataFrame:
-    raise NotImplementedError("SVN은 render()를 통해 처리한다 (PxWeb v1 POST 쿼리 바디 필요)")
+    raise NotImplementedError("SVN is handled via render() (needs a PxWeb v1 POST query body)")
 
 
 def render(target: dict) -> pd.DataFrame:
@@ -75,7 +84,7 @@ def render(target: dict) -> pd.DataFrame:
     payload = response.json()
 
     dims = payload["dimension"]
-    date_index = dims["Date"]["category"]["index"]  # "2004M12" -> 0, 오름차순
+    date_index = dims["Date"]["category"]["index"]  # "2004M12" -> 0, ascending order
     dates = sorted(date_index.keys(), key=lambda k: date_index[k])
     n_dates = len(dates)
 
@@ -86,7 +95,7 @@ def render(target: dict) -> pd.DataFrame:
 
     values = payload["value"]
 
-    # 차원 순서 [Date, Currency, Frequency(=1), Items], Items가 가장 빠르게 변한다.
+    # Dimension order [Date, Currency, Frequency(=1), Items]; Items varies fastest.
     def cell(date_idx: int, currency_idx: int, item_idx: int) -> float | None:
         offset = (date_idx * n_currency + currency_idx) * n_items + item_idx
         return values[offset]
@@ -99,8 +108,9 @@ def render(target: dict) -> pd.DataFrame:
         year = int(year_str)
         period = f"{year_str}-{month_str}"
 
-        # SIT(0)/EUR(1) 두 통화 표시 계열 중 그 시점에 실제 값이 채워진 쪽을 쓴다
-        # (둘 다 채워진 시점은 없고, 둘 다 비어 있으면 이 날짜는 건너뛴다).
+        # Of the two currency-denominated series SIT(0)/EUR(1), use whichever one actually has
+        # values populated at that point in time (never both populated at once; if both are
+        # empty, this date is skipped).
         domestic_total = None
         foreign_total = None
         for currency_idx in range(n_currency):

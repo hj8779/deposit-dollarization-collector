@@ -1,32 +1,43 @@
-"""Finland: Suomen Pankki(Bank of Finland) open data portal(portal.boffsaopendata.fi, Azure API
-Management 기반) 'Timeseries API v4'.
+"""Finland: Suomen Pankki (Bank of Finland) open data portal (portal.boffsaopendata.fi, built
+on Azure API Management) 'Timeseries API v4'.
 
-targets.json에 저장돼 있던 구 URL(mfi-balance-sheet/tables/)은 사이트 개편으로 404. 현재
-suomenpankki.fi의 통계 대시보드(dashboards/loans-and-deposits2)는 Power BI 임베드라 직접
-스크래핑이 사실상 불가능해서, 같은 데이터를 제공하는 공개 REST API(api.boffsaopendata.fi,
-API 키 불필요)를 대신 사용한다. ECB SDMX(data-api.ecb.europa.eu) BSI 데이터플로우도 검토했으나
-FI의 통화별(CURRENCY_TRANS=Z06 'all currencies except EUR') 분해는 227A/227B/227C(OFI 하위
-섹터)에만 존재하고 가계+기업을 포함하는 일반 거주자 예금 총계(BS_COUNT_SECTOR=2000)에는
-없어서(실측 확인: 여러 BS_ITEM/COUNT_AREA 조합 모두 빈 결과) 사용하지 않았다.
+The old URL saved in targets.json (mfi-balance-sheet/tables/) 404s after a site
+redesign. The current suomenpankki.fi statistics dashboard
+(dashboards/loans-and-deposits2) is a Power BI embed, which makes direct
+scraping essentially impossible, so we use the public REST API that serves the
+same data instead (api.boffsaopendata.fi, no API key required). We also
+considered the ECB SDMX (data-api.ecb.europa.eu) BSI dataflow, but FI's
+currency breakdown (CURRENCY_TRANS=Z06 'all currencies except EUR') only exists
+for 227A/227B/227C (OFI subsectors), not for the general resident deposit total
+including households + corporates (BS_COUNT_SECTOR=2000) — empirically
+confirmed by trying several BS_ITEM/COUNT_AREA combinations, all of which
+returned empty results — so we did not use it.
 
-MFI_PUBL 데이터셋의 시리즈 이름은 점(.)으로 구분된 17개 차원 코드로 구성된다. 아래 두 시리즈는
-포털의 'Series' 엔드포인트(GET /v4/series/MFI_PUBL)로 전체 1382개 시리즈 목록을 받아 제목
-텍스트에서 검증한 것이다:
+Series names in the MFI_PUBL dataset consist of 17 dot-separated dimension
+codes. The two series below were verified against the title text after
+fetching the full list of 1382 series from the portal's 'Series' endpoint
+(GET /v4/series/MFI_PUBL):
 
     TD  = M.A.0.A.L20.A.A.U6.2000.ZZ.Z01.A.A.0.A.0.A.0
           (Monthly, MFIs excl. Bank of Finland, Volume, Stock, Deposit liabilities,
-           Domestic(home/reference area), Non-MFIs, All currencies combined)
-    FCD = 위와 동일하되 마지막에서 세 번째 코드만 Z06(All currencies except EUR)
+           Domestic (home/reference area), Non-MFIs, All currencies combined)
+    FCD = same as above except the third-from-last code is Z06 (All currencies
+          except EUR)
 
-둘 다 'Deposit liabilities'(L20, 만기 구분 없는 예금 총계) x 'Non-MFIs'(거주 비MFI 부문 전체,
-가계+기업+정부 등) x 'Domestic'(거주자) 조합이라 FCD/TD 정의에 정확히 부합한다.
-TD는 1998-01부터, FCD는 2003-01부터 월별로 존재(2026-06까지, 즉 최신월 기준 약 2개월 시차).
+Both combine 'Deposit liabilities' (L20, total deposits regardless of maturity)
+x 'Non-MFIs' (the entire resident non-MFI sector: households + corporates +
+government, etc.) x 'Domestic' (residents), which matches the FCD/TD
+definitions exactly.
+TD is available monthly from 1998-01, FCD from 2003-01 (through 2026-06, i.e.
+roughly a 2-month lag as of the latest month).
 
-Observations 엔드포인트(GET /v4/observations/{dataset}?seriesName=...)는 시리즈 하나당 전체
-관측치를 한 번에 반환하므로(페이지네이션은 시리즈 목록 쪽에만 적용) 페이지 처리가 불필요하다.
-기본 브라우저형 Accept 헤더로도 JSON을 반환하지만(BEL/EST와 달리 이 API는 Accept: text/html에도
-JSON을 줌), 명시적으로 application/json을 요청해 안전하게 처리한다. 단일 파일 다운로드가 아니라
-API를 두 번 호출해야 하므로 FILE_URL="__RENDER__"로 처리한다.
+The Observations endpoint (GET /v4/observations/{dataset}?seriesName=...)
+returns all observations for a series in a single response (pagination only
+applies to the series-list endpoint), so no paging logic is needed. Default
+browser-style Accept headers also return JSON (unlike BEL/EST, this API
+returns JSON even for Accept: text/html), but we explicitly request
+application/json to be safe. Since this requires two API calls rather than a
+single file download, it's handled via FILE_URL="__RENDER__".
 """
 
 from datetime import datetime, timezone
@@ -44,11 +55,11 @@ _HEADERS = {"User-Agent": "Mozilla/5.0", "Accept": "application/json"}
 
 
 def parse(content: bytes, country_code: str) -> pd.DataFrame:
-    raise NotImplementedError("FIN은 render()를 통해 처리한다 (단일 파일이 아니라 API 2회 호출)")
+    raise NotImplementedError("FIN is handled via render() (two API calls instead of a single file)")
 
 
 def _fetch_series(series_name: str) -> dict[str, float]:
-    """periodCode('YYYYMnn') -> value 매핑을 반환한다."""
+    """Returns a mapping from periodCode ('YYYYMnn') to value."""
     response = requests.get(
         f"{_BASE}/{_DATASET}",
         params={"seriesName": series_name, "pageSize": 1000},

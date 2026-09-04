@@ -1,27 +1,32 @@
 """Morocco: Bank Al-Maghrib "Séries statistiques monétaires" — 'AGRÉGATS DE MONNAIE' xlsx.
 
-페이지: https://www.bkam.ma/Statistiques/Statistiques-monetaires/Series-statistiques-monetaires
-다운로드 링크(예: /content/download/632818/7098245/6-AgregatsDeMonnaie.xlsx)의 문서ID가
-개정마다 바뀔 수 있어 매번 페이지를 스크레이핑해 현재 링크를 찾는다.
+Page: https://www.bkam.ma/Statistiques/Statistiques-monetaires/Series-statistiques-monetaires
+The document ID in the download link (e.g.
+/content/download/632818/7098245/6-AgregatsDeMonnaie.xlsx) can change with each
+revision, so we scrape the page every time to find the current link.
 
-'Feuil1' 시트: 3행이 월말 날짜 헤더(2001-12부터), 이후 각 행이 지표. 필요한 행(라벨로
-탐색, 행 번호가 아니라):
-  'Dépôts en devises' — 각주(3) "Dépôts à vue et à terme en devises auprès des banques"
-      = 은행 예치 요구불+정기 외화예금 = FCD.
-  'Monnaie scripturale' — BAM/은행/우체국(CCP)/재무부 예치 요구불예금 합계 (M1의 통화발행고
-      제외 부분) = 자국통화 요구불예금.
-  'Placements à vue' — 저축성 즉시인출예금(quasi-money 유동성 예치).
-  'Comptes à terme et bons de caisse auprès des banques' — 은행 정기예금.
-  'Autres dépôts' — 기타예금.
+Sheet 'Feuil1': row 3 is the month-end date header (starting 2001-12), and each
+subsequent row is an indicator. Rows are looked up by label, not by row number:
+  'Dépôts en devises' — footnote (3) "Dépôts à vue et à terme en devises auprès des banques"
+      = foreign-currency demand + time deposits held at banks = FCD.
+  'Monnaie scripturale' — sum of demand deposits held at BAM/banks/post office
+      (CCP)/Treasury (the non-currency-in-circulation part of M1) = local-currency
+      demand deposits.
+  'Placements à vue' — savings-type instant-access deposits (quasi-money liquid holdings).
+  'Comptes à terme et bons de caisse auprès des banques' — time deposits at banks.
+  'Autres dépôts' — other deposits.
 
 TD = Monnaie scripturale + Placements à vue + Comptes à terme... + Dépôts en devises
-   + Autres dépôts. 'Titres OPCVM monétaires'(MMF 지분), 'Valeurs données en pension'(레포),
-   'Certificats de dépôts'(NCD), 'Dépôts à terme auprès du Trésor'는 순수 예금이 아니거나
-   자료 부재(ND)가 잦아 제외 — 다른 국가 파서들의 NID/repo 제외 관행과 동일.
-   검산: 'Autres actifs Monétaires' 행 = 위 제외 항목들 + Dépôts en devises + Comptes à
-   terme + Autres dépôts 의 합과 정확히 일치함을 확인(구조 검증됨).
+   + Autres dépôts. 'Titres OPCVM monétaires' (MMF shares), 'Valeurs données en
+   pension' (repos), 'Certificats de dépôts' (NCDs), and 'Dépôts à terme auprès du
+   Trésor' are excluded because they aren't pure deposits or are frequently marked
+   not available (ND) — consistent with the NID/repo exclusion convention used in
+   other country parsers.
+   Cross-check: the 'Autres actifs Monétaires' row exactly matches the sum of the
+   excluded items above plus Dépôts en devises + Comptes à terme + Autres dépôts
+   (structure verified).
 
-월간, 2001-12~현재. 단위: MDH(백만 디르함)."""
+Monthly, 2001-12 to present. Unit: MDH (million dirhams)."""
 
 from __future__ import annotations
 
@@ -62,7 +67,7 @@ _OTHER_LABEL = "autres dépôts"
 
 
 def parse(content: bytes, country_code: str) -> pd.DataFrame:
-    raise NotImplementedError("MAR는 render()로 xlsx를 받는다")
+    raise NotImplementedError("MAR fetches the xlsx via render()")
 
 
 def _empty() -> pd.DataFrame:
@@ -91,7 +96,7 @@ def render(target: dict) -> pd.DataFrame:
     country_code = target["country_code"]
     xlsx_url = _find_xlsx_url()
     if not xlsx_url:
-        logger.warning("[%s] 목록 페이지에서 AgregatsDeMonnaie.xlsx 링크를 찾지 못함", country_code)
+        logger.warning("[%s] could not find the AgregatsDeMonnaie.xlsx link on the listing page", country_code)
         return _empty()
 
     resp = requests.get(xlsx_url, headers=_HEADERS, timeout=60, verify=False)
@@ -110,7 +115,7 @@ def _parse_workbook(content: bytes, country_code: str) -> pd.DataFrame:
     other_row = _find_row(ws, _OTHER_LABEL)
     if not all([scriptural_row, sight_savings_row, term_row, fcd_row, other_row]):
         logger.error(
-            "[%s] 필요한 행을 못 찾음: scriptural=%s sight_savings=%s term=%s fcd=%s other=%s",
+            "[%s] could not find required rows: scriptural=%s sight_savings=%s term=%s fcd=%s other=%s",
             country_code, scriptural_row, sight_savings_row, term_row, fcd_row, other_row,
         )
         return _empty()

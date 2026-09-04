@@ -2,41 +2,49 @@
 Table 'I.4 Commercial Banks: Deposits and Balances (excluding S$NCDs) by Types of
 Non-bank Customers'.
 
-이 표의 최상위 합계 행이 정확히 필요한 지표다:
-    TOTAL DEPOSITS - TOTAL            -> TD  (총예금, 거주자+비거주자 전체)
-    TOTAL DEPOSITS - IN FOREIGN CURRENCIES -> FCD (외화예금 전체)
-    TOTAL DEPOSITS - IN S$            -> (미사용, SGD 예금)
+The top-level total rows in this table are exactly the indicators we need:
+    TOTAL DEPOSITS - TOTAL            -> TD  (total deposits, residents + non-residents combined)
+    TOTAL DEPOSITS - IN FOREIGN CURRENCIES -> FCD (total foreign-currency deposits)
+    TOTAL DEPOSITS - IN S$            -> (unused, SGD deposits)
 
-주의: 이 FCD는 거주자(resident)뿐 아니라 비거주자(residents outside Singapore, 즉
-아시아 통화 단위/ACU 역외 예금 포함)까지 합산된 상업은행 전체 외화예금이다. 싱가포르는
-국제금융센터라 비거주자 예금 비중이 크지만, MAS 자신이 'Deposits and Balances'로
-공표하는 은행권 전체 수치를 그대로 쓰는 것은 이 파이프라인의 다른 국가(중앙은행이 발표하는
-'외화예금' 원자료를 그대로 채택)와 일관된 처리 방식이다.
+Note: this FCD is the entire commercial-bank foreign-currency deposit base,
+combining not just residents but also non-residents (residents outside
+Singapore, i.e. including Asian Currency Unit/ACU offshore deposits).
+Singapore is an international financial center so the non-resident share is
+large, but taking the banking-sector-wide figure that MAS itself publishes as
+'Deposits and Balances' at face value is consistent with how this pipeline
+handles other countries (adopting the central bank's own published 'foreign
+currency deposits' figure as-is).
 
-데이터 소스는 두 곳을 이어붙여야 전체 이력을 구성할 수 있다:
+The data source requires stitching together two places to build the full
+history:
 
-1. MSB Historical Summary(discontinued/과거 데이터, ~1991-01 ~ 2021-06):
+1. MSB Historical Summary (discontinued/legacy data, ~1991-01 to 2021-06):
    https://www.mas.gov.sg/-/media/mas-media-library/statistics/monthly-statistical-bulletin/msb-historical/money-and-banking--i4--monthly.csv
-   컬럼 순서가 현재 라이브 API와 동일(TOTAL/IN S$/IN FOREIGN CURRENCIES)하다.
+   Column order matches the current live API (TOTAL/IN S$/IN FOREIGN CURRENCIES).
 
-2. 현재 라이브 MSB 페이지가 내부적으로 호출하는 JSON API(최근 약 5년 롤링 윈도우만 제공,
-   2021-07부터 현재까지):
+2. The JSON API that the current live MSB page calls internally (provides
+   only a rolling ~5-year window, 2021-07 to present):
    https://www.mas.gov.sg/api/v1/MAS/chart/table_i_4_commercial_banks_deposits_and_balances_excluding_s_ncds_by_types_of_non_bank_customers
-   필드: dpst_bal_tot(=TD), dpst_bal_in_sgd, dpst_bal_in_forg_cur(=FCD).
-   이 엔드포인트는 해당 표의 사람이 보는 페이지
-   (/statistics/monthly-statistical-bulletin/i-4-commercial-banks-deposits-and-balances-excluding-s$ncds)
-   안에 `injectMasChartData(...)` 스크립트로 URL이 하드코딩되어 있어 찾아냈다.
+   Fields: dpst_bal_tot(=TD), dpst_bal_in_sgd, dpst_bal_in_forg_cur(=FCD).
+   This endpoint was found because its URL is hardcoded in an
+   `injectMasChartData(...)` script embedded in the human-facing page for
+   this table
+   (/statistics/monthly-statistical-bulletin/i-4-commercial-banks-deposits-and-balances-excluding-s$ncds).
 
-주의: mas.gov.sg의 일부 인터랙티브 페이지(예: /statistics/monthly-statistical-bulletin/money-and-banking
-같은 구 URL)는 Referer 헤더 없이 접근하면 "Maintenance" WAF 페이지를 반환하지만, 실제 데이터
-엔드포인트(위 CSV/API 두 곳)는 일반 브라우저 User-Agent만으로도 정상적으로 200을 반환했다
-(WAF는 특정 경로에만 적용되는 것으로 보임). 안전을 위해 Referer는 계속 넣어준다.
+Note: some interactive pages on mas.gov.sg (e.g. the old
+/statistics/monthly-statistical-bulletin/money-and-banking URL) return a
+"Maintenance" WAF page when accessed without a Referer header, but the actual
+data endpoints (the CSV/API above) returned 200 normally even with just a
+plain browser User-Agent (the WAF appears to apply only to certain paths). We
+still send a Referer for safety.
 
-두 소스 모두 결측월 없이 이어진다(과거 1991-01~2021-06, 현재 API 2021-07~). 검증:
-2023-12 FCD=974,745.8 / TD=1,789,239.4 (비율 54.5%), 2024-03 FCD=1,007,555.3 -
-사전 조사에서 언급된 표본값(FCD~936bn Dec 2023, ~1,008.2bn Mar 2024, 비율~55%)과
-근사치가 대체로 일치해 같은 표/같은 정의임을 확인했다(사전 조사 수치는 근사/역산값이었다).
-"""
+Both sources connect with no missing months (legacy 1991-01~2021-06, live API
+2021-07~). Validation: 2023-12 FCD=974,745.8 / TD=1,789,239.4 (ratio 54.5%),
+2024-03 FCD=1,007,555.3 — this roughly matches the sample values noted during
+preliminary research (FCD~936bn Dec 2023, ~1,008.2bn Mar 2024, ratio~55%),
+confirming it's the same table/same definition (the preliminary-research
+figures were approximate/back-calculated)."""
 
 import csv
 import json
@@ -50,7 +58,7 @@ from src.utils.logger import get_logger
 
 logger = get_logger(__name__)
 
-FILE_URL = "__RENDER__"  # 단일 파일이 아니라 과거 CSV + 현재 API 두 소스를 이어붙여야 한다.
+FILE_URL = "__RENDER__"  # not a single file — must stitch together the legacy CSV and the current API.
 
 _HIST_CSV_URL = (
     "https://www.mas.gov.sg/-/media/mas-media-library/statistics/monthly-statistical-bulletin/"
@@ -76,7 +84,7 @@ _COLUMNS = ["country_code", "year", "period", "indicator", "value", "updated_at"
 
 
 def parse(content: bytes, country_code: str) -> pd.DataFrame:
-    raise NotImplementedError("SGP는 render()를 통해 처리한다 (과거 CSV + 현재 API 2개 소스 병합)")
+    raise NotImplementedError("SGP is handled via render() (merges the legacy CSV and current API sources)")
 
 
 def _emit(country_code: str, year: int, month: int, fcd: float, td: float, now: str) -> list[dict]:
@@ -138,18 +146,18 @@ def render(target: dict) -> pd.DataFrame:
         hist_content = download(_HIST_CSV_URL, referer=_HIST_REFERER)
         rows.extend(_parse_historical(hist_content, country_code, now))
     except Exception:
-        logger.warning("[%s] 과거 이력 CSV 수집 실패, 라이브 API만으로 진행", country_code)
+        logger.warning("[%s] failed to fetch legacy CSV, proceeding with the live API only", country_code)
 
     try:
         live_content = download(_LIVE_API_URL, referer=_LIVE_REFERER)
         rows.extend(_parse_live(live_content, country_code, now))
     except Exception:
-        logger.warning("[%s] 라이브 API 수집 실패", country_code)
+        logger.warning("[%s] failed to fetch live API", country_code)
 
     if not rows:
         return pd.DataFrame(columns=_COLUMNS)
 
     df = pd.DataFrame(rows)
-    # 과거 CSV(~2021-06)와 라이브 API(2021-07~)가 겹치는 경우 라이브 값을 우선한다.
+    # Where the legacy CSV (~2021-06) and live API (2021-07~) overlap, prefer the live value.
     df = df.drop_duplicates(subset=["period", "indicator"], keep="last")
     return df.sort_values(["period", "indicator"]).reset_index(drop=True)

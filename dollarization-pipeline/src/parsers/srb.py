@@ -1,43 +1,55 @@
 """Serbia: National Bank of Serbia (NBS) monetary statistics, "Table 1.1.4 Consolidated
 Balance Sheet of the Banking System" (SBMS04.xlsx).
 
-config/targets.json에 기록되어 있던 "nbs.rs가 봇 차단('Pristup je blokiran')"은 실측 결과
-재현되지 않았다: `requests`에 일반적인 브라우저 User-Agent/Accept 헤더만 실어 보내면(이
-프로젝트의 `src.collectors.base.download()`가 이미 기본으로 그렇게 함) nbs.rs는 200과 함께
-정상 콘텐츠를 반환한다. Playwright 등 추가 우회는 불필요했다.
+The note in config/targets.json that "nbs.rs blocks bots ('Pristup je
+blokiran')" did not reproduce in practice: sending `requests` with just
+ordinary browser User-Agent/Accept headers (which this project's
+`src.collectors.base.download()` already does by default) gets a normal 200
+response with real content from nbs.rs. No additional workaround such as
+Playwright was needed.
 
-nbs.rs Statistics > Monetary Statistics 페이지(mon_stat/)에는 월간 PDF Bulletin 외에도
-같은 데이터를 담은 xlsx가 테이블별로 개별 게시되어 있는데, 이쪽이 훨씬 다루기 쉽다(단일
-파일, 파싱 안정적인 셀 구조, 1999년~현재 연간 + 2004년~현재 월간을 한 파일에 롤링 없이
-전부 담고 있어 매월 파일이 덮어써져도 과거 이력이 유실되지 않는다):
+The nbs.rs Statistics > Monetary Statistics page (mon_stat/) publishes, in
+addition to the monthly PDF Bulletin, an xlsx per table containing the same
+data, which is much easier to work with (a single file, a stable cell
+structure for parsing, and covers annual data from 1999 to present plus
+monthly data from 2004 to present all in one file with no rolling window, so
+history is never lost even though the file gets overwritten each month):
 
     https://www.nbs.rs/export/sites/NBS_site/documents/statistika/monetarni_sektor/SBMS04.xlsx
 
-시트 'Eng, Liabilities'는 'LIABILITIES' 쪽 컬럼을 담고 있고, 그중 'Money supply' 섹션
-컬럼 구성(헤더 행 기준, 항목 번호는 시트 자체의 각주 번호):
+Sheet 'Eng, Liabilities' holds the 'LIABILITIES' side columns, and within it
+the 'Money supply' section column layout (per the header row; item numbers
+are the sheet's own footnote numbers):
     (5) Currency in circulation      (6) Dinar sight deposits
     (7=5+6) Money supply M1          (8) Dinar time deposits
     (9=7+8) Money supply M2          (10) Foreign currency deposits
     (11=9+10) Money supply M3
 
-FCD(거주자 외화예금) = 항목(10) "Foreign currency deposits" 그대로 사용.
-TD(총예금)          = 항목(6)+(8)+(10) = Dinar sight + Dinar time + FCD
-                     (= M3 - Currency in circulation; 즉 '통화(현금)를 제외한 전체 예금').
+FCD (resident foreign-currency deposits) = item (10) "Foreign currency
+deposits" used directly.
+TD (total deposits) = item (6)+(8)+(10) = Dinar sight + Dinar time + FCD
+                     (= M3 - Currency in circulation; i.e. "all deposits
+                     excluding currency (cash)").
 
-주의(정의 범위): 이 표의 "Foreign currency deposits"는 정부 부문을 제외한 전 거주 부문
-(가계/기업/기타금융기관/지방정부/비영리단체 등)의 은행+NBS 예치 외화예금 합계로,
-FX-indexed(디나르 표시이나 환율 연동)는 포함하지 않는 순수 외화표시 예금만이다. NBS의
-다른 표(Table 1.1.5 Monetary Survey, Table 1.1.6 Non-Monetary Sector Deposits)에는
-"Foreign currency deposits AND FX-indexed savings/time deposits"라는 더 넓은 정의의
-라인이 별도로 존재하므로 혼동하지 말 것(그쪽은 사용하지 않음).
+Note (scope of definition): this table's "Foreign currency deposits" is the
+sum of foreign-currency deposits held at banks + NBS by the entire resident
+sector excluding government (households/enterprises/other financial
+institutions/local government/nonprofits, etc.), and covers only deposits
+denominated purely in foreign currency, not FX-indexed deposits (denominated
+in dinars but pegged to an exchange rate). Other NBS tables (Table 1.1.5
+Monetary Survey, Table 1.1.6 Non-Monetary Sector Deposits) have a separately
+reported, broader-definition line "Foreign currency deposits AND FX-indexed
+savings/time deposits" — don't confuse the two (that line is not used here).
 
-실측(2026-06, 최신월): FCD=2,801,974.069백만 디나르, TD=1,700,085.343+740,249.753+
-2,801,974.069=5,242,309.165백만 디나르 -> ratio=53.46%. IMF 2025 Serbia Article IV
-보고서의 스팟체크 수치(FCD≈EUR 3,366mn, TD≈EUR 5,859mn, ratio≈57.45%)와는 정확히
-일치하지 않는다(IMF 쪽 표는 우리보다 좁은 부문 정의를 쓰는 것으로 보임 -- 예를 들어
-은행만 포함하고 NBS 예치분/일부 부문을 제외했을 가능성). 그러나 두 비율 모두 50%대
-후반이라는 같은 자릿수(오더)이고 방향도 일치해 상식적인 범위(ballpark) 안에 있음을
-확인했다.
+Empirical check (2026-06, latest month): FCD=2,801,974.069 million dinars,
+TD=1,700,085.343+740,249.753+2,801,974.069=5,242,309.165 million dinars ->
+ratio=53.46%. This does not exactly match the spot-check figures in the IMF's
+2025 Serbia Article IV report (FCD≈EUR 3,366mn, TD≈EUR 5,859mn, ratio≈57.45%)
+(the IMF table appears to use a narrower sectoral definition than ours — e.g.
+possibly banks only, excluding NBS-held deposits/some sectors). However, both
+ratios are in the high-50%-percent range, the same order of magnitude and
+same direction, so we confirmed they're within a reasonable ballpark of each
+other.
 """
 
 from datetime import datetime, timezone
@@ -57,7 +69,7 @@ FILE_URL = (
 
 _SHEET = "Eng, Liabilities"
 
-# 시트 내 절대 컬럼 위치(헤더 행에서 확인한 고정 레이아웃).
+# Absolute column positions within the sheet (fixed layout confirmed from the header row).
 _COL_YEAR = 1
 _COL_MONTH = 2
 _COL_CURRENCY = 7   # (5) Currency in circulation
@@ -79,7 +91,7 @@ def parse(content: bytes, country_code: str) -> pd.DataFrame:
     wb = openpyxl.load_workbook(BytesIO(content), data_only=True)
 
     if _SHEET not in wb.sheetnames:
-        logger.warning("[%s] 시트 '%s' 없음, 스킵", country_code, _SHEET)
+        logger.warning("[%s] sheet '%s' not found, skipping", country_code, _SHEET)
         return pd.DataFrame(columns=COLUMNS)
     ws = wb[_SHEET]
 
@@ -110,9 +122,11 @@ def parse(content: bytes, country_code: str) -> pd.DataFrame:
                 continue
             period = f"{current_year}-{month:02d}"
         else:
-            # 연간 요약 행(1999~2025 구간에는 연간만, 2004년 이후는 이 연간 행에 더해
-            # 월별 행도 별도로 이어진다). 연간/월간을 (period, indicator) 기준으로 구분
-            # 저장하므로 이후 UPSERT 단계에서 서로 덮어쓰지 않는다.
+            # Annual summary row (1999-2025 has annual rows only; from 2004
+            # onward, monthly rows follow separately in addition to this
+            # annual row). Annual and monthly are stored distinguished by
+            # (period, indicator), so they don't overwrite each other at the
+            # later UPSERT stage.
             period = f"{current_year}-Annual"
 
         td = round(dinar_sight + dinar_time + fcd, 3)

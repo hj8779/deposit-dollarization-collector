@@ -56,7 +56,7 @@
       "implemented": true,
       "strategy_class": "InteractiveWebStrategy",
       "status": "success",
-      "notes": "사용자가 제시한 SDMX REST API(sdmx.eccb-centralbank.org)는 DNS 미해석(존재하지 않는 도메인) 확인됨 -> 실제로는 eccb-centralbank.org의 'Interactive Database' 쿼리 폼(Laravel, CSRF+암호화 hidden 필드, 부트스트랩 모달 안 select2 멀티셀렉트)이 진짜 데이터 소스. Playwright로 모달 열기-> 국가 선택->'Foreign Currency Deposits' 지표 선택->제출 흐름 재현(src/parsers/_eccb_common.py 공용). start_date를 jQuery datepicker API로 2000-01-01로 설정해 2000~2025년(26개년) 연간 데이터 확보. 8개국(AIA/ATG/DMA/GRD/MSR/KNA/LCA/VCT) 공용 로직 검증 완료"
+      "notes": "제시된 SDMX REST API(sdmx.eccb-centralbank.org)는 DNS 미해석(존재하지 않는 도메인)으로 확인됨 -> 실제로는 eccb-centralbank.org의 'Interactive Database' 쿼리 폼(Laravel, CSRF+암호화 hidden 필드, 부트스트랩 모달 안 select2 멀티셀렉트)이 진짜 데이터 소스. Playwright로 모달 열기-> 국가 선택->'Foreign Currency Deposits' 지표 선택->제출 흐름 재현(src/parsers/_eccb_common.py 공용). start_date를 jQuery datepicker API로 2000-01-01로 설정해 2000~2025년(26개년) 연간 데이터 확보. 8개국(AIA/ATG/DMA/GRD/MSR/KNA/LCA/VCT) 공용 로직 검증 완료"
     }
   },
   {
@@ -124,14 +124,14 @@
     "country_name": "Argentina",
     "data_type": "API",
     "source_url": "https://api.bcra.gob.ar/estadisticas/v4.0/Monetarias/1414",
-    "update_frequency": "Daily",
+    "update_frequency": "Monthly",
     "requires_js": false,
     "notes": "Boletín Estadístico(월간) 목록에서 최신월 클릭 시 PDF 내 Excel(.xls) 시리즈 링크 포함, 예: dep....xls 형태로 개별 시리즈 다운 가능",
     "adapter": {
       "implemented": true,
       "strategy_class": "ApiStrategy",
       "status": "success",
-      "notes": "사용자가 제시한 idVariable=14는 실제로 'Tasa de interés de préstamos personales'(개인대출 금리)였음 -> 전체 변수 목록(/v4.0/Monetarias)에서 descripcion 검색으로 idVariable=1414('Depósitos totales del total de sectores', 카테고리='Depósitos por cuenta', 단위=USD백만)를 정확한 지표로 특정. API도 v3.0은 이미 폐기(HTTP 410)되어 v4.0 사용. 일별 데이터를 월말값 기준 월별 집계, offset 페이지네이션(limit=3000). 1999-12~2026-08, 321개월 확보"
+      "notes": "제시된 idVariable=14는 실제로 'Tasa de interés de préstamos personales'(개인대출 금리)였음 -> 전체 변수 목록(/v4.0/Monetarias)에서 descripcion 검색으로 idVariable=1414('Depósitos totales del total de sectores', 카테고리='Depósitos por cuenta', 단위=USD백만)를 정확한 지표로 특정. API도 v3.0은 이미 폐기(HTTP 410)되어 v4.0 사용. 일별 데이터를 월말값 기준 월별 집계, offset 페이지네이션(limit=3000). 1999-12~2026-08, 321개월 확보"
     }
   },
   {
@@ -206,7 +206,7 @@
       "implemented": true,
       "strategy_class": "InteractiveWebStrategy",
       "status": "success",
-      "notes": "사용자가 제시한 SDMX REST API(sdmx.eccb-centralbank.org)는 DNS 미해석(존재하지 않는 도메인) 확인됨 -> 실제로는 eccb-centralbank.org의 'Interactive Database' 쿼리 폼(Laravel, CSRF+암호화 hidden 필드, 부트스트랩 모달 안 select2 멀티셀렉트)이 진짜 데이터 소스. Playwright로 모달 열기-> 국가 선택->'Foreign Currency Deposits' 지표 선택->제출 흐름 재현(src/parsers/_eccb_common.py 공용). start_date를 jQuery datepicker API로 2000-01-01로 설정해 2000~2025년(26개년) 연간 데이터 확보. 8개국(AIA/ATG/DMA/GRD/MSR/KNA/LCA/VCT) 공용 로직 검증 완료"
+      "notes": "제시된 SDMX REST API(sdmx.eccb-centralbank.org)는 DNS 미해석(존재하지 않는 도메인)으로 확인됨 -> 실제로는 eccb-centralbank.org의 'Interactive Database' 쿼리 폼(Laravel, CSRF+암호화 hidden 필드, 부트스트랩 모달 안 select2 멀티셀렉트)이 진짜 데이터 소스. Playwright로 모달 열기-> 국가 선택->'Foreign Currency Deposits' 지표 선택->제출 흐름 재현(src/parsers/_eccb_common.py 공용). start_date를 jQuery datepicker API로 2000-01-01로 설정해 2000~2025년(26개년) 연간 데이터 확보. 8개국(AIA/ATG/DMA/GRD/MSR/KNA/LCA/VCT) 공용 로직 검증 완료"
     }
   },
   {
@@ -371,7 +371,7 @@
       "implemented": true,
       "strategy_class": "InteractiveWebStrategy",
       "status": "success",
-      "notes": "Publications 페이지 'Statistical Bulletin' 섹션에 xlsx(2016-12~)/xls(2010-12~2015-12, 12월판만)가 게시(88개 파일 전부 순회). 'Deposit Liabilities to Non-Banks' 표를 제목 텍스트로 매 파일마다 동적으로 찾음(tab 번호가 시기별로 다름: 사용자가 지정한 tab 17은 시기에 따라 'Assets by Currency' 등 전혀 다른 표라 부적합함을 실측 확인, 제목 검색으로 해결). Private Sector Demand+Savings+Time 각각의 BD/FC 컬럼을 라벨로 동적 탐색(Government 제외). FCD = 세 항목 FC 합계(구버전은 Demand FC만 사용해 과소집계, 이번에 Savings/Time FC까지 포함하도록 확장), TD = 세 항목 BD+FC 합계. 컬럼 레이아웃은 2001년부터 지금까지 안정적으로 동일함을 실측 확인. 2020-01~현재는 매월, 2009-12~2019-12는 12월 스냅샷만(연 1회). 2010-12 이전(2001~2009)은 같은 섹션의 PDF(파일명이 극도로 불규칙: MSB-Dec2011.pdf/QSB Dec 2007.pdf/dec_2001.pdf 등 — 내용은 동일 표 구조라 pdfplumber extract_tables()로 xlsx와 동일하게 파싱 가능, 마지막 행이 항상 월간 블록)까지 순회해 확장. xlsx/xls가 이미 커버하는 기간은 그쪽을 우선하고 PDF는 빈 구간만 보충. 최종 2000-03~2026-06, 316개월(632행), 음수 없음."
+      "notes": "Publications 페이지 'Statistical Bulletin' 섹션에 xlsx(2016-12~)/xls(2010-12~2015-12, 12월판만)가 게시(88개 파일 전부 순회). 'Deposit Liabilities to Non-Banks' 표를 제목 텍스트로 매 파일마다 동적으로 찾음(tab 번호가 시기별로 다름: 지정된 tab 17은 시기에 따라 'Assets by Currency' 등 전혀 다른 표라 부적합함을 실측 확인, 제목 검색으로 해결). Private Sector Demand+Savings+Time 각각의 BD/FC 컬럼을 라벨로 동적 탐색(Government 제외). FCD = 세 항목 FC 합계(구버전은 Demand FC만 사용해 과소집계, 이번에 Savings/Time FC까지 포함하도록 확장), TD = 세 항목 BD+FC 합계. 컬럼 레이아웃은 2001년부터 지금까지 안정적으로 동일함을 실측 확인. 2020-01~현재는 매월, 2009-12~2019-12는 12월 스냅샷만(연 1회). 2010-12 이전(2001~2009)은 같은 섹션의 PDF(파일명이 극도로 불규칙: MSB-Dec2011.pdf/QSB Dec 2007.pdf/dec_2001.pdf 등 — 내용은 동일 표 구조라 pdfplumber extract_tables()로 xlsx와 동일하게 파싱 가능, 마지막 행이 항상 월간 블록)까지 순회해 확장. xlsx/xls가 이미 커버하는 기간은 그쪽을 우선하고 PDF는 빈 구간만 보충. 최종 2000-03~2026-06, 316개월(632행), 음수 없음."
     }
   },
   {
@@ -476,7 +476,7 @@
       "implemented": true,
       "strategy_class": "DirectExcelStrategy",
       "status": "success",
-      "notes": "src/parsers/bol.py. TD = Total 시트 TOTAL SISTEMA 행(볼리비아노 기준). 사용자가 처음 제안한 Base Monetaria 31행(Moneda Extranjera)은 중앙은행 지급준비금 중 외화분일 뿐 시중은행 고객 외화예금이 아니라서(금액도 훨씬 작음) 채택하지 않고, 같은 목록의 더 정확한 파일로 대체. 2026-08-19 중대 버그 수정: FCD로 쓰던 'ME' 시트 TOTAL SISTEMA 행이 볼리비아노 환산액이 아니라 원화(달러) 그대로였음(시트 제목 'MONEDA DÓLARES') — 그동안 FCD(USD)/TD(Bs)를 그대로 나눠 ratio가 실제보다 ~7배 작게(예: 2026-06 1.0%) 나오고 있었다. 사용자가 '3. Sistema Monetario.xlsx'와 교차검증하다 발견, 실제 뉴스(2023년 이후 달러위기로 $2.5B 예금 동결, 2026-06-26 변동환율제 전환)로도 확인. 볼리비아는 2011-11~2026-06-26까지 고정환율(6.96 Bs/USD)이었고 그 이후는 BCB가 매일 공개하는 TCO(tco_tcreferencial_descargar_csv.php) 가중평균 환율을 사용해 ME(USD)×환율로 Bs 환산 후 TD와 비교하도록 수정. 수정 후 실측: 2026-06 ratio≈9.75%(변동환율 전환 직후 급등), 2026-01~05는 7.2~7.4%대(기존 대비 약 7배)."
+      "notes": "src/parsers/bol.py. TD = Total 시트 TOTAL SISTEMA 행(볼리비아노 기준). 초기에 검토했던 Base Monetaria 31행(Moneda Extranjera)은 중앙은행 지급준비금 중 외화분일 뿐 시중은행 고객 외화예금이 아니라서(금액도 훨씬 작음) 채택하지 않고, 같은 목록의 더 정확한 파일로 대체. 2026-08-19 중대 버그 수정: FCD로 쓰던 'ME' 시트 TOTAL SISTEMA 행이 볼리비아노 환산액이 아니라 원화(달러) 그대로였음(시트 제목 'MONEDA DÓLARES') — 그동안 FCD(USD)/TD(Bs)를 그대로 나눠 ratio가 실제보다 ~7배 작게(예: 2026-06 1.0%) 나오고 있었다. '3. Sistema Monetario.xlsx'와 교차검증하는 과정에서 발견, 실제 뉴스(2023년 이후 달러위기로 $2.5B 예금 동결, 2026-06-26 변동환율제 전환)로도 확인. 볼리비아는 2011-11~2026-06-26까지 고정환율(6.96 Bs/USD)이었고 그 이후는 BCB가 매일 공개하는 TCO(tco_tcreferencial_descargar_csv.php) 가중평균 환율을 사용해 ME(USD)×환율로 Bs 환산 후 TD와 비교하도록 수정. 수정 후 실측: 2026-06 ratio≈9.75%(변동환율 전환 직후 급등), 2026-01~05는 7.2~7.4%대(기존 대비 약 7배)."
     }
   },
   {
@@ -561,7 +561,7 @@
     "source_url": "https://www.bankofbotswana.bw/publications",
     "update_frequency": "Monthly",
     "requires_js": true,
-    "notes": "Publications 목록(페이지네이션, JS)에 매달 \"Botswana Economic and Financial Statistics - {Month} {Year}\" xlsx가 게시됨. 시트 3.16(COMMERCIAL BANKS: FOREIGN CURRENCY ACCOUNTS AND TOTAL DEPOSITS)에 통화별 외화계좌 풀라 환산 합계가 있음. 각 파일이 최근 ~10~13년 롤링 윈도우만 담고 있어 여러 발행월의 파일을 모아야 함. 목록에는 안 뜨지만 사용자가 알려준 구형 직접 링크 (BFS-JAN-2015.xls, 옛 바이너리 .xls 포맷)에 2004~2014년치가 있어 이것도 함께 받아 2004-12까지 확장.",
+    "notes": "Publications 목록(페이지네이션, JS)에 매달 \"Botswana Economic and Financial Statistics - {Month} {Year}\" xlsx가 게시됨. 시트 3.16(COMMERCIAL BANKS: FOREIGN CURRENCY ACCOUNTS AND TOTAL DEPOSITS)에 통화별 외화계좌 풀라 환산 합계가 있음. 각 파일이 최근 ~10~13년 롤링 윈도우만 담고 있어 여러 발행월의 파일을 모아야 함. 목록에는 안 뜨지만 추가로 확인된 구형 직접 링크 (BFS-JAN-2015.xls, 옛 바이너리 .xls 포맷)에 2004~2014년치가 있어 이것도 함께 받아 2004-12까지 확장.",
     "adapter": {
       "implemented": true,
       "strategy_class": "InteractiveWebStrategy",
@@ -696,7 +696,7 @@
     "source_url": "https://www.bcc.cd/statistiques/secteur-monetaire/depots",
     "update_frequency": "Monthly",
     "requires_js": false,
-    "notes": "BCC 신형 통계 사이트(2025경 개편) 'Dépôts : Secteur monétaire' 위젯. Next.js RSC가 페이지 HTML 안에 전체 시계열을 스트리밍 청크로 그대로 심어놓아(self.__next_f.push) 별도 API 호출 없이 정적 HTML 하나로 전체 데이터 확보 가능 - 사용자가 언급한 CSV/XLSX 내보내기 버튼도 이 내장 데이터를 클라이언트에서 파일로 변환하는 것으로 보임. depots--mn(자국통화)/depots--me(외화, FCD) 필드, 단위는 백만 미국 달러(콩고프랑 아님, 화폐개혁/환율 이슈 없음). 2010-12부터. bcc.cd 인증서 체인 문제로 verify=False 필요.",
+    "notes": "BCC 신형 통계 사이트(2025경 개편) 'Dépôts : Secteur monétaire' 위젯. Next.js RSC가 페이지 HTML 안에 전체 시계열을 스트리밍 청크로 그대로 심어놓아(self.__next_f.push) 별도 API 호출 없이 정적 HTML 하나로 전체 데이터 확보 가능 - 확인된 CSV/XLSX 내보내기 버튼도 이 내장 데이터를 클라이언트에서 파일로 변환하는 것으로 보임. depots--mn(자국통화)/depots--me(외화, FCD) 필드, 단위는 백만 미국 달러(콩고프랑 아님, 화폐개혁/환율 이슈 없음). 2010-12부터. bcc.cd 인증서 체인 문제로 verify=False 필요.",
     "adapter": {
       "implemented": true,
       "strategy_class": "InteractiveWebStrategy",
@@ -926,7 +926,7 @@
       "implemented": true,
       "strategy_class": "InteractiveWebStrategy",
       "status": "success",
-      "notes": "사용자가 제시한 SDMX REST API(sdmx.eccb-centralbank.org)는 DNS 미해석(존재하지 않는 도메인) 확인됨 -> 실제로는 eccb-centralbank.org의 'Interactive Database' 쿼리 폼(Laravel, CSRF+암호화 hidden 필드, 부트스트랩 모달 안 select2 멀티셀렉트)이 진짜 데이터 소스. Playwright로 모달 열기-> 국가 선택->'Foreign Currency Deposits' 지표 선택->제출 흐름 재현(src/parsers/_eccb_common.py 공용). start_date를 jQuery datepicker API로 2000-01-01로 설정해 2000~2025년(26개년) 연간 데이터 확보. 8개국(AIA/ATG/DMA/GRD/MSR/KNA/LCA/VCT) 공용 로직 검증 완료"
+      "notes": "제시된 SDMX REST API(sdmx.eccb-centralbank.org)는 DNS 미해석(존재하지 않는 도메인)으로 확인됨 -> 실제로는 eccb-centralbank.org의 'Interactive Database' 쿼리 폼(Laravel, CSRF+암호화 hidden 필드, 부트스트랩 모달 안 select2 멀티셀렉트)이 진짜 데이터 소스. Playwright로 모달 열기-> 국가 선택->'Foreign Currency Deposits' 지표 선택->제출 흐름 재현(src/parsers/_eccb_common.py 공용). start_date를 jQuery datepicker API로 2000-01-01로 설정해 2000~2025년(26개년) 연간 데이터 확보. 8개국(AIA/ATG/DMA/GRD/MSR/KNA/LCA/VCT) 공용 로직 검증 완료"
     }
   },
   {
@@ -964,7 +964,7 @@
     "country_name": "Algeria",
     "data_type": "Interactive Web",
     "source_url": "https://www.bank-of-algeria.dz/bulletins-statistiques-2021/",
-    "update_frequency": "Quarterly",
+    "update_frequency": "Monthly",
     "requires_js": false,
     "notes": "bulletins-statistiques-{YYYY}/ 연도별 페이지에서 분기통계Bulletin PDF 링크 수집(TLS 인증서 체인 문제로 verify=False 필요)",
     "adapter": {
@@ -1315,7 +1315,7 @@
       "implemented": true,
       "strategy_class": "ApiStrategy",
       "status": "success",
-      "notes": "GET /guest/getMnemonicData/cbg/FIN/fcdlttlcb (경로: account/databank/mnemonic). 분기 비율(%%)을 FCD_TD_RATIO로 적재 — 정의는 외화표시부채/총부채(예금 전용 달러화율과 다를 수 있음). 메타 unit=mill. Of GMD 이나 값은 %%(2022Q4=34.62 등 사용자 제시 표본과 일치). 절대 FCD·TD 시계열 없음. 실측 2007Q3~2023Q3, 65분기. 18번 fcdlttlocb(외화대출/총대출)는 미수집"
+      "notes": "GET /guest/getMnemonicData/cbg/FIN/fcdlttlcb (경로: account/databank/mnemonic). 분기 비율(%%)을 FCD_TD_RATIO로 적재 — 정의는 외화표시부채/총부채(예금 전용 달러화율과 다를 수 있음). 메타 unit=mill. Of GMD 이나 값은 %%(2022Q4=34.62 등 제시된 표본과 일치). 절대 FCD·TD 시계열 없음. 실측 2007Q3~2023Q3, 65분기. 18번 fcdlttlocb(외화대출/총대출)는 미수집"
     }
   },
   {
@@ -1375,7 +1375,7 @@
       "implemented": true,
       "strategy_class": "InteractiveWebStrategy",
       "status": "success",
-      "notes": "사용자가 제시한 SDMX REST API(sdmx.eccb-centralbank.org)는 DNS 미해석(존재하지 않는 도메인) 확인됨 -> 실제로는 eccb-centralbank.org의 'Interactive Database' 쿼리 폼(Laravel, CSRF+암호화 hidden 필드, 부트스트랩 모달 안 select2 멀티셀렉트)이 진짜 데이터 소스. Playwright로 모달 열기-> 국가 선택->'Foreign Currency Deposits' 지표 선택->제출 흐름 재현(src/parsers/_eccb_common.py 공용). start_date를 jQuery datepicker API로 2000-01-01로 설정해 2000~2025년(26개년) 연간 데이터 확보. 8개국(AIA/ATG/DMA/GRD/MSR/KNA/LCA/VCT) 공용 로직 검증 완료"
+      "notes": "제시된 SDMX REST API(sdmx.eccb-centralbank.org)는 DNS 미해석(존재하지 않는 도메인)으로 확인됨 -> 실제로는 eccb-centralbank.org의 'Interactive Database' 쿼리 폼(Laravel, CSRF+암호화 hidden 필드, 부트스트랩 모달 안 select2 멀티셀렉트)이 진짜 데이터 소스. Playwright로 모달 열기-> 국가 선택->'Foreign Currency Deposits' 지표 선택->제출 흐름 재현(src/parsers/_eccb_common.py 공용). start_date를 jQuery datepicker API로 2000-01-01로 설정해 2000~2025년(26개년) 연간 데이터 확보. 8개국(AIA/ATG/DMA/GRD/MSR/KNA/LCA/VCT) 공용 로직 검증 완료"
     }
   },
   {
@@ -1775,7 +1775,7 @@
     "source_url": "https://www.centralbank.go.ke/uploads/monetary_and_finance_statistics/18143394_Depository%20Corporation%20Survey%20Old%20-%20CSV.csv",
     "update_frequency": "Monthly",
     "requires_js": false,
-    "notes": "CBK Depository Corporation Survey CSV (사용자 제보, 2026-08-19). 'Old'라는 이름과 달리 1995-12부터 최신월까지 매달 갱신되는 메인 소스. FCD는 직접 행으로 제공, TD=M2-M0+FCD.",
+    "notes": "CBK Depository Corporation Survey CSV (추가 조사로 확인, 2026-08-19). 'Old'라는 이름과 달리 1995-12부터 최신월까지 매달 갱신되는 메인 소스. FCD는 직접 행으로 제공, TD=M2-M0+FCD.",
     "adapter": {
       "implemented": true,
       "strategy_class": "DirectExcelStrategy",
@@ -1840,7 +1840,7 @@
       "implemented": true,
       "strategy_class": "InteractiveWebStrategy",
       "status": "success",
-      "notes": "사용자가 제시한 SDMX REST API(sdmx.eccb-centralbank.org)는 DNS 미해석(존재하지 않는 도메인) 확인됨 -> 실제로는 eccb-centralbank.org의 'Interactive Database' 쿼리 폼(Laravel, CSRF+암호화 hidden 필드, 부트스트랩 모달 안 select2 멀티셀렉트)이 진짜 데이터 소스. Playwright로 모달 열기-> 국가 선택->'Foreign Currency Deposits' 지표 선택->제출 흐름 재현(src/parsers/_eccb_common.py 공용). start_date를 jQuery datepicker API로 2000-01-01로 설정해 2000~2025년(26개년) 연간 데이터 확보. 8개국(AIA/ATG/DMA/GRD/MSR/KNA/LCA/VCT) 공용 로직 검증 완료"
+      "notes": "제시된 SDMX REST API(sdmx.eccb-centralbank.org)는 DNS 미해석(존재하지 않는 도메인)으로 확인됨 -> 실제로는 eccb-centralbank.org의 'Interactive Database' 쿼리 폼(Laravel, CSRF+암호화 hidden 필드, 부트스트랩 모달 안 select2 멀티셀렉트)이 진짜 데이터 소스. Playwright로 모달 열기-> 국가 선택->'Foreign Currency Deposits' 지표 선택->제출 흐름 재현(src/parsers/_eccb_common.py 공용). start_date를 jQuery datepicker API로 2000-01-01로 설정해 2000~2025년(26개년) 연간 데이터 확보. 8개국(AIA/ATG/DMA/GRD/MSR/KNA/LCA/VCT) 공용 로직 검증 완료"
     }
   },
   {
@@ -1910,7 +1910,7 @@
     "source_url": "https://www.cbl.org.lr/general/all-publications?keys=&field_document_type_target_id%5B%5D=194&items_per_page=25",
     "update_frequency": "Monthly",
     "requires_js": false,
-    "notes": "CBL Monthly Economic Review: commercial bank deposits by USD/LRD and Total Deposits converted to LRD. 기존 /publications/document-type/monthly-economic-review 페이지는 페이지네이션이 없어 최근 몇 건만 노출 → 사용자 제보로 all-publications?field_document_type_target_id[]=194 (페이지네이션 있음, 2015-01까지)로 전환(2026-08-19).",
+    "notes": "CBL Monthly Economic Review: commercial bank deposits by USD/LRD and Total Deposits converted to LRD. 기존 /publications/document-type/monthly-economic-review 페이지는 페이지네이션이 없어 최근 몇 건만 노출 → 추가 조사로 all-publications?field_document_type_target_id[]=194 (페이지네이션 있음, 2015-01까지)로 전환(2026-08-19).",
     "adapter": {
       "implemented": true,
       "strategy_class": "PdfBulletinStrategy",
@@ -1945,7 +1945,7 @@
       "implemented": true,
       "strategy_class": "InteractiveWebStrategy",
       "status": "success",
-      "notes": "사용자가 제시한 SDMX REST API(sdmx.eccb-centralbank.org)는 DNS 미해석(존재하지 않는 도메인) 확인됨 -> 실제로는 eccb-centralbank.org의 'Interactive Database' 쿼리 폼(Laravel, CSRF+암호화 hidden 필드, 부트스트랩 모달 안 select2 멀티셀렉트)이 진짜 데이터 소스. Playwright로 모달 열기-> 국가 선택->'Foreign Currency Deposits' 지표 선택->제출 흐름 재현(src/parsers/_eccb_common.py 공용). start_date를 jQuery datepicker API로 2000-01-01로 설정해 2000~2025년(26개년) 연간 데이터 확보. 8개국(AIA/ATG/DMA/GRD/MSR/KNA/LCA/VCT) 공용 로직 검증 완료"
+      "notes": "제시된 SDMX REST API(sdmx.eccb-centralbank.org)는 DNS 미해석(존재하지 않는 도메인)으로 확인됨 -> 실제로는 eccb-centralbank.org의 'Interactive Database' 쿼리 폼(Laravel, CSRF+암호화 hidden 필드, 부트스트랩 모달 안 select2 멀티셀렉트)이 진짜 데이터 소스. Playwright로 모달 열기-> 국가 선택->'Foreign Currency Deposits' 지표 선택->제출 흐름 재현(src/parsers/_eccb_common.py 공용). start_date를 jQuery datepicker API로 2000-01-01로 설정해 2000~2025년(26개년) 연간 데이터 확보. 8개국(AIA/ATG/DMA/GRD/MSR/KNA/LCA/VCT) 공용 로직 검증 완료"
     }
   },
   {
@@ -1968,7 +1968,7 @@
     "country_name": "Sri Lanka",
     "data_type": "Direct Excel",
     "source_url": "https://www.cbsl.gov.lk/en/statistics/statistical-tables/financial-sector",
-    "update_frequency": "Quarterly",
+    "update_frequency": "Monthly",
     "requires_js": false,
     "notes": "CBSL Table2.0 Banking Sector Liabilities: FCY Deposits / Total Deposits (Rs. Mn, quarterly).",
     "adapter": {
@@ -2030,7 +2030,7 @@
     "source_url": "https://statdb.bank.lv/lb/Data.aspx?id=243&lang=en",
     "update_frequency": "Monthly",
     "requires_js": true,
-    "notes": "id=243 = '01 MFI balance sheet (excluding central bank)', 'DEPOSITS (total)' 행의 Residents>Latvia>Euro/Foreign currency 열. 2026-08-20 사용자 확인: 표가 DevExpress ASP.NET PivotGrid(가상 스크롤, XHR/API 백엔드 없음)라 자동 스크레이핑 불가 확인 — half_manual로 전환, Period를 원하는 달로 맞추고 xlsx 내보내기 → 웹 대시보드 업로드 버튼으로 반영(web/src/lib/lvaImport.ts). 내보내기 파일 1개당 상세 통화분해가 있는 기간은 1개뿐이라 매달 반복 필요.",
+    "notes": "id=243 = '01 MFI balance sheet (excluding central bank)', 'DEPOSITS (total)' 행의 Residents>Latvia>Euro/Foreign currency 열. 2026-08-20 확인: 표가 DevExpress ASP.NET PivotGrid(가상 스크롤, XHR/API 백엔드 없음)라 자동 스크레이핑 불가 확인 — half_manual로 전환, Period를 원하는 달로 맞추고 xlsx 내보내기 → 웹 대시보드 업로드 버튼으로 반영(web/src/lib/lvaImport.ts). 내보내기 파일 1개당 상세 통화분해가 있는 기간은 1개뿐이라 매달 반복 필요.",
     "adapter": {
       "implemented": false,
       "strategy_class": null,
@@ -2245,7 +2245,7 @@
       "implemented": true,
       "strategy_class": "DirectExcelStrategy",
       "status": "success",
-      "notes": "zip xlsx Total deposits(2003~현재 월별, TD로 사용) + 연말 other-currency share(각 연도 Annual Report 'deposits in other currencies made up X% of total deposits' 문장에서 직접 확인: 2009=3.4,2010=3.32,2011=3.5,2012=4.0,2014=4.08,2015=6.9,2016=6.6,2017=7.06,2018=6.92,2019=7.10,2021=5.75,2022=5.12,2023=4.93,2024=4.76). 2026-08-20 사용자가 짚어준 publications 목록 페이지에서 cbm_annual_report_2003~2012+cbcg_annual_report_2014~2024 15개 보고서를 전수조사해 대폭 확장(2013,2020 보고서는 없거나 해당 문장 없음, 2003-2008은 문장형 요약이 없어 보류 — 2003년판엔 'Table 21 Deposits by Private Citizens'가 있지만 개인 부문만의 범위라 시스템 전체 TD와 정의가 달라 채택 안 함). 개선 후 실측 168개월(2009-01~2024-12, 2013/2020 구간은 공백)."
+      "notes": "zip xlsx Total deposits(2003~현재 월별, TD로 사용) + 연말 other-currency share(각 연도 Annual Report 'deposits in other currencies made up X% of total deposits' 문장에서 직접 확인: 2009=3.4,2010=3.32,2011=3.5,2012=4.0,2014=4.08,2015=6.9,2016=6.6,2017=7.06,2018=6.92,2019=7.10,2021=5.75,2022=5.12,2023=4.93,2024=4.76). 2026-08-20 확인된 publications 목록 페이지에서 cbm_annual_report_2003~2012+cbcg_annual_report_2014~2024 15개 보고서를 전수조사해 대폭 확장(2013,2020 보고서는 없거나 해당 문장 없음, 2003-2008은 문장형 요약이 없어 보류 — 2003년판엔 'Table 21 Deposits by Private Citizens'가 있지만 개인 부문만의 범위라 시스템 전체 TD와 정의가 달라 채택 안 함). 개선 후 실측 168개월(2009-01~2024-12, 2013/2020 구간은 공백)."
     }
   },
   {
@@ -2320,7 +2320,7 @@
       "implemented": true,
       "strategy_class": "InteractiveWebStrategy",
       "status": "success",
-      "notes": "사용자가 제시한 SDMX REST API(sdmx.eccb-centralbank.org)는 DNS 미해석(존재하지 않는 도메인) 확인됨 -> 실제로는 eccb-centralbank.org의 'Interactive Database' 쿼리 폼(Laravel, CSRF+암호화 hidden 필드, 부트스트랩 모달 안 select2 멀티셀렉트)이 진짜 데이터 소스. Playwright로 모달 열기-> 국가 선택->'Foreign Currency Deposits' 지표 선택->제출 흐름 재현(src/parsers/_eccb_common.py 공용). start_date를 jQuery datepicker API로 2000-01-01로 설정해 2000~2025년(26개년) 연간 데이터 확보. 8개국(AIA/ATG/DMA/GRD/MSR/KNA/LCA/VCT) 공용 로직 검증 완료"
+      "notes": "제시된 SDMX REST API(sdmx.eccb-centralbank.org)는 DNS 미해석(존재하지 않는 도메인)으로 확인됨 -> 실제로는 eccb-centralbank.org의 'Interactive Database' 쿼리 폼(Laravel, CSRF+암호화 hidden 필드, 부트스트랩 모달 안 select2 멀티셀렉트)이 진짜 데이터 소스. Playwright로 모달 열기-> 국가 선택->'Foreign Currency Deposits' 지표 선택->제출 흐름 재현(src/parsers/_eccb_common.py 공용). start_date를 jQuery datepicker API로 2000-01-01로 설정해 2000~2025년(26개년) 연간 데이터 확보. 8개국(AIA/ATG/DMA/GRD/MSR/KNA/LCA/VCT) 공용 로직 검증 완료"
     }
   },
   {
@@ -2365,7 +2365,7 @@
       "implemented": true,
       "strategy_class": "DirectExcelStrategy",
       "status": "success",
-      "notes": "sheet='Depository Corporations Survey', row3=날짜 헤더(col B~), row29='Foreign currency denominated deposits'. 2026-08-19 사용자 제보로 RBM Annual Reports(rbm.mw/Publications/AnnualReports/, JS 페이지네이션) 부록 'Table N: Commercial Banks: Assets and Liabilities' 병합 — 2018년판(2012-2018 커버)+2025년판(2019-2025 커버) 딱 2개 보고서로 2012-2025 전체 커버(7개년 롤링 컬럼이라 중간 연도 리포트는 불필요). TD='1.4 Private sector deposits', FCD='1.4.3 Foreign Currency deposits'. 'Commercial Banks' 범위가 DCS('Depository Corporations', RBM 포함)보다 살짝 좁아 2018년 값이 정확히 일치하진 않음(연차보고서 ratio 19.19% vs DCS 19.82%, 근접) — 그래서 DCS가 커버하는 2018-04 이후는 DCS 우선, 그 이전만 연차보고서 사용. 개선 후 실측 105개월(2012-12~2026-06, 2013-2018 구간은 연말 관측만)."
+      "notes": "sheet='Depository Corporations Survey', row3=날짜 헤더(col B~), row29='Foreign currency denominated deposits'. 2026-08-19 추가 조사로 RBM Annual Reports(rbm.mw/Publications/AnnualReports/, JS 페이지네이션) 부록 'Table N: Commercial Banks: Assets and Liabilities' 병합 — 2018년판(2012-2018 커버)+2025년판(2019-2025 커버) 딱 2개 보고서로 2012-2025 전체 커버(7개년 롤링 컬럼이라 중간 연도 리포트는 불필요). TD='1.4 Private sector deposits', FCD='1.4.3 Foreign Currency deposits'. 'Commercial Banks' 범위가 DCS('Depository Corporations', RBM 포함)보다 살짝 좁아 2018년 값이 정확히 일치하진 않음(연차보고서 ratio 19.19% vs DCS 19.82%, 근접) — 그래서 DCS가 커버하는 2018-04 이후는 DCS 우선, 그 이전만 연차보고서 사용. 개선 후 실측 105개월(2012-12~2026-06, 2013-2018 구간은 연말 관측만)."
     }
   },
   {
@@ -2583,7 +2583,7 @@
     "country_name": "Oman",
     "data_type": "PDF Bulletin",
     "source_url": "https://cbo.gov.om/Pages/QuarterlyBulletins.aspx",
-    "update_frequency": "Quarterly",
+    "update_frequency": "Monthly",
     "requires_js": false,
     "notes": "CBO Quarterly Bulletin: Breakdown of Private Sector Deposits (Total Deposits RO/FC/Total). Absolute OMR mn FCD+TD; ratio=FCD/TD*100. Filename tokens Mar/March/Jun/June/Sep/Sept/Dec/December + optional En/EN.",
     "adapter": {
@@ -2598,14 +2598,14 @@
     "country_name": "Pakistan",
     "data_type": "Direct Excel",
     "source_url": "https://www.sbp.org.pk/assets/document/BroadMoney_M2_Arch.xls",
-    "update_frequency": "Weekly",
+    "update_frequency": "Monthly",
     "requires_js": false,
     "notes": "SBP 'Broad Money (M2)' 아카이브 xls, 시대별 시트(M2_FY70-FY90 ... FY23 to onwards)에 1969-06부터 현재까지 전체 시계열. TD=Demand+Time+RFCD(Resident Foreign Currency Deposits) deposits, FCD=RFCD. RFCD는 1991년 이전 시트엔 항목만 있고 값이 비어 있어 그 이전은 자동 제외. sbp.org.pk가 기본 requests 헤더를 403 차단해 브라우저형 UA/Referer 필요.",
     "adapter": {
       "implemented": true,
       "strategy_class": "PdfBulletinStrategy",
       "status": "success",
-      "notes": "src/parsers/pak.py: 기존 FE-25 USD 환산 추정치 방식을 폐기하고 사용자가 지목한 단일 xls(로컬통화 원본, 환산 불필요)로 전환. 시트별 헤더/라벨 행 위치가 달라 'Currency in Circulation' 라벨을 앵커로 삼아 상대적으로 탐색. 원자료는 주간(금/토 마감)이라 (연,월)별 마지막 관측치로 월간 리샘플링. 실측 1991-03~2026-08 (426개월, 1278행)."
+      "notes": "src/parsers/pak.py: 기존 FE-25 USD 환산 추정치 방식을 폐기하고 확인된 단일 xls(로컬통화 원본, 환산 불필요)로 전환. 시트별 헤더/라벨 행 위치가 달라 'Currency in Circulation' 라벨을 앵커로 삼아 상대적으로 탐색. 원자료는 주간(금/토 마감)이라 (연,월)별 마지막 관측치로 월간 리샘플링. 실측 1991-03~2026-08 (426개월, 1278행)."
     }
   },
   {
@@ -2650,7 +2650,7 @@
       "implemented": true,
       "strategy_class": "ApiStrategy",
       "status": "success",
-      "notes": "PN00217MM+PN00224MM×PN01210PM. FCD=ME_USD*FX, TD=MN+FCD (S/ mn). 실측 2021-08~2026-05. 2026-05 ratio≈29.2%. 2026-08-19 사용자 제보로 2021년 이전 구간을 BCRP Annual Report 부록('MONETARY ACCOUNTS OF THE DEPOSITORY INSTITUTIONS', 2020년판=Appendix 60)으로 보강 — TD='IV. Monetary liabilities with private sector', FCD='B. Quasi money in foreign currency', 표 자체가 예금취급기관 전체 통화성부채를 자국통화/외화로 나눈 것이라 월별 시리즈와 개념 동일(이전엔 'Liquidez'(유동성) 연간 시리즈로 임시 프록시했으나 이 실제 예금 데이터로 교체). 2020년판 부록 하나가 2011-2020 10개년 롤링 컬럼을 담고 있어 그것만으로 충분. 목록 페이지는 Incapsula 챌린지(플레이키 — 같은 요청도 통과/실패 랜덤)라 Playwright로 목록 페이지 방문 후 같은 브라우저 컨텍스트의 request API로 PDF를 받아야 하고, 실패 시 최대 4회 재시도. PDF 자체가 pdfplumber 추출 시 줄 단위로 문자가 뒤집혀 나오는 손상 포맷이라 줄 전체를 reverse해 복원 후 앵커 토큰('IV.', 'B.'+'Quasi money'+'foreign'+'currency') 기준으로 파싱. 개선 후 실측 68개 기간(2011-Annual~2026-05)."
+      "notes": "PN00217MM+PN00224MM×PN01210PM. FCD=ME_USD*FX, TD=MN+FCD (S/ mn). 실측 2021-08~2026-05. 2026-05 ratio≈29.2%. 2026-08-19 추가 조사로 2021년 이전 구간을 BCRP Annual Report 부록('MONETARY ACCOUNTS OF THE DEPOSITORY INSTITUTIONS', 2020년판=Appendix 60)으로 보강 — TD='IV. Monetary liabilities with private sector', FCD='B. Quasi money in foreign currency', 표 자체가 예금취급기관 전체 통화성부채를 자국통화/외화로 나눈 것이라 월별 시리즈와 개념 동일(이전엔 'Liquidez'(유동성) 연간 시리즈로 임시 프록시했으나 이 실제 예금 데이터로 교체). 2020년판 부록 하나가 2011-2020 10개년 롤링 컬럼을 담고 있어 그것만으로 충분. 목록 페이지는 Incapsula 챌린지(플레이키 — 같은 요청도 통과/실패 랜덤)라 Playwright로 목록 페이지 방문 후 같은 브라우저 컨텍스트의 request API로 PDF를 받아야 하고, 실패 시 최대 4회 재시도. PDF 자체가 pdfplumber 추출 시 줄 단위로 문자가 뒤집혀 나오는 손상 포맷이라 줄 전체를 reverse해 복원 후 앵커 토큰('IV.', 'B.'+'Quasi money'+'foreign'+'currency') 기준으로 파싱. 개선 후 실측 68개 기간(2011-Annual~2026-05)."
     }
   },
   {
@@ -2705,12 +2705,12 @@
     "source_url": "https://nbp.pl/en/statistic-and-financial-reporting/monetary-and-financial-statistics/archives/banking-system-assets-and-liabilities/",
     "update_frequency": "Annual",
     "requires_js": true,
-    "notes": "nbp.pl 전체가 Incapsula로 막혀 있음(일반 requests/헤드리스 Playwright/WebFetch/Wayback 스냅샷 전부 동일한 'Pardon Our Interruption' 챌린지 페이지만 반환, 확인함). static.nbp.pl 파일 서빙 서브도메인 자체는 안 막혀 있으나(200) 목록 페이지를 못 읽어 실제 xlsx 파일명을 알 수 없음. 2002년 이전은 사용자 확인으로는 연도별 엑셀 파일을 이 아카이브 페이지에서 받아야 함.",
+    "notes": "nbp.pl 전체가 Incapsula로 막혀 있음(일반 requests/헤드리스 Playwright/WebFetch/Wayback 스냅샷 전부 동일한 'Pardon Our Interruption' 챌린지 페이지만 반환, 확인함). static.nbp.pl 파일 서빙 서브도메인 자체는 안 막혀 있으나(200) 목록 페이지를 못 읽어 실제 xlsx 파일명을 알 수 없음. 2002년 이전은 확인 결과 연도별 엑셀 파일을 이 아카이브 페이지에서 받아야 함.",
     "adapter": {
       "implemented": true,
       "strategy_class": "PdfBulletinStrategy",
       "status": "needs_research",
-      "notes": "이전 버전은 IMF/BIS 인용 비율을 TD=100(가짜 분모)/FCD=비율 형태로 저장해 실측 데이터처럼 보이게 했으나 NBP 원출처가 아니라는 지적을 받아 DB에서 삭제하고(2026-08-18) 파서를 빈 결과 반환으로 되돌림. nbp.pl Incapsula 우회 방법을 찾거나 사용자가 실제 파일 URL을 알려주면 재개 가능."
+      "notes": "이전 버전은 IMF/BIS 인용 비율을 TD=100(가짜 분모)/FCD=비율 형태로 저장해 실측 데이터처럼 보이게 했으나 NBP 원출처가 아니라는 지적을 받아 DB에서 삭제하고(2026-08-18) 파서를 빈 결과 반환으로 되돌림. nbp.pl Incapsula 우회 방법을 찾거나 실제 파일 URL이 확인되면 재개 가능."
     }
   },
   {
@@ -2898,7 +2898,7 @@
     "country_name": "Sudan (the)",
     "data_type": "PDF Bulletin",
     "source_url": "https://cbos.gov.sd/en/publication-type/annual-reports",
-    "update_frequency": "Annual",
+    "update_frequency": "Quarterly",
     "requires_js": false,
     "notes": "CBOS 연차보고서 목록(2002~2018만 존재, 2019년 이후 미발간)을 순회. 각 보고서의 'Deposits in Local/Foreign Currency by the end of <Y1> and <Y2>' 표(제목 문구가 연도별로 조금씩 다름) 'Grand Total' 행 = 그 해 총예금. FCD=Foreign Grand Total, TD=Local+Foreign Grand Total (SDG million, 2007년 이전은 화폐개혁 전 구 디나르 표시라 스케일 다름).",
     "adapter": {
@@ -3010,7 +3010,7 @@
       "implemented": true,
       "strategy_class": "InteractiveWebStrategy",
       "status": "success",
-      "notes": "www.bsl.gov.sl은 DNS 오류지만 www. 없는 https://bsl.gov.sl 은 정상 응답(브라우저 UA 헤더 필요, 아니면 커넥션 리셋). 안내된 Open Data for Africa 포털(cb-sierraleone.opendataforafrica.org)은 Cloudflare 봇 챌린지로 requests/Playwright 모두 차단되어 자동화 불가 확인. Publications.html에 아카이브된 분기별 Monetary Policy Report PDF들의 부록 'Monetary Survey' 표(약 절반의 보고서에만 존재)에서 FCD(o.w. Foreign currency deposit)와 TD(Demand deposit+Quasi money)를 직접 추출. FCD/TD 비율 32~51%로 BSL 자체 Financial Stability Report 2022의 서술('FX 예금 비중이 2022년 중 36%→51%로 급등')과 정합. 2022년 8월 리디노미네이션(구 SLL->신 SLE, 1000:1) 전후 표 단위('Billions'/'Millions of Leones')는 수치적으로 동일해 별도 환산 불필요(2022Q1 M2 값이 양쪽 보고서에서 동일함을 교차 확인). 2026-08-19 사용자 제보로 'Annual Report and Statement of Accounts'(Publications.html에 정적 링크로 존재, hover처럼 보여도 JS 불필요) PDF도 추가 소스로 병합 — 부록 'Table N: Monetary Survey'가 MPR과 동일 항목이지만 헤더가 분기번호 대신 월-연도(Dec-12 등)라 Dec/Mar/Jun/Sep→Q4/Q1/Q2/Q3 매핑, 행 라벨도 'o.w.' 접두어 없이 그냥 'Foreign Currency Deposits'라 폴백 매칭 추가. 2013~2015년판 3개는 텍스트 추출 성공, 2016/2017년판은 스캔 이미지라 실패(자동 skip). 개선 후 실측 30개 분기(2012Q4~2026Q1, 다만 2016Q1~2021Q2 공백 있음 — 해당 연차보고서가 이미지 PDF이거나 목록에 없음)."
+      "notes": "www.bsl.gov.sl은 DNS 오류지만 www. 없는 https://bsl.gov.sl 은 정상 응답(브라우저 UA 헤더 필요, 아니면 커넥션 리셋). 안내된 Open Data for Africa 포털(cb-sierraleone.opendataforafrica.org)은 Cloudflare 봇 챌린지로 requests/Playwright 모두 차단되어 자동화 불가 확인. Publications.html에 아카이브된 분기별 Monetary Policy Report PDF들의 부록 'Monetary Survey' 표(약 절반의 보고서에만 존재)에서 FCD(o.w. Foreign currency deposit)와 TD(Demand deposit+Quasi money)를 직접 추출. FCD/TD 비율 32~51%로 BSL 자체 Financial Stability Report 2022의 서술('FX 예금 비중이 2022년 중 36%→51%로 급등')과 정합. 2022년 8월 리디노미네이션(구 SLL->신 SLE, 1000:1) 전후 표 단위('Billions'/'Millions of Leones')는 수치적으로 동일해 별도 환산 불필요(2022Q1 M2 값이 양쪽 보고서에서 동일함을 교차 확인). 2026-08-19 추가 조사로 'Annual Report and Statement of Accounts'(Publications.html에 정적 링크로 존재, hover처럼 보여도 JS 불필요) PDF도 추가 소스로 병합 — 부록 'Table N: Monetary Survey'가 MPR과 동일 항목이지만 헤더가 분기번호 대신 월-연도(Dec-12 등)라 Dec/Mar/Jun/Sep→Q4/Q1/Q2/Q3 매핑, 행 라벨도 'o.w.' 접두어 없이 그냥 'Foreign Currency Deposits'라 폴백 매칭 추가. 2013~2015년판 3개는 텍스트 추출 성공, 2016/2017년판은 스캔 이미지라 실패(자동 skip). 개선 후 실측 30개 분기(2012Q4~2026Q1, 다만 2016Q1~2021Q2 공백 있음 — 해당 연차보고서가 이미지 PDF이거나 목록에 없음)."
     }
   },
   {
@@ -3115,7 +3115,7 @@
       "implemented": true,
       "strategy_class": "DirectExcelStrategy",
       "status": "success",
-      "notes": "src/parsers/stp.py: FCD=행 '(1.2) Moeda Estrangeira'(거주자 외화예금), TD=행 '(1) Residentes'(거주자 총예금, MN+ME). 월별 2018-01~2026-05, 101개월x3지표=303행 확인. 2018년 재화폐화(1000 STD=1 STN) 이후 파일이라 단위 불연속 없음. FCD/TD 비율 19~27% 범위로 IMF Article IV 추정치(2025년 약 24.9%)와 대체로 부합. 2026-08-19 사용자 제보로 'Agregados Monetários_2001-2026.xlsx'(통화총량, 2001-12부터) 추가 병합 — TD=M3-Moeda em Circulação, FCD=Depósitos em Moeda Estrangeira. 이 파일은 거주자 한정이 아니라 은행 시스템 전체 기준이라 개념이 약간 다름(2018-01 교차검증: 이 파일 28.9% vs 상세파일 26.6%) — 2018-01 이전 구간에만 보조로 쓰고 겹치는 달은 상세 파일(거주자 기준) 우선. 개선 후 실측 294개월 연속 무공백(2001-12~2026-05)."
+      "notes": "src/parsers/stp.py: FCD=행 '(1.2) Moeda Estrangeira'(거주자 외화예금), TD=행 '(1) Residentes'(거주자 총예금, MN+ME). 월별 2018-01~2026-05, 101개월x3지표=303행 확인. 2018년 재화폐화(1000 STD=1 STN) 이후 파일이라 단위 불연속 없음. FCD/TD 비율 19~27% 범위로 IMF Article IV 추정치(2025년 약 24.9%)와 대체로 부합. 2026-08-19 추가 조사로 'Agregados Monetários_2001-2026.xlsx'(통화총량, 2001-12부터) 추가 병합 — TD=M3-Moeda em Circulação, FCD=Depósitos em Moeda Estrangeira. 이 파일은 거주자 한정이 아니라 은행 시스템 전체 기준이라 개념이 약간 다름(2018-01 교차검증: 이 파일 28.9% vs 상세파일 26.6%) — 2018-01 이전 구간에만 보조로 쓰고 겹치는 달은 상세 파일(거주자 기준) 우선. 개선 후 실측 294개월 연속 무공백(2001-12~2026-05)."
     }
   },
   {
@@ -3550,7 +3550,7 @@
       "implemented": true,
       "strategy_class": "PdfBulletinStrategy",
       "status": "success",
-      "notes": "src/parsers/uzb.py: 기존 다중 PDF+OCR+시드값 추측 방식을 폐기하고 사용자가 지목한 단일 xlsx로 전환. 실측 2013-02~2026-08 (163개월, 489행)."
+      "notes": "src/parsers/uzb.py: 기존 다중 PDF+OCR+시드값 추측 방식을 폐기하고 확인된 단일 xlsx로 전환. 실측 2013-02~2026-08 (163개월, 489행)."
     }
   },
   {
@@ -3580,7 +3580,7 @@
       "implemented": true,
       "strategy_class": "InteractiveWebStrategy",
       "status": "success",
-      "notes": "사용자가 제시한 SDMX REST API(sdmx.eccb-centralbank.org)는 DNS 미해석(존재하지 않는 도메인) 확인됨 -> 실제로는 eccb-centralbank.org의 'Interactive Database' 쿼리 폼(Laravel, CSRF+암호화 hidden 필드, 부트스트랩 모달 안 select2 멀티셀렉트)이 진짜 데이터 소스. Playwright로 모달 열기-> 국가 선택->'Foreign Currency Deposits' 지표 선택->제출 흐름 재현(src/parsers/_eccb_common.py 공용). start_date를 jQuery datepicker API로 2000-01-01로 설정해 2000~2025년(26개년) 연간 데이터 확보. 8개국(AIA/ATG/DMA/GRD/MSR/KNA/LCA/VCT) 공용 로직 검증 완료"
+      "notes": "제시된 SDMX REST API(sdmx.eccb-centralbank.org)는 DNS 미해석(존재하지 않는 도메인)으로 확인됨 -> 실제로는 eccb-centralbank.org의 'Interactive Database' 쿼리 폼(Laravel, CSRF+암호화 hidden 필드, 부트스트랩 모달 안 select2 멀티셀렉트)이 진짜 데이터 소스. Playwright로 모달 열기-> 국가 선택->'Foreign Currency Deposits' 지표 선택->제출 흐름 재현(src/parsers/_eccb_common.py 공용). start_date를 jQuery datepicker API로 2000-01-01로 설정해 2000~2025년(26개년) 연간 데이터 확보. 8개국(AIA/ATG/DMA/GRD/MSR/KNA/LCA/VCT) 공용 로직 검증 완료"
     }
   },
   {
@@ -3595,7 +3595,7 @@
       "implemented": true,
       "strategy_class": "DirectExcelStrategy",
       "status": "success",
-      "notes": "src/parsers/ven.py: 기존 추측성 다중 파일 스캔+시드값 방식을 폐기하고 사용자가 지목한 단일 xls로 전환. 라벨 위치가 연도별로 이동해(1999년 40/65행 vs 2026년 45/70행) 라벨 텍스트로 매번 검색. 실측 1999-07~2026-06 (291개월, 873행)."
+      "notes": "src/parsers/ven.py: 기존 추측성 다중 파일 스캔+시드값 방식을 폐기하고 확인된 단일 xls로 전환. 라벨 위치가 연도별로 이동해(1999년 40/65행 vs 2026년 45/70행) 라벨 텍스트로 매번 검색. 실측 1999-07~2026-06 (291개월, 873행)."
     }
   },
   {
@@ -3648,7 +3648,7 @@
     "country_name": "Vanuatu",
     "data_type": "PDF Bulletin",
     "source_url": "https://www.rbv.gov.vu/index.php/en/research-publications",
-    "update_frequency": "Quarterly",
+    "update_frequency": "Monthly",
     "requires_js": false,
     "notes": "RBV QER multi-PDF archive Table 7 Vatu/FC resident deposits.",
     "adapter": {
@@ -3678,7 +3678,7 @@
     "country_name": "Samoa",
     "data_type": "Direct Excel",
     "source_url": "https://cbs.gov.ws/media/A4-Structure-of-Money-Supply-7.xlsx",
-    "update_frequency": "Quarterly",
+    "update_frequency": "Monthly",
     "requires_js": false,
     "notes": "CBS 'Money and Banking' Table A-4 'Structure of Money Supply' (구성비 %표). 'Foreign currency deposits of residents' 행(%) × 17행 광의통화 절대값(Tala million)으로 FCD 역산. TD=광의통화×(1-통화발행고%). 분기, 회계연도(7월~6월) 기준.",
     "adapter": {
@@ -3723,7 +3723,7 @@
     "country_name": "Zambia",
     "data_type": "Direct Excel",
     "source_url": "https://www.boz.zm/statistics/monetary-and-financial-statistics",
-    "update_frequency": "Weekly",
+    "update_frequency": "Monthly",
     "requires_js": true,
     "notes": "BoZ 'Fortnightly Time Series' xlsx, 'Comm. Banks Deposit Liabilities' 시트. 'Total Kwacha Liabilities to the Public'(자국통화)+\"Foreign currency Deposits ($'000)\"(외화, USD 표시)를 'K-USD Exchange Rates' 시트 환율로 콰차 환산 후 합산. 주간, 2014-01부터.",
     "adapter": {

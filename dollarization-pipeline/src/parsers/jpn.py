@@ -1,26 +1,29 @@
 """Japan: BOJ Time-Series Data Search API — MD10 deposits by depositor.
 
-API (2026-02 공개, 키 불필요):
+API (published 2026-02, no key required):
   https://www.stat-search.boj.or.jp/api/v1/getDataCode
-  매뉴얼: https://www.stat-search.boj.or.jp/info/api_manual_en.pdf
-  포털:   https://www.stat-search.boj.or.jp/
+  Manual: https://www.stat-search.boj.or.jp/info/api_manual_en.pdf
+  Portal: https://www.stat-search.boj.or.jp/
 
-통계 DB: MD10 — Amounts Outstanding of Deposits by Depositor
+Statistics DB: MD10 — Amounts Outstanding of Deposits by Depositor
 (Domestically Licensed Banks, Total Value, Total of All Depositors)
 
   FCD  DLDDLKY45090_DLDD3DBTTL12
        Total Value / Foreign Currency Deposits / Total of All Depositors
   TD   DLDDLKY45090_DLDD3DBTTL
        Total Value / Total Value / Total of All Depositors
-       (= 엔화+외화+비거주자 엔 예금 합계; 달러화율 분모)
+       (= sum of yen + foreign-currency + nonresident yen deposits; the
+       dollarization-ratio denominator)
 
-참고: 사용자가 언급한 「定期預金・据置貯金」(Time Deposits and Fixed Savings,
-코드 …TTL8)은 시간성 예금 하위항목이라 분모로 쓰면 FCD/TD가 과대 계상된다.
-파이프라인 관례(총예금 대비 외화예금)에 맞게 Total Value를 TD로 사용한다.
+Note: the item some sources refer to, 「定期預金・据置貯金」(Time Deposits and
+Fixed Savings, code ...TTL8), is a subcategory of time deposits, so using it
+as the denominator would overstate FCD/TD. To match the pipeline convention
+(foreign-currency deposits over total deposits), Total Value is used as TD.
 
-단위: 100 million yen (億円)
-빈도: 분기 슬롯에 수록되나 최근은 FH(반기) — Q2·Q4 값이 0인 관측은 제외.
-period: 분기말 월 (Q1→03, Q2→06, Q3→09, Q4→12).
+Unit: 100 million yen (億円)
+Frequency: recorded in quarterly slots, but recent data is FH (semiannual) —
+observations where Q2/Q4 values are 0 are excluded.
+period: quarter-end month (Q1->03, Q2->06, Q3->09, Q4->12).
 """
 
 from __future__ import annotations
@@ -62,7 +65,7 @@ _Q_TO_MONTH = {1: 3, 2: 6, 3: 9, 4: 12}
 
 
 def parse(content: bytes, country_code: str) -> pd.DataFrame:
-    raise NotImplementedError("JPN는 render()로 BOJ API를 호출한다")
+    raise NotImplementedError("JPN calls the BOJ API via render()")
 
 
 def _empty() -> pd.DataFrame:
@@ -121,7 +124,7 @@ def _fetch_series() -> dict[str, dict]:
                 num = float(v)
             except (TypeError, ValueError):
                 continue
-            # FH 슬롯의 빈 분기(0) 제외 — 실제 0 잔액 가능성은 극히 낮음
+            # exclude empty quarters (0) in FH slots — an actual zero balance is extremely unlikely
             if num <= 0:
                 continue
             period = _survey_to_period(d)

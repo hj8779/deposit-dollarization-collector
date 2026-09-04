@@ -1,24 +1,28 @@
-"""Afghanistan: Da Afghanistan Bank(DAB) Annual/Quarterly Economic Bulletin PDF들,
-'Table 2.1' 계열 표('Monetary Aggregates' / "...Analytical Balance Sheet and Monetary
-Aggregate...")의 'In Foreign currency' 행(Other Deposits/Quasi Money의 외화 구성분).
+"""Afghanistan: Da Afghanistan Bank(DAB) Annual/Quarterly Economic Bulletin PDFs, the
+'In Foreign currency' row (the foreign-currency component of Other Deposits/Quasi Money) in
+'Table 2.1'-style tables ('Monetary Aggregates' / "...Analytical Balance Sheet and Monetary
+Aggregate...").
 
-수집 절차:
-1. 랜딩 페이지(Annual/Quarterly Bulletins 목록) 진입, 페이지 내 a[href$=".pdf"] 전부 수집
-   (DAB 사이트는 별도 게시물 상세페이지 없이 목록 페이지에 PDF가 직접 링크되어 있음).
-2. 각 PDF를 다운로드해 pdfplumber로 'In Foreign currency' 행을 정규식으로 추출.
-   표는 항상 [기간1 금액, 기간2 금액, YoY%, YoY증감, 기간3(최신) 금액, YoY%, YoY증감]
-   7개 숫자 토큰으로 구성되고, 마지막에서 3번째 토큰(기간3 금액)이 그 회보 발행 시점의
-   최신 값이다.
+Collection procedure:
+1. Visit the landing page (list of Annual/Quarterly Bulletins) and collect every a[href$=".pdf"]
+   on the page (the DAB site links PDFs directly on the listing page, with no separate post
+   detail page).
+2. Download each PDF and extract the 'In Foreign currency' row via pdfplumber with regex.
+   The table always consists of 7 numeric tokens: [period1 amount, period2 amount, YoY%,
+   YoY change, period3 (latest) amount, YoY%, YoY change], and the 3rd-from-last token
+   (period3 amount) is the latest value as of that bulletin's publication.
 
-TD(총예금) = 'Demand Deposits' 행 + 'Other Deposits (Quasi Money)' 행(같은 표, 같은 7토큰
-구조). 'In Foreign currency'는 'Other Deposits (Quasi Money)'의 하위 구성분(In Afghani +
-In Foreign currency = Other Deposits)이므로, Demand Deposits + Other Deposits 전체가
-곧 광의통화(M2)에 포함되는 예금 총액이다(실측: 2020-12 Demand 252,219 + Other 40,373.93 =
-292,592.93; Other 40,373.93 = In Afghani 9,191.67 + In Foreign currency 31,182.26 일치).
-3. 기간 라벨은 PDF 내부 텍스트(문서마다 아프간력/그레고리력이 뒤섞여 있고 표 헤더 자체가
-   pdfplumber에서 글자 단위로 뒤섞여 나옴)가 아니라 훨씬 안정적인 **링크 텍스트(파일명)**에서
-   분기/연도를 추출한다. 파일명의 연도가 1500 미만이면 아프간 태양력(SH)으로 보고 +621해
-   그레고리력으로 정규화한다(예: FY1399 -> 2020).
+TD (total deposits) = 'Demand Deposits' row + 'Other Deposits (Quasi Money)' row (same table,
+same 7-token structure). 'In Foreign currency' is a sub-component of 'Other Deposits (Quasi
+Money)' (In Afghani + In Foreign currency = Other Deposits), so Demand Deposits + Other
+Deposits together equal the total deposits included in broad money (M2). Verified empirically:
+2020-12 Demand 252,219 + Other 40,373.93 = 292,592.93; Other 40,373.93 = In Afghani 9,191.67 +
+In Foreign currency 31,182.26, which matches.
+3. Period labels are extracted from the far more reliable **link text (filename)** rather than
+   the PDF's internal text (documents mix Afghan solar and Gregorian calendars, and the table
+   header itself comes out character-scrambled from pdfplumber). If the year in the filename is
+   below 1500, it's treated as Afghan solar hijri (SH) and normalized to the Gregorian calendar
+   by adding 621 (e.g. FY1399 -> 2020).
 """
 
 import re
@@ -55,7 +59,7 @@ _ANNUAL_PATTERN = re.compile(r"Annual.*?(\d{4})", re.I)
 
 
 def _normalize_year(year: int) -> int:
-    """파일명의 연도가 아프간 태양력(SH)이면 그레고리력으로 환산한다."""
+    """Convert the year in the filename to the Gregorian calendar if it's Afghan solar hijri (SH)."""
     return year + 621 if year < 1500 else year
 
 
@@ -72,13 +76,13 @@ def _period_from_label(label: str) -> str | None:
 
 
 def _collect_pdf_links() -> list[tuple[str, str]]:
-    """(period, absolute_pdf_url) 목록. 기간 라벨을 못 만들면 건너뛴다."""
+    """List of (period, absolute_pdf_url). Skipped if a period label can't be derived."""
     links: dict[str, str] = {}
     for landing_url in LANDING_URLS:
         try:
             html = download(landing_url).decode("utf-8", errors="ignore")
         except Exception:
-            logger.warning("[AFG] 랜딩 페이지 접근 실패: %s", landing_url)
+            logger.warning("[AFG] Failed to access landing page: %s", landing_url)
             continue
 
         soup = BeautifulSoup(html, "html.parser")
@@ -90,23 +94,24 @@ def _collect_pdf_links() -> list[tuple[str, str]]:
             period = _period_from_label(filename)
             if period is None:
                 continue
-            # 같은 기간에 파일이 여러 개면(재게시 등) 나중에 발견된 것으로 덮어써
-            # 랜딩 페이지 하단(대개 더 최신 재게시본)의 값을 우선한다.
+            # If multiple files exist for the same period (e.g. reposts), overwrite with the
+            # later one found, preferring whatever appears lower on the landing page
+            # (usually the more recent repost).
             links[period] = urljoin(landing_url, href)
 
     return list(links.items())
 
 
 def _extract_fcd_td(content: bytes) -> tuple[str | None, str | None]:
-    """PDF에서 'In Foreign currency'(FCD)와 'Demand Deposits'+'Other Deposits (Quasi Money)'
-    (TD) 행의 최신(가장 오른쪽) 금액을 문자열로 반환."""
+    """Return the latest (rightmost) amounts from the 'In Foreign currency' (FCD) and
+    'Demand Deposits'+'Other Deposits (Quasi Money)' (TD) rows in the PDF, as strings."""
     with pdfplumber.open(BytesIO(content)) as pdf:
         for page in pdf.pages:
             text = page.extract_text() or ""
             fcd_m = _ROW_RE.search(text)
             if not fcd_m:
                 continue
-            fcd = fcd_m.group(5)  # [amt1, amt2, pct, diff, amt3(최신), pct, diff]
+            fcd = fcd_m.group(5)  # [amt1, amt2, pct, diff, amt3 (latest), pct, diff]
 
             demand_m = _DEMAND_ROW_RE.search(text)
             other_m = _OTHER_DEPOSITS_ROW_RE.search(text)
@@ -128,24 +133,24 @@ def render(target: dict) -> pd.DataFrame:
     now = datetime.now(timezone.utc).isoformat()
 
     pdf_links = _collect_pdf_links()
-    logger.info("[%s] 라벨링 가능한 PDF %d개 발견", country_code, len(pdf_links))
+    logger.info("[%s] Found %d labelable PDFs", country_code, len(pdf_links))
 
     rows = []
     for period, pdf_url in pdf_links:
         try:
             content = download(pdf_url)
         except Exception:
-            logger.warning("[%s] %s(%s) 다운로드 실패, 스킵", country_code, period, pdf_url)
+            logger.warning("[%s] Failed to download %s (%s), skipping", country_code, period, pdf_url)
             continue
 
         try:
             amount, td_amount = _extract_fcd_td(content)
         except Exception:
-            logger.warning("[%s] %s PDF 파싱 실패, 스킵", country_code, period)
+            logger.warning("[%s] Failed to parse %s PDF, skipping", country_code, period)
             continue
 
         if amount is None:
-            logger.info("[%s] %s PDF에 'In Foreign currency' 행 없음, 스킵", country_code, period)
+            logger.info("[%s] No 'In Foreign currency' row in %s PDF, skipping", country_code, period)
             continue
 
         year = int(period.split("-")[0])

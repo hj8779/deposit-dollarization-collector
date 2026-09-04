@@ -1,19 +1,21 @@
 """Montenegro: CBCG Monetary Financial Institutions statistics zip.
 
-페이지:
+Page:
   https://www.cbcg.me/en/statistics/statistical-data/monetary-and-financial-statistics/monetary-financial-institutions
-파일:
+File:
   /slike_i_fajlovi/fajlovi/fajlovi_publikacije/statistika/statistika_monetarnih_finansijskih_institucija_{mon}_{year}.zip
 
-xlsx 시트 'Ukupni depoziti -Total deposits':
-  연도 행 × 월 열 (I..XII) → TD (EUR 000)
+xlsx sheet 'Ukupni depoziti -Total deposits':
+  year rows × month columns (I..XII) → TD (EUR 000)
 
-FCD (other currencies, 유로 제외):
-  월별 통화분해가 zip에 없어, CBCG 연차/안정보고서에서 확인된
-  year-end other-currency share를 TD에 적용해 연말 관측을 보강한다.
+FCD (other currencies, excluding the euro):
+  a monthly currency breakdown is not included in the zip, so year-end
+  other-currency shares confirmed from CBCG annual/stability reports are
+  applied to TD to derive year-end observations.
   (2021=5.75%, 2022=5.12%, 2023=4.93% — batch1/CBCG AR)
 
-월별 TD는 전 기간, FCD/RATIO는 연말(12월) 및 문서 기반 share가 있는 해만.
+Monthly TD covers the full period; FCD/RATIO are only available for
+year-end (December) and years where a documented share exists.
 """
 
 from __future__ import annotations
@@ -46,14 +48,18 @@ _FALLBACK_ZIP = (
     "statistika_monetarnih_finansijskih_institucija_jun_2026.zip"
 )
 
-# Year-end other-currency share of total deposits (CBCG Annual Report 각 연도판,
-# "deposits in other currencies made up X% of total deposits" 문장에서 직접 확인).
-# 2026-08-20 사용자가 짚어준 publications 목록 페이지에서 cbm_annual_report_2003~2012.pdf +
-# cbcg_annual_report_2014~2024.pdf 15개를 전부 훑어 확장(2013, 2020 보고서는 미게시/해당
-# 문장 없음 확인 — 2020-2024판부터는 이 상세 표 자체가 사라졌다는 사용자 확인과 일치).
-# 2003-2008은 문장형 요약이 없고 옛 포맷 표(예: 2003년 'Table 21 Deposits by Private
-# Citizens'는 전체가 아니라 거주자 중 개인 부문만의 통화별 분해라 범위가 달라 보류 —
-# 추후 시간 날 때 재조사 필요.
+# Year-end other-currency share of total deposits (confirmed directly from
+# each year's CBCG Annual Report, from the sentence "deposits in other
+# currencies made up X% of total deposits").
+# Expanded on 2026-08-20 by going through all 15 reports the user pointed to
+# in the publications listing page — cbm_annual_report_2003~2012.pdf plus
+# cbcg_annual_report_2014~2024.pdf (2013 and 2020 reports are not published /
+# confirmed to lack the sentence — consistent with the user's note that this
+# detailed table itself disappears starting with the 2020-2024 editions).
+# 2003-2008 have no sentence-form summary, and the old-format tables (e.g. the
+# 2003 'Table 21 Deposits by Private Citizens') only break down currency for
+# the resident household segment, not the total, so scope differs — held back,
+# needs re-investigation later when time allows.
 _YEAR_END_OTHER_CCY_SHARE = {
     2009: 3.4,
     2010: 3.32,
@@ -82,7 +88,7 @@ _HEADERS = {
 
 
 def parse(content: bytes, country_code: str) -> pd.DataFrame:
-    raise NotImplementedError("MNE는 render()로 zip을 받는다")
+    raise NotImplementedError("MNE fetches the zip via render()")
 
 
 def _empty() -> pd.DataFrame:

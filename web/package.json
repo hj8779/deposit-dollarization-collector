@@ -12,8 +12,10 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.112.3",
     "effect": "^3.22.1",
+    "i18next": "^26.4.1",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
+    "react-i18next": "^17.0.13",
     "recharts": "^3.10.1",
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
   },

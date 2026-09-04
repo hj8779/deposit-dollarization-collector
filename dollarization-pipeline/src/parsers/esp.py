@@ -1,30 +1,41 @@
-"""Spain: Banco de España(BdE) 공식 통계 페이지, Statistics Bulletin Table 8.25
-('Main assets and liabilities of OMFIs, by currency' / 통화별 OIFM 주요 자산부채) CSV.
+"""Spain: Banco de España (BdE) official statistics page, Statistics Bulletin Table 8.25
+('Main assets and liabilities of OMFIs, by currency') CSV.
 
-BdE 통계 포털(bde.es/webbe/.../estadis/...) 자체는 링크가 408개나 있고 지표명이 페이지
-텍스트에 노출되지 않는 것처럼 보이지만, 실제로는 순수 정적 HTML이다(JS 렌더링 아님) -
-각 링크 앵커 주변에 <strong>제목</strong>과 'Table X.Y of the Statistics Bulletin' 툴팁이
-바로 붙어 있어서 curl만으로도 표 제목 -> csv 코드(beXXYY) 매핑을 뽑아낼 수 있었다.
+The BdE statistics portal (bde.es/webbe/.../estadis/...) itself has as many as 408
+links, and the indicator names appear not to be exposed in the page text, but it
+is actually pure static HTML (not JS-rendered) - each link anchor is immediately
+followed by a <strong>title</strong> and a 'Table X.Y of the Statistics Bulletin'
+tooltip, so a plain curl was enough to extract the table-title -> csv-code
+(beXXYY) mapping.
 
-CSV 자체는 SDMX 스타일 코드를 컬럼 헤더로 쓰는 '가로로 넓은' 시계열 포맷이다(1행=시리즈
-코드, 4행=스페인어 설명, 7행부터 'MAR 1992' 같은 분기 라벨이 첫 컬럼에 오고 그 뒤로 각
-시리즈의 값이 옆으로 이어짐). 코드 예시: DF_QESNAL20A1U62000Z01E
-    L20    = Deposit liabilities (예금부채)
-    U62000 = 카운터파트: 스페인 거주 non-MFI(U6=domestic/거주자, 2000=Non-MFIs)
-             -> 은행간이 아닌 '고객 예금'만 잡는다(U61000=거주 MFI끼리의 예금은 제외)
+The CSV itself is a "wide" time-series format that uses SDMX-style codes as
+column headers (row 1 = series code, row 4 = Spanish description, and from row 7
+onward each row starts with a quarter label like 'MAR 1992' in the first column
+followed by each series' value across the row). Example code:
+DF_QESNAL20A1U62000Z01E
+    L20    = Deposit liabilities
+    U62000 = counterparty: Spain-resident non-MFI (U6=domestic/resident,
+             2000=Non-MFIs) -> captures only 'customer deposits', not
+             interbank deposits (U61000=deposits between resident MFIs is
+             excluded)
     Z01    = All currencies combined -> TD
-    EUR    = Euro만 -> 자국통화
-    (Z03/USD/JPY/CHF/Z05 등 개별 외화 컬럼도 있으나, 굳이 다 더할 필요 없이
-     FCD = Z01 - EUR 로 계산 가능함을 실측으로 확인: 예) 2003Q1 EUR 619,719 +
-     (Z03 345 + USD 2,742 + JPY 88 + CHF 97 + Z05 133) = 623,124 = Z01과 정확히 일치)
+    EUR    = Euro only -> domestic currency
+    (Individual foreign-currency columns like Z03/USD/JPY/CHF/Z05 also exist,
+     but there's no need to sum them all - empirically confirmed that
+     FCD = Z01 - EUR works: e.g. 2003Q1 EUR 619,719 +
+     (Z03 345 + USD 2,742 + JPY 88 + CHF 97 + Z05 133) = 623,124, which exactly
+     matches Z01)
 
-고정 컬럼 인덱스 대신 4행(DESCRIPCIÓN DE LA SERIE)의 텍스트에서 'Depósitos'+'no IFM
-residentes en España'가 모두 들어간(그리고 '[discontinuada]' 아닌) 열을 찾고, 그 중
-통화 표시가 없는 것(Z01=총액)과 'En euros'가 들어간 것(EUR)을 각각 골라 열 인덱스로
-사용한다 - 이 프로젝트의 표준 관례(bgr.py/bgd.py)대로 텍스트 기반 동적 탐색.
+Instead of fixed column indices, we search row 4 (DESCRIPCIÓN DE LA SERIE) for
+columns whose text contains both 'Depósitos' and 'no IFM residentes en España'
+(and does not contain '[discontinuada]'), then among those pick the one with no
+currency designation (Z01=total) and the one containing 'En euros' (EUR) as the
+respective column indices - following this project's standard convention
+(bgr.py/bgd.py) of text-based dynamic column discovery.
 
-분기별(TRIMESTRAL) 데이터가 1997년 3분기(SEP 1997)부터 최신 분기까지 존재한다(그 이전
-컬럼은 값이 전부 '_' placeholder). period 표기는 'YYYY-QN'.
+Quarterly (TRIMESTRAL) data exists from Q3 1997 (SEP 1997) through the most
+recent quarter (columns before that are all '_' placeholders). Period is
+formatted as 'YYYY-QN'.
 """
 
 import csv
@@ -48,8 +59,9 @@ _TARGET_DESC_MARKERS = ("Depósitos", "no IFM residentes en España")
 
 
 def _find_columns(desc_row: list[str]) -> tuple[int, int]:
-    """4행(시리즈 설명)에서 '거주 non-MFI 대상 예금' 계열 중 총액(Z01, 통화 표기 없음)과
-    유로(EUR, 'En euros' 포함) 컬럼 인덱스를 찾는다."""
+    """Finds, among the 'deposits held by resident non-MFIs' series in row 4 (series
+    description), the column indices for the total (Z01, no currency designation)
+    and the euro (EUR, contains 'En euros')."""
     total_col, eur_col = None, None
     for idx, desc in enumerate(desc_row):
         if not desc or "[discontinuada]" in desc:
@@ -75,7 +87,7 @@ def parse(content: bytes, country_code: str) -> pd.DataFrame:
     desc_row = reader[3]
     total_col, eur_col = _find_columns(desc_row)
     if total_col is None or eur_col is None:
-        logger.warning("[%s] Table 8.25에서 예금(Z01/EUR) 컬럼을 찾지 못함", country_code)
+        logger.warning("[%s] Could not find deposit (Z01/EUR) columns in Table 8.25", country_code)
         return pd.DataFrame(columns=["country_code", "year", "period", "indicator", "value", "updated_at"])
 
     rows = []
@@ -84,7 +96,7 @@ def parse(content: bytes, country_code: str) -> pd.DataFrame:
             continue
         m = _PERIOD_RE.match(row[0].strip())
         if not m:
-            continue  # 'NOTAS' 같은 꼬리 행
+            continue  # trailing rows like 'NOTAS'
 
         month_abbr, year_str = m.groups()
         quarter = _MONTH_TO_Q.get(month_abbr)

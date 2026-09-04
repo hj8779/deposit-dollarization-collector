@@ -1,25 +1,27 @@
 """Liberia: CBL Monthly Economic Review — commercial bank deposits by currency.
 
-목록 페이지(페이지네이션 있음, document_type=194가 MER):
+Listing page (paginated; document_type=194 is MER):
   https://www.cbl.org.lr/general/all-publications?keys=&field_document_type_target_id%5B%5D=194&items_per_page=25&page=N
-  (기존에 쓰던 /publications/document-type/monthly-economic-review 페이지는 페이지네이션이
-  없어 최근 몇 건만 노출됨 — 이 페이지로 바꿔 page=0..4까지 순회하면 2015-01호까지 118건
-  전부 나옴, 2026-08-19 수정)
-PDF 예:
+  (the previously used /publications/document-type/monthly-economic-review page
+  has no pagination and only surfaces the most recent few issues — switched to
+  this listing page instead, iterating page=0..4 to reach all 118 issues back
+  to 2015-01; fixed 2026-08-19)
+Example PDF:
   /sites/default/files/documents/MONTHLY%20ECONOMIC%20REVIEW%20MAY%202026.pdf
 
-표 "Deposits of commercial banks" / "Total Deposits (both USD & LRD) converted to LRD":
+Table "Deposits of commercial banks" / "Total Deposits (both USD & LRD) converted to LRD":
   Demand deposits – USD / LRD
   Time & savings deposits – USD / LRD
   Other deposits USD/LRD components
   Total Deposits (both USD & LRD) converted to LRD  → TD
 
 FCD = TD − (Demand LRD + Time&savings LRD + Other LRD)
-    = USD components converted into LRD (official total already in LRD)
-또는 동등하게: Total_LRD_deposits_share 역산.
+    = USD components converted into LRD (the official total is already in LRD)
+Equivalently: back out the Total_LRD_deposits_share.
 
-최신 MER 여러 호를 읽어 월별 시계열을 합친다 (호당 최근 4개월 정도).
-단위: LRD million (converted).
+We read several recent MER issues and merge the monthly series (each issue
+covers roughly the last 4 months).
+Unit: LRD million (converted).
 """
 
 from __future__ import annotations
@@ -67,7 +69,7 @@ _MONTHS = {
 
 
 def parse(content: bytes, country_code: str) -> pd.DataFrame:
-    raise NotImplementedError("LBR는 render()로 MER PDF를 받는다")
+    raise NotImplementedError("LBR fetches the MER PDF via render()")
 
 
 def _empty() -> pd.DataFrame:
@@ -346,7 +348,8 @@ def render(target: dict) -> pd.DataFrame:
                 # header column a value belongs to. Rather than trust a reading
                 # that contradicts every neighboring month, drop it.
                 logger.warning(
-                    "[%s] %s ratio=%.2f%% 비정상적으로 낮음(<50%%) — 표 컬럼 어긋남으로 보고 스킵",
+                    "[%s] %s ratio=%.2f%% abnormally low (<50%%) — treating as a "
+                    "table-column misalignment and skipping",
                     country_code, period, ratio,
                 )
                 continue

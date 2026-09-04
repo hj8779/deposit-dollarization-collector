@@ -1,32 +1,36 @@
-"""Costa Rica: BCCR(Banco Central de Costa Rica) 'Indicadores Económicos' 데이터 포털
-(gee.bccr.fi.cr)의 개별 통계표(CodCuadro) 두 개를 합친다.
+"""Costa Rica: combines two individual statistical tables (CodCuadro) from the BCCR
+(Banco Central de Costa Rica) 'Indicadores Económicos' data portal (gee.bccr.fi.cr).
     CodCuadro=167: Depósitos de ahorro en moneda extranjera mantenidos en el sistema financiero
-                   (외화 저축예금, 1997~현재)
+                   (FX savings deposits, 1997-present)
     CodCuadro=147: Depósitos en cuenta corriente en moneda extranjera mantenidos en el sistema
-                   bancario (외화 당좌예금, 1987~현재)
-FCD = 167 + 147. BCCR 검색(frmBusquedas.aspx)으로 '외화 정기예금(depósito a plazo en moneda
-extranjera)'에 해당하는 별도 통계표를 찾아봤으나 존재하지 않았다 - 위 두 카테고리가 BCCR가
-공개하는 전부다.
+                   bancario (FX current/checking accounts, 1987-present)
+FCD = 167 + 147. Searched the BCCR catalog (frmBusquedas.aspx) for a separate table
+corresponding to 'FX time deposits (depósito a plazo en moneda extranjera)', but none exists -
+the two categories above are all that BCCR publishes.
 
-각 통계표 페이지 자체는 UI 위젯(날짜 범위 입력 등)이라 JS 없이는 표를 못 보지만, 페이지에
-내장된 'Exportar datos a Excel' 버튼(js_doExport())이 실제로 여는 URL은 그냥
-'...frmVerCatCuadro.aspx?CodCuadro={코드}&Idioma=1&Exportar=True'라 requests로 직접 GET
-가능하다. 응답은 확장자만 .xls이고 실제로는 HTML 테이블이라 pandas.read_html로 바로 읽힌다.
+Each table's own page is a UI widget (date-range inputs, etc.) so the table can't be seen
+without JS, but the page's embedded 'Exportar datos a Excel' button (js_doExport()) actually
+opens a plain URL of the form '...frmVerCatCuadro.aspx?CodCuadro={code}&Idioma=1&Exportar=True',
+which can be GET'd directly with requests. The response only has a .xls extension - it's
+actually an HTML table, so pandas.read_html reads it directly.
 
-내보내진 표는 연도(행) x 월(열) 매트릭스이고, 값이 정수로 스케일링되어 있다(예: 1998년 1월
-저축예금 원자료 22104846115 -> 실제 값은 221.048...백만 달러). 페이지에 표시되는 값
-(스페인어 천단위 '.'/소수점 ',' 표기, 예: '5.176,9')과 대조해 스케일 계수가 정확히 1e8임을
-확인했다(517690172446 / 1e8 = 5176.90 = 표시값 '5.176,9'와 일치).
+The exported table is a year(row) x month(column) matrix, with values scaled as integers
+(e.g. the raw January 1998 savings-deposit value 22104846115 -> actual value is
+221.048... million USD). Cross-checked against the value shown on the page (Spanish
+thousands-separator '.'/decimal-comma ',' notation, e.g. '5.176,9') to confirm the scale
+factor is exactly 1e8 (517690172446 / 1e8 = 5176.90, matching the displayed '5.176,9').
 
-TD(총예금) 계산: 국내통화(콜론) 대응 통계표
+TD (total deposits) calculation: the corresponding domestic-currency (colón) tables
     CodCuadro=172: Depósitos de ahorro en moneda nacional mantenidos en el sistema financiero
-                   (FCD의 167과 동일 scope: sistema financiero)
+                   (same scope as FCD's 167: sistema financiero)
     CodCuadro=138: Depósitos en cuenta corriente en moneda nacional mantenidos en el sistema
-                   bancario (FCD의 147과 동일 scope: sistema bancario)
-+ FCD(167+147). 콜론 표는 'millones de colones', 달러 표(FCD)는 'millones de dólares'로 단위가
-달라, CodCuadro=748 'Tipo de cambio promedio MONEX'(일별, 콜론/달러, 2006~현재)를 월평균으로
-집계해 환산한다: TD_usd = (172+138)_colones / fx_avg + FCD_usd. MONEX 환율표가 2006년부터만
-있어 TD는 2006-01부터 산출되고, 그 이전(1987~2005) 구간은 FCD만 존재한다.
+                   bancario (same scope as FCD's 147: sistema bancario)
++ FCD(167+147). The colón tables are in 'millones de colones' while the dollar table (FCD) is
+in 'millones de dólares', so the units differ; CodCuadro=748 'Tipo de cambio promedio MONEX'
+(daily, colones/dollar, 2006-present) is aggregated to a monthly average and used for
+conversion: TD_usd = (172+138)_colones / fx_avg + FCD_usd. Since the MONEX FX table only
+starts in 2006, TD is only computed from 2006-01 onward; the earlier period (1987-2005) has
+FCD values only.
 """
 
 from datetime import datetime, timezone
@@ -55,7 +59,7 @@ _MONTHS_ES = {
 
 
 def parse(content: bytes, country_code: str) -> pd.DataFrame:
-    raise NotImplementedError("CRI는 render()를 통해 처리한다 (두 통계표를 합산해야 함)")
+    raise NotImplementedError("CRI is handled via render() (needs to sum two statistical tables)")
 
 
 def _fetch_series(code: int) -> dict[str, float]:
@@ -82,7 +86,7 @@ def _fetch_series(code: int) -> dict[str, float]:
 
 
 def _fetch_monthly_fx_avg(code: int) -> dict[str, float]:
-    """일별(day-row x year-col) MONEX 환율표를 월평균으로 집계한다."""
+    """Aggregates the daily (day-row x year-col) MONEX FX table into monthly averages."""
     response = requests.get(
         _EXPORT_URL.format(code=code),
         headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36"},

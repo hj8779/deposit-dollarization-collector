@@ -1,8 +1,10 @@
-"""Bosnia and Herzegovina: legacy .xls, row7(0-idx6)='TOTAL DEPOSITS'의 하위 항목 중
-row12(0-idx11)='in foreign currency'가 총 외화예금. 헤더(row7/0-idx6)는 'MM-YY' 기간 라벨.
+"""Bosnia and Herzegovina: legacy .xls, among the sub-items under row7 (0-idx6)='TOTAL DEPOSITS',
+row12 (0-idx11)='in foreign currency' is the total foreign-currency deposits. The header
+(row7/0-idx6) holds 'MM-YY' period labels.
 
-TD(총예금) = row idx7 'TOTAL DEPOSITS' 행 그 자체. 실측으로 TOTAL DEPOSITS = 'in KM'(idx8) +
-'in foreign currency'(idx11) 합계임을 확인했다(예: 01-06 6823.90 = 3648.52 + 3175.39)."""
+TD (total deposits) = the row idx7 'TOTAL DEPOSITS' row itself. Verified against actual data
+that TOTAL DEPOSITS = sum of 'in KM' (idx8) + 'in foreign currency' (idx11) (e.g. 01-06
+6823.90 = 3648.52 + 3175.39)."""
 
 from datetime import datetime, timezone
 
@@ -11,7 +13,7 @@ import xlrd
 
 from src.collectors.base import INDICATOR, INDICATOR_TD
 
-FILE_URL = None  # target['source_url']를 그대로 사용
+FILE_URL = None  # use target['source_url'] as-is
 
 
 def parse(content: bytes, country_code: str) -> pd.DataFrame:

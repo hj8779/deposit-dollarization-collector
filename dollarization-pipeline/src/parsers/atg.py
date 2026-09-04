@@ -1,5 +1,6 @@
 """Antigua and Barbuda: ECCB Interactive Database, country='Antigua and Barbuda'.
-공용 스크래핑 로직은 src/parsers/_eccb_common.py 참고 (SDMX API는 존재하지 않음, Playwright 폼 조회)."""
+See src/parsers/_eccb_common.py for the shared scraping logic (no SDMX API is available;
+this uses a Playwright form query)."""
 
 import pandas as pd
 
@@ -9,7 +10,7 @@ FILE_URL = "__RENDER__"
 
 
 def parse(content: bytes, country_code: str) -> pd.DataFrame:
-    raise NotImplementedError("ATG는 render()를 통해 처리한다")
+    raise NotImplementedError("ATG is handled via render()")
 
 
 def render(target: dict) -> pd.DataFrame:

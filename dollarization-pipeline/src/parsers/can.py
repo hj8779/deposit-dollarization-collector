@@ -63,7 +63,7 @@ _HEADERS = {
 
 
 def parse(content: bytes, country_code: str) -> pd.DataFrame:
-    raise NotImplementedError("CAN은 render()를 통해 처리한다 (파일 다운로드 방식이 아님)")
+    raise NotImplementedError("CAN is handled via render() (not a file download method)")
 
 
 def _empty() -> pd.DataFrame:
@@ -194,7 +194,8 @@ def _fetch_td(country_code: str, now: str) -> pd.DataFrame:
     sums: dict[str, float] = {}
     counts: dict[str, int] = {}
 
-    # 7개 구성요소 시리즈를 병렬로 받아 벽시계 시간을 줄인다(직렬이면 요청당 ~1s씩 누적).
+    # Fetch the 7 component series in parallel to reduce wall-clock time (sequentially, each
+    # request adds ~1s).
     with ThreadPoolExecutor(max_workers=len(_TD_COMPONENT_SERIES)) as executor:
         futures = {executor.submit(_valet_observations, name): name for name in _TD_COMPONENT_SERIES}
         for future in futures:
@@ -211,7 +212,7 @@ def _fetch_td(country_code: str, now: str) -> pd.DataFrame:
     rows = []
     for period, total in sums.items():
         if counts[period] < len(_TD_COMPONENT_SERIES):
-            continue  # 7개 구성요소가 모두 있는 달만 사용
+            continue  # only use months where all 7 components are present
         year = int(period[:4])
         rows.append({
             "country_code": country_code,
@@ -233,8 +234,9 @@ def render(target: dict) -> pd.DataFrame:
     url = target.get("source_url") or _DEFAULT_PAGE
     now = datetime.now(timezone.utc).isoformat()
 
-    # TD 7개 시리즈 조회는 FCD의 Playwright 페이지 탐색과 독립적이므로, 탐색이 진행되는 동안
-    # 백그라운드에서 미리 받아둔다(순차 실행 시 두 단계가 그대로 더해져 느려짐).
+    # Fetching the 7 TD series is independent of the FCD Playwright page discovery, so it is
+    # kicked off in the background while discovery is in progress (running the two steps
+    # sequentially would simply add their durations together).
     td_executor = ThreadPoolExecutor(max_workers=1)
     td_future = td_executor.submit(_fetch_td, country_code, now)
 

@@ -1,33 +1,43 @@
-"""Bolivia: BCB(Banco Central de Bolivia) 'sector-monetario' 페이지의 개별 통계 엑셀 목록 중
-'Créditos y Depósitos > OSD > 17. Depósitos totales por monedas serie.xlsx'
-(전체 금융시스템(은행+Pyme+저축은행+협동조합 등) 예금의 통화별 시계열, 월별, 2017-12~현재).
+"""Bolivia: among BCB (Banco Central de Bolivia)'s 'sector-monetario' page individual statistics
+Excel listings, uses 'Créditos y Depósitos > OSD > 17. Depósitos totales por monedas
+serie.xlsx' (a time series of deposits across the whole financial system (banks + Pyme +
+savings banks + cooperatives, etc.) broken down by currency, monthly, from 2017-12 to present).
 
-처음엔 사용자가 짚어준 '2. Base Monetaria...' 파일 31행 'Moneda Extranjera'를 검토했으나,
-그건 중앙은행 지급준비금(Encaje Legal 등) 중 외화로 예치된 부분일 뿐 시중은행 고객의
-외화예금이 아니어서(금액도 훨씬 작음) 채택하지 않았다. 같은 목록의 '17. Depósitos totales
-por monedas serie.xlsx'가 전체 금융시스템 예금을 통화별(MN/ME/UFV/MVDOL)로 집계한
-진짜 시계열이라 이걸 사용한다(사용자 확인 완료).
+Initially the '2. Base Monetaria...' file's row 31 'Moneda Extranjera', which the user pointed
+out, was examined, but that turned out to be only the foreign-currency-denominated portion of
+central bank reserve requirements (Encaje Legal, etc.), not customer foreign-currency deposits
+held at commercial banks (and the amounts were much smaller), so it wasn't used. The same
+listing's '17. Depósitos totales por monedas serie.xlsx' is a genuine time series aggregating
+deposits across the entire financial system by currency (MN/ME/UFV/MVDOL), so that is used
+instead (confirmed with the user).
 
-워크북은 시트가 'Total'/'MN'/'ME'/'UFV'/'MVDOL'로 나뉘어 있고, 각 시트는 금융기관별
-(은행/Pyme/저축은행/협동조합 등 여러 그룹)로 행이 나열되다 각 그룹 끝에 'TOTAL' 소계 행,
-맨 마지막에 전체를 합산한 'TOTAL SISTEMA' 행이 온다. TD = 'Total' 시트의 'TOTAL SISTEMA' 행
-(날짜는 5행에 월말 기준으로 나열).
+The workbook has sheets split into 'Total'/'MN'/'ME'/'UFV'/'MVDOL'; each sheet lists rows by
+financial institution group (banks/Pyme/savings banks/cooperatives, etc.), with a 'TOTAL'
+subtotal row at the end of each group, and a 'TOTAL SISTEMA' row summing everything at the very
+end. TD = the 'TOTAL SISTEMA' row of the 'Total' sheet (dates are listed in row 5, on a
+month-end basis).
 
-2026-08-19 버그 수정 (중요): 'ME' 시트의 'TOTAL SISTEMA' 행은 볼리비아노 환산액이 아니라
-**원화(달러) 그대로** 찍혀있다 — 시트 제목이 "POR ENTIDADES FINANCIERAS DE MONEDA DÓLARES"인데,
-'MN'/'UFV'/'MVDOL' 시트는 전부 볼리비아노 기준이라 그동안 FCD(=ME 원장) / TD(=Total, 볼리비아노)를
-그대로 나눠 ratio를 계산해온 게 사실상 "USD 예금액 ÷ Bs 총예금"이라는 단위 불일치였다(사용자
-제보로 '3. Sistema Monetario.xlsx' Pasivo 탭과 교차검증하다 발견). 검증: 2026-06 Total(Bs)=
-255,956,216.02, MN(Bs)=227,326,162.06, UFV=1,460,453.86, MVDOL=226,029.27 인데 ME(2,557,741.23)를
-그대로 더하면 24.4M Bs가 안 맞고, 그 시점 BCB 공식 환율(9.76, 2026-06-26 변동환율제 전환 직후
-TCO 기준)을 곱하면(2,557,741.23×9.76≈24,963,571) 합계가 255.98M Bs로 0.8%까지 맞아떨어짐 —
-즉 실제 달러화 비율은 기존 계산(~1.0%)이 아니라 그 몇 배(2026-06 기준 9.4~9.8%대)였다.
+2026-08-19 bug fix (important): the 'ME' sheet's 'TOTAL SISTEMA' row is not a Boliviano-converted
+amount but is instead recorded **directly in the original currency (USD)** — the sheet's title
+is "POR ENTIDADES FINANCIERAS DE MONEDA DÓLARES", but the 'MN'/'UFV'/'MVDOL' sheets are all in
+Bolivianos, so dividing FCD (=raw ME) / TD (=Total, in Bolivianos) directly to compute the ratio,
+as had been done up to this point, was in fact a unit mismatch equivalent to "USD deposits ÷
+Bs total deposits" (discovered while cross-checking against the Pasivo tab of '3. Sistema
+Monetario.xlsx' after a tip from the user). Verification: for 2026-06, Total(Bs)=255,956,216.02,
+MN(Bs)=227,326,162.06, UFV=1,460,453.86, MVDOL=226,029.27, but adding ME(2,557,741.23) directly
+leaves 24.4M Bs unaccounted for; multiplying by the BCB's official exchange rate at that time
+(9.76, the TCO rate right after the 2026-06-26 switch to a floating regime) gives
+2,557,741.23×9.76≈24,963,571, and the sum comes out to 255.98M Bs, matching to within 0.8% —
+meaning the actual dollarization ratio was several times higher (around 9.4~9.8% as of 2026-06)
+than what had previously been computed (~1.0%).
 
-환율: 볼리비아는 2011년 11월부터 2026-06-26 변동환율제 전환 전까지 고정환율(매수 6.96 Bs/USD)을
-유지했다(이 기간 전체가 이 파일이 다루는 2017-12~2026-06 이력의 대부분). 변동환율제 전환 이후는
-BCB가 'TCO(Tipo de Cambio Oficial)' 일별 은행별 상세를 CSV로 공개하며(tco_tcreferencial_
-descargar_csv.php?desde=&hasta=), 각 cut-off 날짜별 'TOTAL BANCOS' 열의 가중평균 TCO 값을 쓴다.
-월말 값이 그 달의 대표 환율."""
+Exchange rate: Bolivia maintained a fixed exchange rate (buy rate 6.96 Bs/USD) from November
+2011 until the switch to a floating regime on 2026-06-26 (this period covers most of the
+2017-12~2026-06 history handled by this file). After the switch to floating, the BCB publishes
+daily per-bank 'TCO (Tipo de Cambio Oficial)' detail as CSV
+(tco_tcreferencial_descargar_csv.php?desde=&hasta=), and the weighted-average TCO value from the
+'TOTAL BANCOS' column is used for each cut-off date. The month-end value is used as the
+representative rate for that month."""
 
 from __future__ import annotations
 
@@ -57,7 +67,7 @@ _HEADERS = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit
 
 
 def parse(content: bytes, country_code: str) -> pd.DataFrame:
-    raise NotImplementedError("BOL은 render()로 예금 xlsx + 환율 CSV를 함께 받는다")
+    raise NotImplementedError("BOL fetches the deposits xlsx and exchange-rate CSV together via render()")
 
 
 def _empty() -> pd.DataFrame:
@@ -101,7 +111,7 @@ def _fetch_post_float_rates() -> dict[str, float]:
         resp.raise_for_status()
         text = resp.content.decode("utf-8-sig")
     except Exception as e:
-        logger.warning("[BOL] TCO 환율 CSV 조회 실패: %s", e)
+        logger.warning("[BOL] Failed to fetch TCO exchange-rate CSV: %s", e)
         return {}
 
     rates: dict[str, float] = {}  # date -> rate, keep last (month-end) per YYYY-MM
@@ -142,7 +152,7 @@ def render(target: dict) -> pd.DataFrame:
         resp.raise_for_status()
         wb = openpyxl.load_workbook(BytesIO(resp.content), data_only=True)
     except Exception as e:
-        logger.exception("[%s] 예금 xlsx 다운로드/파싱 실패: %s", country_code, e)
+        logger.exception("[%s] Deposits xlsx download/parse failed: %s", country_code, e)
         return _empty()
 
     fcd_usd_series = _extract_series(wb["ME"])  # raw USD thousands, needs FX conversion
@@ -158,7 +168,7 @@ def render(target: dict) -> pd.DataFrame:
             continue
         rate = _rate_for_period(period, post_float_rates)
         if rate is None:
-            logger.warning("[%s] %s 환율을 못 찾아 스킵", country_code, period)
+            logger.warning("[%s] Could not find an exchange rate for %s, skipping", country_code, period)
             continue
         fcd = fcd_usd * rate
         if fcd > td:

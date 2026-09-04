@@ -9,9 +9,10 @@ API (statistics.cbn.gov.ng):
 
 FCD = FOREIGN CURRENCY DEPOSITS
 TD  = DEMAND + TIME AND SAVINGS + FOREIGN CURRENCY DEPOSITS
-단위: Naira Million, 월별.
+Unit: Naira Million, monthly.
 
-batch2 권장 A.4.2 와 동일 계열(상업·비이자은행 부채 예금 구성).
+Same series as the batch2-recommended A.4.2 (deposit composition of commercial
+and non-interest bank liabilities).
 """
 
 from __future__ import annotations
@@ -54,7 +55,7 @@ _MONTH = {
 
 
 def parse(content: bytes, country_code: str) -> pd.DataFrame:
-    raise NotImplementedError("NGA는 render()로 Data Browser API를 호출한다")
+    raise NotImplementedError("NGA calls the Data Browser API via render()")
 
 
 def _empty() -> pd.DataFrame:
@@ -262,8 +263,8 @@ def _parse_table_html(html: str, country_code: str) -> pd.DataFrame:
 def render(target: dict) -> pd.DataFrame:
     country_code = target["country_code"]
     try:
-        # API accepts ISO dates. Table 25 시계열은 DB상 대체로 2019말 전후로
-        # 끊기므로 장기 구간 + 최근 구간을 병합해 최대한 확보한다.
+        # API accepts ISO dates. The Table 25 series in the DB tends to break around
+        # end-2019, so long-range and recent windows are merged to maximize coverage.
         year = datetime.now().year
         frames: list[pd.DataFrame] = []
         for start, end in (

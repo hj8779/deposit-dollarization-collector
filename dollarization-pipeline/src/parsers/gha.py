@@ -1,37 +1,43 @@
 """Ghana: Bank of Ghana(BoG) Monetary Survey (wpDataTables).
 
-페이지 https://www.bog.gov.gh/economic-data/monetary-survey/ 는 Export(Excel/CSV)
-버튼을 제공하지만, 실제 소스는 MySQL 기반 wpDataTables(serverSide) 테이블
-id=22 이다. Export는 브라우저 DataTables 플러그인이 같은 AJAX 응답을 파일로
-내려받는 것뿐이라, 여기서는 Export UI 대신 동일 엔드포인트를 직접 호출한다.
+The page https://www.bog.gov.gh/economic-data/monetary-survey/ provides an
+Export (Excel/CSV) button, but the actual source is a MySQL-backed
+wpDataTables (serverSide) table with id=22. Export is just the browser's
+DataTables plugin downloading the same AJAX response as a file, so here we
+call the same endpoint directly instead of using the Export UI.
 
-    GET  페이지 → nonce(wdtNonceFrontendServerSide_22) + 세션 쿠키
+    GET the page -> nonce (wdtNonceFrontendServerSide_22) + session cookie
     POST /wp-admin/admin-ajax.php?action=get_wdtable&table_id=22
-         body: draw/start/length/wdtNonce + DataTables columns[*] 파라미터
-         length=-1 로 필터된 전체(약 450행, 2000~최신) 수신
+         body: draw/start/length/wdtNonce + DataTables columns[*] parameters
+         length=-1 receives the full filtered set (~450 rows, 2000~latest)
 
-SSL: bog.gov.gh 인증서 체인 문제로 verify=False 가 필요하다
-(기존 targets 메모의 '접속 실패' 원인이었음).
+SSL: bog.gov.gh has a certificate chain issue, so verify=False is required
+(this was the cause of the "connection failed" note in the existing targets
+notes).
 
-행 구조 (지저분한 라벨):
+Row structure (messy labels):
     [Year, Variables, Jan, Feb, ..., Dec]
-    Variables 예:
+    Example Variables values:
       "Money Supply Component_Foreign currency deposits (Millions of Ghana Cedis) "
       "Money Supply Component_Demand deposits (Millions of Ghana Cedis)"
       "Money Supply Component_Savings & Time deposits (Millions of Ghana Cedis)"
       "Money Supply_Broad Money (M2) (Millions of Ghana Cedis) "
       "Money Supply_Total Liquidity (M2+) (Millions of Ghana Cedis) "
-    → 접두사/단위/앞뒤 공백/이중 공백이 섞여 있어 정규화 후 부분 매칭.
+    -> Mixed prefixes/units/leading-trailing whitespace/double spaces, so we
+       normalize before substring matching.
 
-정의 (가나 통화통계 관례, 실측으로 M2+ = M2 + FCD 및
-      M2+ - Currency = Demand + Savings&Time + FCD 항등식 확인):
+Definition (per Ghanaian monetary-statistics convention; empirically confirmed
+      the identities M2+ = M2 + FCD and
+      M2+ - Currency = Demand + Savings&Time + FCD):
     FCD = Foreign currency deposits
     TD  = Demand deposits + Savings & Time deposits + FCD
-          (통화유통액 제외, 예금 잔액 기준 달러화율)
+          (excludes currency in circulation; dollarization ratio based on
+          deposit balances)
     FCD_TD_RATIO = FCD / TD * 100
 
-동일 Year 가 두 번 나오는 경우(2022: 미완/개정 중복 행)는 비제로 월 수가 더 많은
-쪽(동률이면 나중 행)을 채택한다. 값이 0.00 인 월은 미공시로 보고 건너뛴다.
+When the same Year appears twice (2022: incomplete/revised duplicate rows), we
+pick the one with more non-zero months (ties go to the later row). Months with
+a value of 0.00 are treated as unreported and skipped.
 """
 
 from __future__ import annotations
@@ -77,7 +83,7 @@ _MONTHS = (
 
 
 def parse(content: bytes, country_code: str) -> pd.DataFrame:
-    raise NotImplementedError("GHA는 render()로 AJAX 수집한다")
+    raise NotImplementedError("GHA is collected via render() using AJAX")
 
 
 def _empty() -> pd.DataFrame:
@@ -87,17 +93,17 @@ def _empty() -> pd.DataFrame:
 
 
 def _norm_label(text: str) -> str:
-    """라벨 공백/특수문자 정리 후 소문자화."""
+    """Cleans up whitespace/special characters in the label and lowercases it."""
     text = text.replace("\xa0", " ").replace("&amp;", "&")
     text = re.sub(r"\s+", " ", text).strip().lower()
     return text
 
 
 def _classify_variable(label: str) -> str | None:
-    """Variables 열 문자열을 fcd / demand / savings_time 중 하나로 분류.
-    Net Foreign Assets, Govt. Deposits 등 유사 키워드는 제외."""
+    """Classifies the Variables column string as one of fcd / demand / savings_time.
+    Similar-sounding keywords like Net Foreign Assets, Govt. Deposits are excluded."""
     s = _norm_label(label)
-    # 예금 구성요소만 (Money Supply Component_... 또는 동일 문구)
+    # deposit components only (Money Supply Component_... or the same phrasing)
     if "foreign currency deposit" in s:
         return "fcd"
     if "demand deposit" in s:
@@ -124,7 +130,7 @@ def _nonzero_count(months: list[float | None]) -> int:
 
 
 def _pick_better(old: list[float | None], new: list[float | None]) -> list[float | None]:
-    """중복 Year 행: 비제로 월이 더 많은 쪽, 동률이면 new(나중 행) 우선."""
+    """Duplicate Year rows: prefer the one with more non-zero months; ties favor new (the later row)."""
     if _nonzero_count(new) >= _nonzero_count(old):
         return new
     return old
@@ -152,7 +158,7 @@ def _fetch_table_rows(session: requests.Session, nonce: str) -> list[list]:
     resp = session.post(_AJAX_URL, data=data, timeout=120)
     resp.raise_for_status()
     if not resp.content:
-        raise RuntimeError("wpDataTables AJAX 빈 응답 (URL에 action/table_id 쿼리 필요)")
+        raise RuntimeError("Empty wpDataTables AJAX response (the URL needs the action/table_id query params)")
     payload = resp.json()
     rows = payload.get("data") or []
     logger.info(
@@ -202,7 +208,7 @@ def _build_frame(country_code: str, series: dict[str, dict[str, list[float | Non
             fcd = fcd_m[mi]
             dem = dem_m[mi]
             sav = sav_m[mi]
-            # 0.00 은 미공시(최근 연도 trailing zero)로 취급
+            # 0.00 is treated as unreported (trailing zeros in recent years)
             if fcd is None or dem is None or sav is None:
                 continue
             if fcd == 0.0 or dem == 0.0 or sav == 0.0:
@@ -248,26 +254,26 @@ def render(target: dict) -> pd.DataFrame:
         page.text,
     )
     if not m:
-        # 이름 패턴 변형 대비
+        # fallback for variant nonce naming patterns
         m = re.search(r'wdtNonceFrontendServerSide_\d+"[^>]*value="([^"]+)"', page.text)
     if not m:
-        logger.error("[%s] wpDataTables nonce를 페이지에서 찾지 못함", country_code)
+        logger.error("[%s] Could not find wpDataTables nonce on the page", country_code)
         return _empty()
     nonce = m.group(1)
 
     try:
         raw_rows = _fetch_table_rows(session, nonce)
     except Exception as e:
-        logger.exception("[%s] Monetary Survey AJAX 실패: %s", country_code, e)
+        logger.exception("[%s] Monetary Survey AJAX failed: %s", country_code, e)
         return _empty()
 
     series = _series_from_rows(raw_rows)
     df = _build_frame(country_code, series)
     if df.empty:
-        logger.warning("[%s] FCD/TD 시리즈를 만들지 못함 (매칭 실패 가능)", country_code)
+        logger.warning("[%s] Could not build FCD/TD series (matching may have failed)", country_code)
     else:
         logger.info(
-            "[%s] %d행 (%s~%s)",
+            "[%s] %d rows (%s~%s)",
             country_code, len(df), df["period"].min(), df["period"].max(),
         )
     return df

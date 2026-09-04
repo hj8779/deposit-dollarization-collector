@@ -11,19 +11,25 @@ FCD_TD_RATIO = FCD/TD×100
 
 API: https://estadisticas.bcrp.gob.pe/estadisticas/series/api/{code}/json
 
-과거 확장(연간, 2026-08-19 사용자 제보): 위 예금(depósitos) 시리즈는 2021-08부터만 있다.
-BCRP Annual Report의 부록(appendix) 중 'MONETARY ACCOUNTS OF THE DEPOSITORY
-INSTITUTIONS'(연도별로 부록 번호가 다름 — 2020년판은 Appendix 60) 표가 10개년 롤링 컬럼을
-담고 있어, 2020년판 하나만으로 2011~2020년을 커버한다(TD='IV. Monetary liabilities with
-private sector', FCD='B. Quasi money in foreign currency' — 표 자체가 이미 예금taking
-기관 전체의 통화성부채를 자국통화/외화로 나눠놓아 월별 시리즈와 개념이 같음). 이 부록
-PDF는 리스트 페이지처럼 Incapsula로 막혀있지 않지만(직접 URL은 200 OK), Incapsula 챌린지를
-통과한 브라우저 세션(쿠키) 없이 접근하면 챌린지 HTML만 반환돼 Playwright로 목록 페이지를
-먼저 방문한 뒤 같은 브라우저 컨텍스트의 request API로 PDF를 받아야 한다. 표 자체가
-pdfplumber 추출 시 각 줄(토큰) 단위로 문자가 뒤집혀 나오는 손상 PDF라(줄 자체를 통째로
-reverse하면 원래 토큰이 복원됨) 앵커 토큰(예: 'IV.', 'B.'+'Quasi money'+'foreign'+
-'currency') 기준으로 해당 앞/뒤에 오는 숫자 10개를 뽑는 방식으로 파싱한다.
-겹치는 연도 없이 월별 시리즈가 커버하지 않는 해(2021 이전)에만 "YYYY-Annual"로 추가."""
+Historical extension (annual, reported by a user on 2026-08-19): the deposit
+(depósitos) series above only goes back to 2021-08. The BCRP Annual Report's
+appendix on 'MONETARY ACCOUNTS OF THE DEPOSITORY INSTITUTIONS' (the appendix
+number differs by edition — Appendix 60 in the 2020 edition) contains a table with
+10 rolling year columns, so the 2020 edition alone covers 2011-2020 (TD='IV.
+Monetary liabilities with private sector', FCD='B. Quasi money in foreign
+currency' — the table already splits deposit-taking institutions' total monetary
+liabilities into local-currency/foreign-currency, the same concept as the monthly
+series). Unlike the listing page, this appendix PDF itself is not blocked by
+Incapsula (a direct URL request returns 200 OK), but fetching it without a browser
+session (cookies) that has passed the Incapsula challenge returns only challenge
+HTML, so Playwright must first visit the listing page and then fetch the PDF via
+the request API of that same browser context. The table itself comes from a
+corrupted PDF where pdfplumber extraction reverses the characters within each line
+(token) — reversing the whole line restores the original tokens — so parsing works
+by locating anchor tokens (e.g. 'IV.', 'B.'+'Quasi money'+'foreign'+'currency') and
+pulling the 10 numbers before/after them.
+Added only for years not covered by the monthly series (pre-2021), as
+"YYYY-Annual", with no overlapping years."""
 
 from __future__ import annotations
 
@@ -59,7 +65,7 @@ _HEADERS = {"User-Agent": "Mozilla/5.0"}
 
 
 def parse(content: bytes, country_code: str) -> pd.DataFrame:
-    raise NotImplementedError("PER는 render()로 API를 호출한다")
+    raise NotImplementedError("PER calls the API via render()")
 
 
 def _empty() -> pd.DataFrame:
@@ -112,8 +118,9 @@ def _to_float(s: str) -> float | None:
 
 
 def _fetch_annual_appendix_pdf() -> bytes | None:
-    """Incapsula가 챌린지 없이 넘어가는 브라우저 세션이 필요해 Playwright로 목록
-    페이지를 먼저 방문한 뒤 같은 컨텍스트의 request API로 PDF를 받는다."""
+    """A browser session that has already passed the Incapsula challenge is
+    required, so Playwright first visits the listing page and then fetches the
+    PDF via the request API of that same context."""
     try:
         from playwright.sync_api import sync_playwright
     except Exception:
@@ -158,8 +165,9 @@ def _parse_annual_appendix(content: bytes, country_code: str) -> pd.DataFrame:
             return _empty()
         text = pdf.pages[_APPENDIX_PAGE_INDEX].extract_text() or ""
 
-    # 이 PDF는 pdfplumber 추출 시 줄(토큰) 단위로 문자가 뒤집혀 나옴 — 줄 전체를
-    # reverse하면 원래 토큰이 복원된다(라벨 어순은 별개 문제라 값 추출에는 영향 없음).
+    # This PDF has characters reversed line-by-line (per token) on pdfplumber
+    # extraction — reversing the whole line restores the original tokens (label
+    # word order is a separate issue and doesn't affect value extraction).
     tokens = [line[::-1] for line in text.split("\n")]
 
     fcd_anchor = _find_token_seq(tokens, ["currency", "foreign", "in", "Quasi money", "B."])
@@ -169,13 +177,13 @@ def _parse_annual_appendix(content: bytes, country_code: str) -> pd.DataFrame:
             td_anchor = i
             break
     if fcd_anchor is None or td_anchor is None:
-        logger.warning("[%s] annual appendix 앵커 토큰을 못 찾음", country_code)
+        logger.warning("[%s] annual appendix anchor tokens not found", country_code)
         return _empty()
 
     fcd_vals = [_to_float(t) for t in tokens[fcd_anchor - 10:fcd_anchor]]
     td_vals = [_to_float(t) for t in tokens[td_anchor + 1:td_anchor + 11]]
     if any(v is None for v in fcd_vals) or any(v is None for v in td_vals):
-        logger.warning("[%s] annual appendix 값 파싱 실패", country_code)
+        logger.warning("[%s] annual appendix value parsing failed", country_code)
         return _empty()
 
     years: list[int] = []
@@ -192,7 +200,7 @@ def _parse_annual_appendix(content: bytes, country_code: str) -> pd.DataFrame:
                     break
             break
     if len(years) != 10:
-        logger.warning("[%s] annual appendix 연도 헤더 파싱 실패: %s", country_code, years)
+        logger.warning("[%s] annual appendix year header parsing failed: %s", country_code, years)
         return _empty()
 
     rows = []
@@ -251,7 +259,7 @@ def render(target: dict) -> pd.DataFrame:
                 annual = _parse_annual_appendix(pdf_content, country_code)
                 for r in annual.to_dict(orient="records"):
                     if r["year"] in monthly_years:
-                        continue  # 월별 실측치가 있는 해는 연차보고서 값으로 덮지 않음
+                        continue  # don't overwrite years with monthly observations with annual-report values
                     rows.append(r)
                 if not annual.empty:
                     logger.info(
@@ -259,7 +267,7 @@ def render(target: dict) -> pd.DataFrame:
                         country_code, len(annual), sorted(annual["period"].unique()),
                     )
         except Exception as e:
-            logger.warning("[%s] annual appendix extension 실패: %s", country_code, e)
+            logger.warning("[%s] annual appendix extension failed: %s", country_code, e)
 
         if not rows:
             return _empty()

@@ -1,43 +1,54 @@
 """Sudan: Central Bank of Sudan (CBOS) annual reports, "Deposits in Local/Foreign
 Currency" tables.
 
-목록: https://cbos.gov.sd/en/publication-type/annual-reports 에서
-/en/content/annual-report-YYYY 링크들을 모음(2002~2018만 존재, 2019년 이후 발행본 없음 -
-CBOS 사이트 자체에 게시된 마지막 연차보고서가 2018년임). 각 연차보고서 페이지에는 영문
-PDF 링크(및 모든 연도 페이지에 공통으로 걸려 있는 무관한 아랍어 조직도 PDF 링크)가 있어,
-아랍어(%D8로 시작하는 percent-encoded) 링크는 제외하고 첫 PDF를 쓴다.
+Listing: collected from https://cbos.gov.sd/en/publication-type/annual-reports,
+gathering /en/content/annual-report-YYYY links (only 2002-2018 exist; nothing
+published after 2019 — the last annual report posted on the CBOS site itself
+is for 2018). Each annual report page has an English PDF link (plus an
+unrelated Arabic org-chart PDF link that appears on every year's page in
+common); we exclude the Arabic (percent-encoded, starting with %D8) link and
+take the first PDF.
 
-각 보고서는 해당 연도와 전년도 2개년 표를 담고 있어("Deposits in Local Currency by the
-end of 2017 and 2018" 등, 연도별 표 제목 문구가 조금씩 다름 - "Total deposits in Local
-Currency by the end of the years 2013 and 2014"처럼 접두어/'the years'가 붙기도 함,
-그래서 정확한 문구 대신 '숫자 4자리 두 개 + Local/Foreign Currency + Deposit' 조합으로
-느슨하게 찾는다), 2002~2018년 보고서를 전부 훑으면 겹치는 연도는 최신 보고서 값으로
-덮어써 2002~2018 전체 연간 시계열이 만들어진다.
+Each report contains tables for two years, the report year and the prior year
+(e.g. "Deposits in Local Currency by the end of 2017 and 2018"; the exact table
+title wording varies slightly by year — sometimes a prefix or "the years" is
+inserted, as in "Total deposits in Local Currency by the end of the years 2013
+and 2014" — so instead of matching an exact phrase, we search loosely for the
+combination of two 4-digit numbers + "Local/Foreign Currency" + "Deposit").
+Scanning every 2002-2018 report and letting overlapping years be overwritten
+by the more recent report's values produces a complete 2002-2018 annual time
+series.
 
-표는 예금주체별(정부/공기업/민간)로 나뉜 뒤 'Grand Total' 행에 두 해의 합계가 있고, 이
-합계를 그대로 쓴다: FCD = Foreign Currency 표의 Grand Total, TD = Local Grand Total +
-Foreign Grand Total. 단위 SDG million(단, 2007년 이전은 수단이 화폐개혁 전 구 디나르
-표시라 절대값 스케일이 다름 - 보고서에 실린 그대로 저장).
+The table breaks deposits down by depositor type (government/public
+enterprises/private) and then has a 'Grand Total' row with the sum for both
+years; we use that total directly: FCD = Grand Total from the Foreign Currency
+table, TD = Local Grand Total + Foreign Grand Total. Units are SDG million
+(note: before 2007, Sudan reports in the old dinar, pre-currency-reform, so the
+absolute scale differs — we store the value exactly as printed in the report).
 
-pdftotext -layout이 이 PDF들의 폰트 인코딩을 pdfplumber보다 훨씬 안정적으로 읽어서(구형
-보고서의 임베디드 폰트가 pdfplumber에서는 전부 (cid:NN) 깨짐 문자로 나옴) pdftotext를
-우선 쓴다.
+pdftotext -layout reads the font encoding of these PDFs far more reliably than
+pdfplumber (the embedded fonts in older reports come out of pdfplumber entirely
+as garbled (cid:NN) characters), so we use pdftotext as the primary extractor.
 
---- 분기 공보(추가) ---
-목록: https://cbos.gov.sd/en/periodicals-publications?field_publication_type_tid_i18n=44
-(2003~2025 분기, 연차보고서보다 최신까지 커버). 게시물 슬러그가 'Nth-quarter-YYYY',
-'quarter-N-YYYY', 'first-quarter-YYYY', 'NYYYY'(오타로 보이는 형태, 예: '32020-0'=
-2020-Q3) 등 제각각이라 여러 정규식으로 시도한다. 공보 제목/링크 텍스트도 국문 표기라
-PDF 링크는 아랍어 파일명인 경우가 대부분인데, PDF 안의 'Table No.(20) Money Supply'
-표(제목 번호는 호수마다 바뀔 수 있어 'Money Supply'와 'Foreign Currency Deposits'가
-같이 나오는 표로 찾음)는 아랍어 보고서 안에서도 영문 라벨+로마숫자로 되어 있어 그대로
-파싱 가능하다.
+--- Quarterly bulletins (additional) ---
+Listing: https://cbos.gov.sd/en/periodicals-publications?field_publication_type_tid_i18n=44
+(quarters 2003-2025, extending more recently than the annual reports). Post
+slugs come in several different forms — 'Nth-quarter-YYYY',
+'quarter-N-YYYY', 'first-quarter-YYYY', 'NYYYY' (looks like a typo, e.g.
+'32020-0' = 2020-Q3) — so we try several regexes. Bulletin titles/link text
+are also inconsistently formatted, and the PDF links are mostly Arabic
+filenames; but inside the PDF, the 'Table No.(20) Money Supply' table (the
+number can change issue to issue, so we locate it by finding the table where
+'Money Supply' and 'Foreign Currency Deposits' appear together) uses English
+labels + roman numerals even within the Arabic report, so it parses fine as-is.
 
-이 표는 매 호마다 최근 9개 기간(과거 연말들 + 최근 분기들)을 나란히 보여주는 롤링
-윈도우라 헤더 정렬을 파싱하는 대신 각 행의 '마지막 숫자'(=해당 호 자신의 분기, 표의
-가장 오른쪽 열)만 취하고, 그 분기는 게시물 슬러그에서 이미 알고 있으므로 헤더 매칭이
-필요 없다. TD = Demand Deposits + Local Currency Deposits + Foreign Currency Deposits
-(= Money Supply M2 - Currency with the Public, 두 방식이 정확히 일치함을 확인함).
+This table shows the most recent 9 periods side by side each issue (past
+year-ends + recent quarters) as a rolling window, so rather than parsing
+header alignment, we just take the 'last number' on each row (= that issue's
+own quarter, the rightmost column of the table); we already know that quarter
+from the post slug, so no header matching is needed. TD = Demand Deposits +
+Local Currency Deposits + Foreign Currency Deposits (= Money Supply M2 -
+Currency with the Public; we verified both approaches match exactly).
 FCD = Foreign Currency Deposits."""
 
 from __future__ import annotations
@@ -95,7 +106,7 @@ def _period_from_slug(slug: str) -> str | None:
 
 
 def parse(content: bytes, country_code: str) -> pd.DataFrame:
-    raise NotImplementedError("SDN은 render()로 연차보고서 목록을 순회한다")
+    raise NotImplementedError("SDN iterates the annual report list via render()")
 
 
 def _empty() -> pd.DataFrame:
@@ -109,9 +120,10 @@ def _list_report_pages() -> list[str]:
 
 
 def _find_pdf_url(report_page_url: str) -> str | None:
-    """공보 PDF 링크를 찾는다. 분기 공보는 아랍어 파일명뿐인 경우가 많지만(표 안 라벨은
-    영문이라 그대로 파싱 가능) 모든 연도 페이지에 공통으로 걸려 있는 무관한 조직도 PDF
-    ('...82%5D.pdf')만 제외하고, 그 외 첫 PDF를 쓴다."""
+    """Finds the bulletin PDF link. Quarterly bulletins often have only an
+    Arabic filename (but the table labels inside are in English, so it still
+    parses fine); we exclude only the unrelated org-chart PDF that appears on
+    every year's page ('...82%5D.pdf') and take the first PDF otherwise."""
     resp = requests.get(report_page_url, headers=_HEADERS, timeout=30, verify=False)
     resp.raise_for_status()
     for url in _PDF_LINK_RE.findall(resp.text):
@@ -144,29 +156,29 @@ def _render_annual(country_code: str) -> pd.DataFrame:
     try:
         report_pages = _list_report_pages()
     except Exception:
-        logger.exception("[%s] 연차보고서 목록 조회 실패", country_code)
+        logger.exception("[%s] failed to fetch annual report list", country_code)
         return _empty()
 
-    logger.info("[%s] 연차보고서 %d건 발견", country_code, len(report_pages))
+    logger.info("[%s] found %d annual reports", country_code, len(report_pages))
 
     combined: dict[tuple[str, int], float] = {}
     for page_url in report_pages:
         try:
             pdf_url = _find_pdf_url(page_url)
             if not pdf_url:
-                logger.warning("[%s] PDF 링크 없음: %s", country_code, page_url)
+                logger.warning("[%s] no PDF link: %s", country_code, page_url)
                 continue
             resp = requests.get(pdf_url, headers=_HEADERS, timeout=120, verify=False)
             resp.raise_for_status()
             text = pdf_text(resp.content)
             found = _extract_deposits(text)
             if found:
-                combined.update(found)  # 최신(연도 오름차순 순회) 보고서 값으로 덮어씀
-                logger.info("[%s] %s -> %d개 항목", country_code, pdf_url.rsplit("/", 1)[-1][:50], len(found))
+                combined.update(found)  # overwritten by the most recent report (years walked in ascending order)
+                logger.info("[%s] %s -> %d entries", country_code, pdf_url.rsplit("/", 1)[-1][:50], len(found))
             else:
-                logger.warning("[%s] 표를 못 찾음: %s", country_code, pdf_url.rsplit("/", 1)[-1][:50])
+                logger.warning("[%s] table not found: %s", country_code, pdf_url.rsplit("/", 1)[-1][:50])
         except Exception:
-            logger.warning("[%s] %s 처리 실패", country_code, page_url, exc_info=True)
+            logger.warning("[%s] failed to process %s", country_code, page_url, exc_info=True)
 
     years = sorted({y for _, y in combined})
     now = datetime.now(timezone.utc).isoformat()
@@ -201,7 +213,8 @@ def _last_number(line: str) -> float | None:
 
 
 def _extract_money_supply_last_col(text: str) -> tuple[float, float, float] | None:
-    """(fcd, local, demand) — 'Money Supply' 표의 가장 오른쪽(=이 공보 자신의 분기) 값."""
+    """(fcd, local, demand) — the rightmost values in the 'Money Supply' table
+    (= the quarter that this bulletin itself covers)."""
     if "Money Supply" not in text or "Foreign Currency Deposits" not in text:
         return None
     fcd = local = demand = None
@@ -234,10 +247,10 @@ def _render_quarterly(country_code: str) -> pd.DataFrame:
     try:
         pages = _list_quarterly_pages()
     except Exception:
-        logger.exception("[%s] 분기 공보 목록 조회 실패", country_code)
+        logger.exception("[%s] failed to fetch quarterly bulletin list", country_code)
         return _empty()
 
-    logger.info("[%s] 분기 공보 %d건 발견", country_code, len(pages))
+    logger.info("[%s] found %d quarterly bulletins", country_code, len(pages))
 
     now = datetime.now(timezone.utc).isoformat()
     rows = []
@@ -245,14 +258,14 @@ def _render_quarterly(country_code: str) -> pd.DataFrame:
         try:
             pdf_url = _find_pdf_url(page_url)
             if not pdf_url:
-                logger.warning("[%s] PDF 링크 없음: %s", country_code, page_url)
+                logger.warning("[%s] no PDF link: %s", country_code, page_url)
                 continue
             resp = requests.get(pdf_url, headers=_HEADERS, timeout=120, verify=False)
             resp.raise_for_status()
             text = pdf_text(resp.content)
             found = _extract_money_supply_last_col(text)
             if not found:
-                logger.warning("[%s] Money Supply 표를 못 찾음: %s (%s)", country_code, period, pdf_url.rsplit("/", 1)[-1][:50])
+                logger.warning("[%s] Money Supply table not found: %s (%s)", country_code, period, pdf_url.rsplit("/", 1)[-1][:50])
                 continue
             fcd, local, demand = found
             td = local + demand + fcd
@@ -267,7 +280,7 @@ def _render_quarterly(country_code: str) -> pd.DataFrame:
                 })
             logger.info("[%s] %s -> FCD=%.1f TD=%.1f", country_code, period, fcd, td)
         except Exception:
-            logger.warning("[%s] %s 처리 실패", country_code, page_url, exc_info=True)
+            logger.warning("[%s] failed to process %s", country_code, page_url, exc_info=True)
 
     return pd.DataFrame(rows) if rows else _empty()
 

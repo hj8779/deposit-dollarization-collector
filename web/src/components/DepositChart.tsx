@@ -8,6 +8,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { useTranslation } from "react-i18next";
 import type { ChartPoint, Indicator } from "../lib/types";
 import { formatPeriodLabel } from "../lib/period";
 
@@ -23,11 +24,12 @@ interface Props {
 }
 
 export function DepositChart({ points, visibleIndicators }: Props) {
+  const { t } = useTranslation();
   const showLeft = visibleIndicators.some((i) => SERIES[i].axis === "left");
   const showRight = visibleIndicators.some((i) => SERIES[i].axis === "right");
 
   if (points.length === 0) {
-    return <div className="chart-empty">이 국가에는 표시할 데이터가 없습니다.</div>;
+    return <div className="chart-empty">{t("depositChart.empty")}</div>;
   }
 
   return (

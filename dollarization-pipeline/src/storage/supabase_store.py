@@ -1,13 +1,13 @@
-"""Supabase(PostgreSQL) 저장소 모듈.
+"""Supabase (PostgreSQL) storage module.
 
-1) 롱폼 DataFrame [country_code, year, period, indicator, value, updated_at]을
-   deposit_dollarization 테이블에 Composite PK 기준 UPSERT.
-2) config/targets.json 국가 메타데이터를 country_metadata 테이블에 UPSERT.
-3) DB 적재 현황 요약(summarize_deposit_data).
+1) UPSERTs the long-form DataFrame [country_code, year, period, indicator,
+   value, updated_at] into the deposit_dollarization table on its composite PK.
+2) UPSERTs config/targets.json country metadata into the country_metadata table.
+3) Summarizes the current state of the loaded data (summarize_deposit_data).
 
-연결 문자열: 환경변수 SUPABASE_DB_URL
-  예) postgresql://postgres.[ref]:[password]@aws-0-...pooler.supabase.com:6543/postgres
-  또는  Session mode 5432 / Transaction pooler 6543
+Connection string: SUPABASE_DB_URL environment variable
+  e.g. postgresql://postgres.[ref]:[password]@aws-0-...pooler.supabase.com:6543/postgres
+  or   Session mode 5432 / Transaction pooler 6543
 """
 
 from __future__ import annotations
@@ -149,7 +149,7 @@ DO UPDATE SET
     synced_at = EXCLUDED.synced_at;
 """
 
-# annual / semi_annual 은 행 수가 적어도 "정상 저밀도"로 본다
+# annual / semi_annual sources are treated as "normally sparse" even with few rows
 EXPECTED_THIN_BUCKETS = frozenset({"annual", "semi_annual"})
 
 
@@ -157,8 +157,8 @@ def get_db_url() -> str:
     url = os.environ.get("SUPABASE_DB_URL", "").strip()
     if not url:
         raise RuntimeError(
-            "SUPABASE_DB_URL 환경변수가 없습니다. "
-            ".env에 Supabase Postgres connection string을 설정하세요. "
+            "SUPABASE_DB_URL environment variable is not set. "
+            "Set the Supabase Postgres connection string in .env. "
             "(Project Settings → Database → Connection string → URI)"
         )
     # SQLAlchemy 2 + psycopg2: postgres:// → postgresql://
@@ -169,7 +169,7 @@ def get_db_url() -> str:
 
 def get_engine(db_url: str | None = None) -> Engine:
     url = db_url or get_db_url()
-    # pool_pre_ping: idle 연결 끊김 방지 (Supabase pooler 호환)
+    # pool_pre_ping: guards against idle connection drops (Supabase pooler compatible)
     return create_engine(
         url,
         pool_pre_ping=True,
@@ -180,7 +180,7 @@ def get_engine(db_url: str | None = None) -> Engine:
 
 
 def ensure_table(engine: Engine) -> None:
-    """deposit_dollarization + country_metadata 테이블/인덱스 보장."""
+    """Ensure the deposit_dollarization + country_metadata tables/indexes exist."""
     with engine.begin() as conn:
         conn.execute(text(CREATE_TABLE_SQL))
         conn.execute(text(ADD_VALUE_RANGE_CHECK_SQL))
@@ -197,11 +197,11 @@ def ensure_table(engine: Engine) -> None:
             s = stmt.strip()
             if s:
                 conn.execute(text(s))
-    logger.info("테이블 확인/생성 완료: %s, %s", TABLE_NAME, METADATA_TABLE)
+    logger.info("Tables verified/created: %s, %s", TABLE_NAME, METADATA_TABLE)
 
 
 def normalize_frequency_bucket(update_frequency: str | None) -> str:
-    """targets.json update_frequency → 정규 버킷.
+    """Map targets.json update_frequency to a canonical bucket.
 
     Returns one of:
       annual | semi_annual | quarterly | monthly | higher | unknown | other
@@ -223,7 +223,7 @@ def normalize_frequency_bucket(update_frequency: str | None) -> str:
 
 
 def periods_look_annual(min_period: str | None, max_period: str | None) -> bool:
-    """적재 period 라벨이 연간형이면 True (예: 2000-Annual, 2025-Annual)."""
+    """True if the stored period label looks annual (e.g. 2000-Annual, 2025-Annual)."""
     for p in (min_period, max_period):
         if p and re.search(r"annual|yearly", str(p), re.I):
             return True
@@ -264,7 +264,7 @@ def _validate_value_range(work: pd.DataFrame) -> pd.DataFrame:
     if bad.any():
         sample = work.loc[bad, ["country_code", "period", "indicator", "value"]].head(10)
         logger.warning(
-            "값 범위 검증 실패로 %d행 스킵 (FCD/TD>=0, FCD_TD_RATIO 0~100 위반):\n%s",
+            "Skipping %d rows that failed value-range validation (FCD/TD>=0, FCD_TD_RATIO 0-100 violated):\n%s",
             int(bad.sum()), sample.to_string(index=False),
         )
     return work.loc[~bad]
@@ -295,14 +295,14 @@ def _chunked(items: list, size: int) -> Iterable[list]:
 
 
 def upsert_long_format(df: pd.DataFrame, engine: Engine | None = None) -> int:
-    """롱폼 DataFrame을 deposit_dollarization에 UPSERT하고 반영 행 수를 반환한다."""
+    """UPSERT a long-form DataFrame into deposit_dollarization and return the affected row count."""
     if df is None or df.empty:
-        logger.info("UPSERT 스킵: 빈 DataFrame")
+        logger.info("Skipping UPSERT: empty DataFrame")
         return 0
 
     missing = set(REQUIRED_COLS) - set(df.columns)
     if missing:
-        raise ValueError(f"롱폼 DataFrame에 필수 컬럼 누락: {missing}")
+        raise ValueError(f"Long-form DataFrame is missing required columns: {missing}")
 
     owns_engine = engine is None
     engine = engine or get_engine()
@@ -310,7 +310,7 @@ def upsert_long_format(df: pd.DataFrame, engine: Engine | None = None) -> int:
         ensure_table(engine)
         records = _normalize_records(df)
         if not records:
-            logger.warning("UPSERT 스킵: 정규화 후 유효 행 없음")
+            logger.warning("Skipping UPSERT: no valid rows after normalization")
             return 0
 
         n = 0
@@ -321,7 +321,7 @@ def upsert_long_format(df: pd.DataFrame, engine: Engine | None = None) -> int:
 
         countries = sorted({r["country_code"] for r in records})
         logger.info(
-            "UPSERT 완료: %d행 / 국가 %d개 (%s)",
+            "UPSERT complete: %d rows / %d countries (%s)",
             n,
             len(countries),
             ", ".join(countries[:12]) + ("…" if len(countries) > 12 else ""),
@@ -333,7 +333,7 @@ def upsert_long_format(df: pd.DataFrame, engine: Engine | None = None) -> int:
 
 
 def fetch_sample(limit: int = 10, engine: Engine | None = None) -> pd.DataFrame:
-    """연결 확인용: 최근 적재 행 조회."""
+    """For connectivity checks: fetch the most recently loaded rows."""
     owns = engine is None
     engine = engine or get_engine()
     try:
@@ -364,7 +364,7 @@ def count_rows(engine: Engine | None = None) -> int:
 
 
 def count_rows_by_country(engine: Engine | None = None) -> dict[str, int]:
-    """country_code → 롱폼 행 수. 테이블이 없으면 빈 dict."""
+    """country_code -> long-form row count. Returns an empty dict if the table doesn't exist."""
     owns = engine is None
     engine = engine or get_engine()
     try:
@@ -380,7 +380,7 @@ def count_rows_by_country(engine: Engine | None = None) -> dict[str, int]:
             rows = conn.execute(q).fetchall()
         return {str(r[0]).upper(): int(r[1]) for r in rows}
     except Exception as e:
-        logger.warning("count_rows_by_country 실패: %s", e)
+        logger.warning("count_rows_by_country failed: %s", e)
         return {}
     finally:
         if owns:
@@ -393,7 +393,7 @@ def list_countries_with_rows(
     min_rows: int | None = None,
     engine: Engine | None = None,
 ) -> list[tuple[str, int]]:
-    """(country_code, n) 목록. max_rows/min_rows로 필터."""
+    """List of (country_code, n), filtered by max_rows/min_rows."""
     counts = count_rows_by_country(engine=engine)
     out = []
     for code, n in sorted(counts.items()):
@@ -431,11 +431,12 @@ def delete_country_rows(
 
 
 def migrate_legacy_indicators(engine: Engine | None = None) -> dict[str, int]:
-    """DB 내 레거시 지표명을 캐노니컬로 이전.
+    """Migrate legacy indicator names in the DB to their canonical form.
 
-    foreign_currency_deposits → FCD.
-    동일 PK에 FCD가 이미 있으면 레거시 행만 삭제(기존 FCD 유지).
-    반환: {"renamed": n, "deleted_dupes": m, "remaining_legacy": k}
+    foreign_currency_deposits -> FCD.
+    If FCD already exists for the same PK, only the legacy row is deleted
+    (the existing FCD row is kept).
+    Returns: {"renamed": n, "deleted_dupes": m, "remaining_legacy": k}
     """
     owns = engine is None
     engine = engine or get_engine()
@@ -487,7 +488,7 @@ def migrate_legacy_indicators(engine: Engine | None = None) -> dict[str, int]:
             )
 
         logger.info(
-            "지표 마이그레이션: renamed=%d deleted_dupes=%d remaining_legacy=%d",
+            "Indicator migration: renamed=%d deleted_dupes=%d remaining_legacy=%d",
             renamed,
             deleted,
             remaining,
@@ -520,7 +521,7 @@ def target_to_metadata_record(
     parsers_dir: Path | None = None,
     synced_at: str | None = None,
 ) -> dict[str, Any]:
-    """targets.json 한 항목 → country_metadata UPSERT 레코드."""
+    """Convert one targets.json entry into a country_metadata UPSERT record."""
     code = str(target.get("country_code", "")).upper().strip()
     adapter = target.get("adapter") or {}
     pending = target.get("pending_parsers") or []
@@ -559,9 +560,9 @@ def upsert_country_metadata(
     *,
     parsers_dir: Path | None = None,
 ) -> int:
-    """targets.json 목록을 country_metadata에 UPSERT. 반영 행 수 반환."""
+    """UPSERT the targets.json list into country_metadata. Returns the affected row count."""
     if not targets:
-        logger.info("메타데이터 UPSERT 스킵: 빈 목록")
+        logger.info("Skipping metadata UPSERT: empty list")
         return 0
 
     owns_engine = engine is None
@@ -584,7 +585,7 @@ def upsert_country_metadata(
                 n += len(batch)
 
         logger.info(
-            "country_metadata UPSERT 완료: %d개국 (has_parser=%d)",
+            "country_metadata UPSERT complete: %d countries (has_parser=%d)",
             n,
             sum(1 for r in records if r.get("has_parser")),
         )
@@ -604,7 +605,7 @@ def count_metadata_rows(engine: Engine | None = None) -> int:
                 or 0
             )
     except Exception as e:
-        logger.warning("count_metadata_rows 실패: %s", e)
+        logger.warning("count_metadata_rows failed: %s", e)
         return 0
     finally:
         if owns:
@@ -615,7 +616,7 @@ def fetch_country_metadata(
     codes: list[str] | None = None,
     engine: Engine | None = None,
 ) -> pd.DataFrame:
-    """country_metadata 조회 (선택적 ISO3 필터)."""
+    """Fetch country_metadata (optional ISO3 filter)."""
     owns = engine is None
     engine = engine or get_engine()
     try:
@@ -647,7 +648,7 @@ def fetch_country_metadata(
 
 
 def load_frequency_map(engine: Engine | None = None) -> dict[str, dict[str, str | None]]:
-    """country_code → {update_frequency, frequency_bucket}."""
+    """country_code -> {update_frequency, frequency_bucket}."""
     owns = engine is None
     engine = engine or get_engine()
     try:
@@ -668,7 +669,7 @@ def load_frequency_map(engine: Engine | None = None) -> dict[str, dict[str, str 
             for r in rows
         }
     except Exception as e:
-        logger.warning("load_frequency_map 실패: %s", e)
+        logger.warning("load_frequency_map failed: %s", e)
         return {}
     finally:
         if owns:
@@ -681,7 +682,7 @@ def is_expected_thin(
     min_period: str | None = None,
     max_period: str | None = None,
 ) -> bool:
-    """연간(또는 반기) 소스면 저행수여도 점검 예외."""
+    """Exempt annual (or semi-annual) sources from thin-row review even with few rows."""
     bucket = (frequency_bucket or "").lower()
     if bucket in EXPECTED_THIN_BUCKETS:
         return True
@@ -696,10 +697,10 @@ def summarize_deposit_data(
     thin_threshold: int = 30,
     exclude_annual_from_thin: bool = True,
 ) -> dict[str, Any]:
-    """DB에 적재된 deposit_dollarization 요약.
+    """Summarize the deposit_dollarization data currently loaded in the DB.
 
-    thin_countries: 파서 점검 후보 (기본: annual/semi_annual 제외)
-    thin_expected: annual 등으로 저행수가 자연스러운 국가
+    thin_countries: parser review candidates (default: annual/semi_annual excluded)
+    thin_expected: countries where a thin row count is expected (e.g. annual)
     """
     owns = engine is None
     engine = engine or get_engine()
@@ -765,7 +766,7 @@ def summarize_deposit_data(
             except Exception:
                 meta_n = 0
 
-            # frequency_bucket 분포
+            # frequency_bucket distribution
             bucket_counts: dict[str, int] = {}
             for m in freq_map.values():
                 b = str(m.get("frequency_bucket") or "unknown")
@@ -815,7 +816,7 @@ def summarize_deposit_data(
             },
             "by_indicator": by_indicator,
             "countries": countries,
-            # 하위 호환: thin_countries = 점검 후보 (annual 제외)
+            # backward compat: thin_countries = review candidates (annual excluded)
             "thin_countries": thin_review,
             "thin_expected": thin_expected,
             "thin_threshold": thin_threshold,
@@ -836,26 +837,26 @@ def format_deposit_summary(
     show_all_countries: bool = True,
     max_list: int = 40,
 ) -> str:
-    """summarize_deposit_data 결과를 콘솔용 텍스트로."""
+    """Render the summarize_deposit_data result as console text."""
     lines: list[str] = []
     t = summary.get("totals") or {}
-    lines.append("=== deposit_dollarization 요약 ===")
+    lines.append("=== deposit_dollarization summary ===")
     lines.append(
-        f"총 행: {t.get('rows', 0):,}  |  국가: {t.get('countries', 0)}  |  "
-        f"지표: {', '.join(t.get('indicators') or []) or '-'}"
+        f"Total rows: {t.get('rows', 0):,}  |  Countries: {t.get('countries', 0)}  |  "
+        f"Indicators: {', '.join(t.get('indicators') or []) or '-'}"
     )
     by_ind = summary.get("by_indicator") or {}
     if by_ind:
         lines.append(
-            "지표별 행: "
+            "Rows by indicator: "
             + ", ".join(f"{k}={v:,}" for k, v in sorted(by_ind.items()))
         )
     meta = summary.get("metadata") or {}
-    lines.append(f"country_metadata 행: {meta.get('rows', 0)}")
+    lines.append(f"country_metadata rows: {meta.get('rows', 0)}")
     buckets = meta.get("frequency_buckets") or {}
     if buckets:
         lines.append(
-            "메타 주기(frequency_bucket): "
+            "Metadata frequency (frequency_bucket): "
             + ", ".join(f"{k}={v}" for k, v in sorted(buckets.items()))
         )
 
@@ -870,10 +871,10 @@ def format_deposit_summary(
         )
         more = f" …+{len(thin) - max_list}" if len(thin) > max_list else ""
         lines.append(
-            f"저행수 점검 후보(≤{thr}, annual 제외) {len(thin)}개국: {sample}{more}"
+            f"Thin-row review candidates (<={thr}, annual excluded) {len(thin)} countries: {sample}{more}"
         )
     else:
-        lines.append(f"저행수 점검 후보(≤{thr}, annual 제외): 없음")
+        lines.append(f"Thin-row review candidates (<={thr}, annual excluded): none")
 
     if thin_exp:
         sample = ", ".join(
@@ -883,7 +884,7 @@ def format_deposit_summary(
         )
         more = f" …+{len(thin_exp) - max_list}" if len(thin_exp) > max_list else ""
         lines.append(
-            f"저행수 예외(annual/semi_annual 등) {len(thin_exp)}개국: {sample}{more}"
+            f"Thin-row exemptions (annual/semi_annual, etc.) {len(thin_exp)} countries: {sample}{more}"
         )
 
     countries = summary.get("countries") or []

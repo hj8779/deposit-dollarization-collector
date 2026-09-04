@@ -1,12 +1,17 @@
-"""El Salvador: BCR 'Panorama de las Sociedades de Depósitos' 페이지.
-라벨 테이블(table 0)과 값 테이블(table 1)이 행 인덱스로 1:1 정렬되는 분리형 레이아웃.
-row 39 = '3.4.1 Depósitos Transferibles en Moneda Extranjera' (외화 이전성예금).
-값 테이블 row1 = 최근 12개월 라벨('Jul'~'Jun', 앞 6개=전년도/뒤 6개=올해).
+"""El Salvador: BCR 'Panorama de las Sociedades de Depósitos' page.
+A split-table layout where the label table (table 0) and the value table
+(table 1) align 1:1 by row index.
+Row 39 = '3.4.1 Depósitos Transferibles en Moneda Extranjera' (foreign-currency
+transferable deposits).
+Value table row1 = labels for the most recent 12 months ('Jul'-'Jun', first 6
+= prior year / last 6 = current year).
 
-TD(총예금) = row22(3.1.2 Depósitos a la Vista, 요구불예금) + row29(3.2.1 Cuasidinero,
-정기/저축성 예금) + row39(FCD). M1(row20)=Currency(row21)+Demand(row22),
-M2(row28)=M1+Cuasidinero(row29), DSA(row19)=M2+Valores(row35)+Otros depósitos(row38=39)
-항등식을 실측 검증했다(예: 2025-07 DSA 22553.7 = M2 21432.2 + Valores 1120.9 + 0.6)."""
+TD (total deposits) = row22 (3.1.2 Depósitos a la Vista, demand deposits) +
+row29 (3.2.1 Cuasidinero, time/savings deposits) + row39 (FCD). We verified
+the identities empirically: M1(row20)=Currency(row21)+Demand(row22),
+M2(row28)=M1+Cuasidinero(row29), DSA(row19)=M2+Valores(row35)+Otros
+depósitos(row38=39) (e.g. 2025-07 DSA 22553.7 = M2 21432.2 + Valores 1120.9 +
+0.6)."""
 
 from datetime import datetime, timezone
 
@@ -26,7 +31,7 @@ _MONTH_MAP = {
 
 
 def parse(content: bytes, country_code: str) -> pd.DataFrame:
-    raise NotImplementedError("SLV은 render()를 통해 처리한다 (파일 다운로드 방식이 아님)")
+    raise NotImplementedError("SLV is handled via render() (not a file-download flow)")
 
 
 def render(target: dict) -> pd.DataFrame:
@@ -40,7 +45,7 @@ def render(target: dict) -> pd.DataFrame:
         label_rows = tables.nth(0).locator("tr").all_inner_texts()
         value_rows = tables.nth(1).locator("tr").all_inner_texts()
 
-        year_header = value_rows[0].split("\t")  # ['2025', '2026'] (6열씩)
+        year_header = value_rows[0].split("\t")  # ['2025', '2026'] (6 columns each)
         month_header = [m.strip().lower() for m in value_rows[1].split("\t")]
         n = len(month_header)
         years = [year_header[0]] * (n // 2) + [year_header[-1]] * (n - n // 2)

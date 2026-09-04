@@ -1,17 +1,19 @@
 """Uzbekistan: CBU "Monetary aggregates" xlsx.
 
-https://cbu.uz/en/statistics/dks/4320467/ (Monetary and financial statistics >
-Monetary aggregates) 페이지에서 xlsx 링크를 스크레이핑(문서 경로가 바뀔 수 있음).
+The xlsx link is scraped from https://cbu.uz/en/statistics/dks/4320467/ (Monetary and
+financial statistics > Monetary aggregates), since the document path can change.
 
-영어/러시아어("Денежные агрегаты")/우즈베크어("Pul agregatlari") 페이지가 언어별로
-서로 다른 콘텐츠 ID를 쓰지만 데이터는 전부 동일하게 2013-02부터 시작함(직접 세 언어
-버전 다 받아서 대조 확인함) - 이 CBU 통계 자체가 2013년 이전 시계열을 갖고 있지 않은
-것으로 보임(2016 IMF Monetary and Financial Statistics Manual 기준 통화별 M2 분해를
-2013년부터 소급 적용한 것으로 추정).
+The English / Russian ("Денежные агрегаты") / Uzbek ("Pul agregatlari") pages each use a
+different content ID, but the data is identical across all three and starts at 2013-02
+(verified by downloading and cross-checking all three language versions directly) - it
+appears the CBU statistic itself has no time series before 2013 (presumably because the
+currency-based M2 breakdown, per the 2016 IMF Monetary and Financial Statistics Manual, was
+only applied retroactively starting from 2013).
 
-'Broad money' 시트, 7행이 열 인덱스 헤더(2=3+8 등 수식으로 열 구성을 알려줌), 8행부터
-월별 데이터. B열(2)=Broad money M2 총계=TD. H열(8)='Foreign currency deposits in
-national currency equivalent'=FCD. 단위 billion UZS."""
+Sheet 'Broad money': row 7 is the column-index header (formulas like 2=3+8 indicate column
+composition), monthly data starts at row 8. Column B (2) = Broad money M2 total = TD.
+Column H (8) = 'Foreign currency deposits in national currency equivalent' = FCD. Unit:
+billion UZS."""
 
 from __future__ import annotations
 
@@ -40,7 +42,7 @@ _FIRST_DATA_ROW = 8
 
 
 def parse(content: bytes, country_code: str) -> pd.DataFrame:
-    raise NotImplementedError("UZB는 render()로 xlsx를 받는다")
+    raise NotImplementedError("UZB fetches the xlsx via render()")
 
 
 def _empty() -> pd.DataFrame:
@@ -61,7 +63,7 @@ def render(target: dict) -> pd.DataFrame:
     country_code = target["country_code"]
     xlsx_url = _find_xlsx_url()
     if not xlsx_url:
-        logger.warning("[%s] 목록 페이지에서 xlsx 링크를 찾지 못함", country_code)
+        logger.warning("[%s] xlsx link not found on listing page", country_code)
         return _empty()
 
     resp = requests.get(xlsx_url, headers=_HEADERS, timeout=60)

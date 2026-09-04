@@ -1,6 +1,6 @@
 """Macao: sheet 'Resident Deposits', header row13, value=residentDepositsTotal - residentDepositsMOP.
 
-TD(총예금) = column3(residentDepositsTotal) 그 자체(거주자 예금 전체, 통화 무관)."""
+TD (total deposits) = column3 (residentDepositsTotal) itself (all resident deposits, regardless of currency)."""
 
 from datetime import datetime, timezone
 from io import BytesIO
@@ -10,7 +10,7 @@ import pandas as pd
 
 from src.collectors.base import INDICATOR, INDICATOR_TD
 
-FILE_URL = None  # target['source_url']를 그대로 사용
+FILE_URL = None  # uses target['source_url'] as-is
 
 
 def parse(content: bytes, country_code: str) -> pd.DataFrame:

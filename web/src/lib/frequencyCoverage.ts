@@ -16,6 +16,9 @@
  * quarterly or 10 monthly observations, it's simply absent from those buckets.
  */
 
+import { periodShape, type PeriodShape } from "./period";
+import type { FrequencyBucket } from "./types";
+
 const ANNUAL_RE = /^(\d{4})-Annual$/;
 const QUARTER_RE = /^(\d{4})-Q([1-4])$/;
 const MONTH_RE = /^(\d{4})-(\d{2})$/;
@@ -155,4 +158,61 @@ export function computeFrequencyTotals(
     }),
     { annual: 0, quarterly: 0, monthly: 0 },
   );
+}
+
+/** annual ⊂ quarterly ⊂ monthly ⊂ higher: a country reporting at some
+ * resolution is implicitly available at every coarser one too (its finest
+ * observed period shape, plus everything coarser than it). */
+const LADDER: readonly FrequencyBucket[] = ["annual", "quarterly", "monthly", "higher"];
+
+function ladderRank(shape: PeriodShape): number {
+  switch (shape) {
+    case "annual":
+      return 0;
+    case "quarterly":
+      return 1;
+    case "monthly":
+      return 2;
+    case "daily":
+      return 3;
+    default:
+      return -1;
+  }
+}
+
+/**
+ * Per-country set of frequency tags a country's data actually supports, for
+ * the dashboard's "Annual / Quarterly / Monthly / Higher" filter — e.g. a
+ * country whose finest data is monthly gets {annual, quarterly, monthly},
+ * so clicking "Annual" surfaces every country with year-level coverage, not
+ * just the ones whose *native* reporting cadence happens to be annual.
+ *
+ * `semi_annual` can't be told apart from sparse monthly data by period shape
+ * alone (both are "YYYY-MM" strings) — for that one bucket we trust the
+ * declared `country_metadata.frequency_bucket` instead, and only credit it
+ * with `annual` on top (not `quarterly`/`monthly`, which it doesn't have).
+ */
+export function computeCountryFrequencyTags(
+  periodRows: { country_code: string; period: string }[],
+  declaredBucketByCountry: Map<string, FrequencyBucket | null | undefined>,
+): Map<string, Set<FrequencyBucket>> {
+  const finestRank = new Map<string, number>();
+  for (const { country_code, period } of periodRows) {
+    if (declaredBucketByCountry.get(country_code) === "semi_annual") continue;
+    const rank = ladderRank(periodShape(period));
+    if (rank < 0) continue;
+    const prev = finestRank.get(country_code) ?? -1;
+    if (rank > prev) finestRank.set(country_code, rank);
+  }
+
+  const out = new Map<string, Set<FrequencyBucket>>();
+  for (const [country_code, rank] of finestRank) {
+    out.set(country_code, new Set(LADDER.slice(0, rank + 1)));
+  }
+  for (const [country_code, bucket] of declaredBucketByCountry) {
+    if (bucket === "semi_annual") {
+      out.set(country_code, new Set<FrequencyBucket>(["semi_annual", "annual"]));
+    }
+  }
+  return out;
 }

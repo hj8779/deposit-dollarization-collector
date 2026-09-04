@@ -1,23 +1,28 @@
-"""Congo (DRC): Banque Centrale du Congo(BCC) 신형 통계 사이트
-(bcc.cd/statistiques/secteur-monetaire/depots)의 "Dépôts : Secteur monétaire" 위젯.
+"""Congo (DRC): Banque Centrale du Congo (BCC) new statistics site
+(bcc.cd/statistiques/secteur-monetaire/depots), "Dépôts : Secteur monétaire" widget.
 
-이 페이지는 Next.js RSC로 서버에서 렌더링될 때 전체 시계열 데이터를 HTML 안에
-`self.__next_f.push([1,"..."])` 스트리밍 청크로 그대로 심어놓는다(별도 API 호출 없이
-정적 HTML만 받아도 전체 데이터가 들어있음 - CSV/XLSX 내보내기 버튼도 이미 로드된 이
-데이터를 클라이언트에서 파일로 변환하는 것으로 보임). 청크를 모두 이어붙여
-unicode-escape로 디코드한 뒤, `"period":"YYYY-MM"...{"depots--mn":X,"depots--me":Y}`
-패턴으로 월별 관측치를 직접 추출한다.
+When this page is server-rendered via Next.js RSC, the entire time series is embedded
+directly in the HTML as `self.__next_f.push([1,"..."])` streaming chunks (no separate API
+call is needed — the full dataset is present even from the static HTML alone; the CSV/XLSX
+export button also appears to just convert this already-loaded data into a file on the
+client side). All chunks are concatenated, decoded with unicode-escape, and monthly
+observations are extracted directly via the pattern
+`"period":"YYYY-MM"...{"depots--mn":X,"depots--me":Y}`.
 
-mn = monnaie nationale(자국통화), me = monnaie étrangère(외화) = FCD. TD = mn + me
-(=depots--total-depots 값과 정확히 일치함을 확인). 단위는 페이지 설명에 명시된 대로
-"백만 미국 달러"(2010-12부터 월간) - 콩고프랑이 아니라 달러 표시라 화폐 개혁/환율 이슈
-없이 시계열이 그대로 이어짐.
+mn = monnaie nationale (domestic currency), me = monnaie étrangère (foreign currency) = FCD.
+TD = mn + me (confirmed to match the depots--total-depots value exactly). Per the unit
+stated on the page, values are in "million US dollars" (monthly from 2010-12) — since the
+figures are denominated in dollars rather than Congolese francs, the series continues
+without any currency-reform or exchange-rate discontinuities.
 
-2010-12 이전은 이 위젯에 데이터가 없다(연차보고서 Tableau 4.2를 개별적으로 찾아야 함 -
-web/src/lib/manualUpdateCountries.ts에 half_manual로 등록, 대시보드에서 수동 입력 대상).
+There is no data in this widget before 2010-12 (the annual report's Tableau 4.2 needs to be
+looked up separately — registered as half_manual in
+web/src/lib/manualUpdateCountries.ts, to be filled in manually on the dashboard).
 
-www.bcc.cd는 TLS 인증서 체인이 불완전해(중간 인증서 누락으로 추정) Python 기본 인증서
-번들(certifi)로 검증 실패한다(curl은 시스템 신뢰 저장소가 달라 통과) - verify=False 필요.
+www.bcc.cd has an incomplete TLS certificate chain (presumably a missing intermediate
+certificate), which fails verification against Python's default certificate bundle
+(certifi), even though curl succeeds because it uses a different system trust store —
+hence verify=False is required.
 """
 
 from __future__ import annotations
@@ -46,7 +51,7 @@ _DEPOSIT_RE = re.compile(r'"period":"(\d{4}-\d{2})"[^}]*?"depots--mn":([\d.]+),"
 
 
 def parse(content: bytes, country_code: str) -> pd.DataFrame:
-    raise NotImplementedError("COD는 render()로 페이지에 심어진 스트리밍 데이터를 받는다")
+    raise NotImplementedError("COD is handled via render(), which reads the streaming data embedded in the page")
 
 
 def _empty() -> pd.DataFrame:
@@ -60,13 +65,13 @@ def render(target: dict) -> pd.DataFrame:
 
     chunks = _NEXT_F_CHUNK_RE.findall(resp.text)
     if not chunks:
-        logger.warning("[%s] __next_f 스트리밍 청크를 찾지 못함 (페이지 구조 변경?)", country_code)
+        logger.warning("[%s] could not find __next_f streaming chunks (page structure changed?)", country_code)
         return _empty()
 
     combined = "".join(chunks).encode().decode("unicode_escape")
     matches = _DEPOSIT_RE.findall(combined)
     if not matches:
-        logger.warning("[%s] depots--mn/me 패턴을 찾지 못함", country_code)
+        logger.warning("[%s] could not find depots--mn/me pattern", country_code)
         return _empty()
 
     now = datetime.now(timezone.utc).isoformat()

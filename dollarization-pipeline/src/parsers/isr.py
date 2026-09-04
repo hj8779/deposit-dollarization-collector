@@ -1,33 +1,36 @@
 """Israel: Bank of Israel Fusion Edge SDMX — Monetary Aggregates deposits.
 
-포털: https://edge.boi.gov.il/FusionDataBrowser/
-경로: Money and Debt aggregates → Public's Assets Portfolio → Monetary Aggregates
+Portal: https://edge.boi.gov.il/FusionDataBrowser/
+Path: Money and Debt aggregates -> Public's Assets Portfolio -> Monetary Aggregates
 
 SDMX dataflow: BOI.STATISTICS / MAG / 1.0
-CSV 예:
+Example CSV:
   https://edge.boi.gov.il/FusionEdgeServer/sdmx/v2/data/dataflow/BOI.STATISTICS/MAG/1.0/{SERIES}?locale=en&format=csv
 
-FCD (외화예금, 백만 NIS):
+FCD (foreign-currency deposits, million NIS):
   MAG_TRANS_OTH_DEP_FC_INCLUDED_2SR_M_E  DATA_ITEM=DD1YF
-    Broad money: FC denominated current accounts + deposits ≤1y
+    Broad money: FC denominated current accounts + deposits <=1y
   MAG_OTH_DEP_FC_EXCLUDED_2SR_M          DATA_ITEM=OTBDF
     Deposits outside broad money (foreign currency)
   FCD = DD1YF + OTBDF
 
-TD (총예금, 백만 NIS) — 달러화율 분모:
-  자국통화(NC) 대응 시리즈까지 합산해 총 예금 잔액을 구성한다.
-  MAG_TRANS_DEP_NC_INCLUDED_2SR_M_E      DATA_ITEM=DDI   (BM 내 NC 이체성 예금)
-  MAG_OTH_DEP_NC_INCLUDED_2SR_M_E        DATA_ITEM=D1Y   (BM 내 NC 기타 예금)
-  MAG_OTH_DEP_NC_EXCLUDED_2SR_M          DATA_ITEM=OTBDI (BM 외 NC 예금)
-  + FCD 구성 두 시리즈
+TD (total deposits, million NIS) — dollarization-ratio denominator:
+  The total deposit balance is built by also summing the local-currency (NC)
+  counterpart series.
+  MAG_TRANS_DEP_NC_INCLUDED_2SR_M_E      DATA_ITEM=DDI   (NC transferable deposits within BM)
+  MAG_OTH_DEP_NC_INCLUDED_2SR_M_E        DATA_ITEM=D1Y   (NC other deposits within BM)
+  MAG_OTH_DEP_NC_EXCLUDED_2SR_M          DATA_ITEM=OTBDI (NC deposits outside BM)
+  + the two FCD component series
   TD = DDI + D1Y + OTBDI + DD1YF + OTBDF
 
-참고: MAG_A028_MA DATA_ITEM=TD 는 "M2: time deposits" (시간성 예금만)이라
-총예금이 아니다. 이를 분모로 쓰면 FCD/TD 가 50%대를 넘어 과대 계상된다.
-달러화율 파이프라인 관례(총예금 대비 외화예금)에 맞게 위 합산을 사용한다.
+Note: MAG_A028_MA DATA_ITEM=TD is "M2: time deposits" (time deposits only),
+not total deposits. Using it as the denominator inflates FCD/TD above the 50%
+range. To match the dollarization-pipeline convention (foreign-currency
+deposits over total deposits), we use the summation above instead.
 
-주기: 월별. 단위: 백만 NIS (UNIT_MULT=6). BM 외 시리즈(OTBDF/OTBDI)는
-2007-03부터 제공 → 공통 기간은 대략 2007-03~최신(실측 OTBDF/OTBDI 시차 가능).
+Frequency: monthly. Unit: million NIS (UNIT_MULT=6). The non-BM series
+(OTBDF/OTBDI) are available starting 2007-03, so the common period range is
+roughly 2007-03 to the latest (observed OTBDF/OTBDI lag is possible).
 """
 
 from __future__ import annotations
@@ -75,7 +78,7 @@ _HEADERS = {
 
 
 def parse(content: bytes, country_code: str) -> pd.DataFrame:
-    raise NotImplementedError("ISR는 render()로 BOI SDMX CSV를 호출한다")
+    raise NotImplementedError("ISR fetches BOI SDMX CSV via render()")
 
 
 def _empty() -> pd.DataFrame:

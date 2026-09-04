@@ -1,29 +1,33 @@
-"""ECCU 8개국(AIA, ATG, DMA, GRD, MSR, KNA, LCA, VCT) 공용: ECCB(Eastern Caribbean Central Bank)
-'Summarized Monetary Survey > Interactive Database' 쿼리 폼.
+"""Shared by all 8 ECCU countries (AIA, ATG, DMA, GRD, MSR, KNA, LCA, VCT): ECCB
+(Eastern Caribbean Central Bank) 'Summarized Monetary Survey > Interactive Database' query form.
 
-원래 지시문은 `sdmx.eccb-centralbank.org`의 공개 SDMX REST API를 가정했지만, 해당 도메인은
-DNS조차 해석되지 않는(NXDOMAIN) 존재하지 않는 엔드포인트였다. 실제로는 다음 URL의
-'Interactive Database'가 진짜 데이터 소스이며, Laravel 기반 폼(POST /search, CSRF 토큰 +
-암호화된 hidden 필드 동반)을 통해서만 조회 가능하다. 폼이 부트스트랩 모달(#modify) 안에
-select2 멀티셀렉트로 구성되어 있어, requests로 폼을 직접 흉내내기보다 Playwright로 실제
-UI 흐름(모달 열기 -> 국가 선택 -> 지표 선택 -> 제출)을 재현하는 편이 훨씬 안정적이다.
+The original brief assumed a public SDMX REST API at `sdmx.eccb-centralbank.org`, but that
+domain doesn't even resolve (NXDOMAIN) — it's not a real endpoint. The actual data source is
+the 'Interactive Database' at the URL below, which can only be queried through a Laravel-based
+form (POST /search, with a CSRF token plus an encrypted hidden field). The form is built as a
+select2 multi-select inside a Bootstrap modal (#modify), so rather than trying to replicate the
+form directly with requests, it's far more reliable to drive the real UI flow with Playwright
+(open modal -> pick country -> pick indicators -> submit).
 
-폼 상호작용 시 주의점(직접 겪은 함정들):
-  - select2 드롭다운을 연 뒤 아무 데나(page.mouse.click) 클릭하면 부트스트랩 모달 자체가
-    닫혀버린다(배경 클릭 = 모달 dismiss). 모달 '안쪽'의 비활성 영역(.modal-header)을 클릭해야
-    드롭다운만 닫히고 모달은 유지된다.
-  - country_code 멀티셀렉트에는 'ECCU'(전지역 합계)가 기본 선택되어 있다. 특정 국가를
-    추가로 선택하면 결과 표에 '국가, ECCU' 순서로 두 세트가 나란히 나온다.
-  - 결과 표(두 번째 <table>)의 데이터 행은 [지표명, 단위, 연도1-국가, 연도1-ECCU,
-    연도2-국가, 연도2-ECCU, ...] 순서. 기본 조회 기간은 최근 5개년(연간)이라 START_DATE를
-    직접 조정해 2000년부터 받아온다.
-  - start_date 입력창은 readonly(직접 타이핑 불가)이고 bootstrap-datepicker
-    (minViewMode=2, 연 단위 선택만 허용, 실제 허용범위는 1975~2029)로 뒤덮여 있다. 이 달력을
-    UI 클릭(연도 그리드 탐색)으로 조작하면 클릭 이벤트가 씹혀 값이 갱신되지 않는 경우가 잦았다
-    (bootstrap-datepicker가 클릭을 씹는 게 아니라, `input.value`를 JS로 바꿔도 HTML의
-    `value` *속성*은 그대로라 `get_attribute('value')`로는 확인 자체가 안 됐던 것 -
-    실제로는 `input_value()`로 읽어야 라이브 값이 보인다). 가장 안정적인 방법은 UI를 아예
-    건드리지 않고 jQuery 플러그인의 공개 API를 직접 호출하는 것:
+Gotchas encountered while automating the form:
+  - Clicking anywhere outside the select2 dropdown (page.mouse.click) closes the Bootstrap
+    modal itself (a background click dismisses the modal). You need to click an inert area
+    'inside' the modal (.modal-header) so only the dropdown closes and the modal stays open.
+  - The country_code multi-select comes with 'ECCU' (region-wide aggregate) selected by
+    default. Adding a specific country produces two side-by-side sets of columns in the
+    results table, ordered '<country>, ECCU'.
+  - Data rows in the results table (the second <table>) are ordered [indicator name, unit,
+    year1-country, year1-ECCU, year2-country, year2-ECCU, ...]. The default query window is
+    only the last 5 years (annual), so START_DATE is adjusted explicitly to pull data starting
+    from 2000.
+  - The start_date input is readonly (can't type into it directly) and is covered by a
+    bootstrap-datepicker (minViewMode=2, year selection only, with an actual allowed range of
+    1975-2029). Driving this calendar via UI clicks (navigating the year grid) frequently drops
+    click events and the value doesn't update. (It's not actually that bootstrap-datepicker
+    swallows clicks — setting `input.value` via JS doesn't change the underlying HTML `value`
+    *attribute*, so checking with `get_attribute('value')` never reflected the change; you have
+    to read `input_value()` to see the live value.) The most reliable approach is to skip the UI
+    entirely and call the jQuery plugin's public API directly:
     `jQuery('#start_date').datepicker('setDate', new Date(2000,0,1))`.
 """
 
@@ -41,9 +45,11 @@ QUERY_URL = (
     "monetary-and-financial-statistics/summarized-monetary-survey/a"
 )
 
-# TD(총예금, 광의통화(M2)에 포함되는 예금 전체) = 아래 3개 지표의 합
-# (국내통화 이체성예금 + 국내통화 기타예금 + 외화예금). 실측으로 세 행이 서로 겹치지 않는
-# 별개 구성요소임을 확인했다(ECCB 결과표에 'Total Deposits' 같은 합계 행은 별도로 없음).
+# TD (total deposits, i.e. all deposits included in broad money M2) = the sum of the 3
+# indicators below (transferable deposits in national currency + other deposits in national
+# currency + foreign currency deposits). Verified empirically that these three rows are
+# non-overlapping, distinct components (the ECCB results table has no separate 'Total
+# Deposits' summary row).
 _TD_COMPONENT_LABELS = [
     "Transferable Deposits, In National Currency",
     "Other Deposits, In National Currency",
@@ -70,8 +76,9 @@ def fetch_fcd(country_code: str, country_label: str) -> pd.DataFrame:
 
             modal_safe_spot = page.locator(".modal-header, .modal-title").first
 
-            # 기본 조회 기간(최근 5개년)이 아니라 2000년부터 받아오도록 시작일을 조정한다.
-            # readonly 달력 위젯이라 UI 클릭 대신 jQuery 플러그인 API를 직접 호출한다.
+            # Adjust the start date to pull data from 2000 instead of the default window
+            # (last 5 years). Since the calendar widget is readonly, call the jQuery plugin
+            # API directly instead of clicking through the UI.
             page.evaluate("window.jQuery('#start_date').datepicker('setDate', new Date(2000, 0, 1))")
             page.wait_for_timeout(300)
 
@@ -113,15 +120,15 @@ def fetch_fcd(country_code: str, country_label: str) -> pd.DataFrame:
                 break
 
     if len(row_texts) != len(_TD_COMPONENT_LABELS) or not years:
-        logger.warning("[%s] ECCB 조회 결과에서 예금 지표 행을 모두 찾지 못함 (%d/%d)",
+        logger.warning("[%s] Could not find all deposit indicator rows in the ECCB query results (%d/%d)",
                         country_code, len(row_texts), len(_TD_COMPONENT_LABELS))
         return pd.DataFrame(columns=["country_code", "year", "period", "indicator", "value", "updated_at"])
 
-    # label -> {year: value}, 국가 값은 짝수 인덱스(country, ECCU 순서로 반복)
+    # label -> {year: value}; country values are at even indices (repeating in country, ECCU order)
     values_by_label: dict[str, dict[int, float]] = {}
     for label, row_text in row_texts.items():
         tokens = row_text.split("\t")
-        values = [t.replace(",", "") for t in tokens[2:]]  # [지표명, 단위, v1_country, v1_eccu, v2_country, ...]
+        values = [t.replace(",", "") for t in tokens[2:]]  # [indicator name, unit, v1_country, v1_eccu, v2_country, ...]
         per_year: dict[int, float] = {}
         for i, year in enumerate(years):
             idx = i * 2

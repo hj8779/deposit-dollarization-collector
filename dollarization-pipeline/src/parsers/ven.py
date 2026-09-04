@@ -1,26 +1,30 @@
 """Venezuela: BCV "Balances monetarios" — Bancos Universales/Comerciales y de
 Desarrollo, "Resumen del Balance Monetario Consolidado" xls.
 
-https://www.bcv.org.ve/estadisticas/balances-monetarios 페이지에서 해당 xls 링크를
-스크레이핑(문서 경로가 개편될 수 있어 매번 재탐색).
+The xls link is scraped from https://www.bcv.org.ve/estadisticas/balances-monetarios
+(re-discovered on every run since the document path can be restructured).
 
-이 xls는 시트 하나당 반년치(예: 'I Semestre 2026', 'II Semestre 1999') 월별 데이터를
-담고 있고 1999년부터 현재까지 전체 시트가 누적되어 있음(2021년만 통화 재표시 시점 때문에
-'Ene - Sep 2021'/'Oct - Dic 2021'로 예외적으로 3+3개월 분할). 5행이 월 헤더(예: 'Ene
-2026'), 라벨 열(A열)에서 'DEPOSITOS EN MONEDA NACIONAL'(자국통화 예금) /
-'DEPOSITOS EN MONEDA EXTRANJERA'(외화예금=FCD) 행을 찾는다 - 이 두 라벨의 실제 행
-번호는 연도별로 계속 바뀌어서(예: 1999년 40/65행, 2010년 44/68행, 2026년 45/70행)
-라벨 텍스트로 매번 검색한다.
+This xls holds one sheet per half-year (e.g. 'I Semestre 2026', 'II Semestre 1999') of
+monthly data, and sheets accumulate continuously from 1999 to the present (2021 is a
+special case, split into 3+3 months as 'Ene - Sep 2021'/'Oct - Dic 2021' due to the
+currency redenomination). Row 5 is the month header (e.g. 'Ene 2026'); the label column
+(column A) is searched for the rows 'DEPOSITOS EN MONEDA NACIONAL' (national-currency
+deposits) and 'DEPOSITOS EN MONEDA EXTRANJERA' (foreign-currency deposits = FCD) - the
+actual row numbers for these two labels keep shifting year to year (e.g. rows 40/65 in
+1999, 44/68 in 2010, 45/70 in 2026), so they are looked up by label text every time.
 
-TD = 자국통화예금 + 외화예금(비거주자예금/양도성예금증서 등은 제외, 다른 국가 파서들의
-'핵심 예금'만 합산하는 관행과 동일). FCD = 외화예금.
+TD = national-currency deposits + foreign-currency deposits (non-resident deposits,
+certificates of deposit, etc. are excluded, matching the same convention other country
+parsers use of summing only 'core deposits'). FCD = foreign-currency deposits.
 
-베네수엘라는 2008년(볼리바르 푸에르떼), 2018년(볼리바르 소베라노), 2021년(볼리바르
-디지털, 6자리 제거) 세 차례 화폐개혁을 거쳐 절대값 스케일이 시기마다 완전히 다르다(파일
-자체에도 '2021-10-01부터 새 통화 표시 적용, 6자리 삭제' 각주가 있음). FCD_TD_RATIO는
-같은 시점 내 비율이라 화폐개혁과 무관하게 유효하지만, FCD/TD 절대값(단위: 천 볼리바르
-또는 볼리바르, 시기별로 다름)은 시계열로 그대로 이어붙이면 안 되므로 그래프에서 절대값
-비교 시 주의가 필요함(비율 축은 문제 없음)."""
+Venezuela underwent three currency redenominations - 2008 (Bolívar Fuerte), 2018 (Bolívar
+Soberano), and 2021 (Bolívar Digital, dropping 6 zeros) - so the absolute-value scale is
+completely different across periods (the file itself carries a footnote: 'new currency
+notation applied from 2021-10-01, 6 digits removed'). FCD_TD_RATIO is a within-period ratio
+so it remains valid across redenominations, but the absolute FCD/TD values (unit: thousand
+bolívares or bolívares, depending on the period) should not be concatenated as-is into a
+single time series - caution is needed when comparing absolute values on a chart (the ratio
+axis is unaffected)."""
 
 from __future__ import annotations
 
@@ -54,12 +58,12 @@ _MONTHS = {
     "jul": 7, "ago": 8, "sep": 9, "oct": 10, "nov": 11, "dic": 12,
 }
 _MONTH_HEADER_RE = re.compile(r"([A-Za-z]{3})\.?\s*(\d{4})")
-_NATIONAL_LABEL = "deposit"  # 뒤에서 'moneda nacional'/'moneda extranjera' 조합으로 재확인
+_NATIONAL_LABEL = "deposit"  # re-confirmed below against the 'moneda nacional'/'moneda extranjera' combination
 _ACCENTS = str.maketrans("áéíóúÁÉÍÓÚ", "aeiouAEIOU")
 
 
 def parse(content: bytes, country_code: str) -> pd.DataFrame:
-    raise NotImplementedError("VEN은 render()로 xls를 받는다")
+    raise NotImplementedError("VEN fetches the xls via render()")
 
 
 def _empty() -> pd.DataFrame:
@@ -144,7 +148,7 @@ def render(target: dict) -> pd.DataFrame:
     country_code = target["country_code"]
     xls_url = _find_xls_url()
     if not xls_url:
-        logger.warning("[%s] 목록 페이지에서 xls 링크를 찾지 못함", country_code)
+        logger.warning("[%s] xls link not found on listing page", country_code)
         return _empty()
 
     resp = requests.get(xls_url, headers=_HEADERS, timeout=60, verify=False)
@@ -158,7 +162,7 @@ def render(target: dict) -> pd.DataFrame:
         try:
             rows.extend(_parse_sheet(sh, country_code, now))
         except Exception:
-            logger.warning("[%s] 시트 파싱 실패: %s", country_code, sheet_name, exc_info=True)
+            logger.warning("[%s] sheet parse failed: %s", country_code, sheet_name, exc_info=True)
 
     if not rows:
         return _empty()

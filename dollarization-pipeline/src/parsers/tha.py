@@ -1,17 +1,19 @@
 """Thailand: Bank of Thailand statistics portal, table EC_MB_004_S2 "Monetary
 Aggregates and Components" (app.bot.or.th/BTWS_STAT/statistics/BOTWEBSTAT.aspx?reportID=7).
 
-ASP.NET WebForms 포스트백 페이지라 일반 requests로는 못 받고 Playwright로 브라우저
-조작이 필요하다: 기본 화면은 최근 6개월만 보여주는데, 'From' 연/월 드롭다운(#drpFromYear,
-#drpFromMonth)을 2003년 1월(이 표의 시작월)로 설정하고 #btnSubmit을 눌러 전체 기간을
-로드한 뒤, CSV 내보내기 버튼(#imbExportText, ASP.NET 이미지버튼이라 클릭하면 바로
-다운로드가 시작됨)을 눌러 받는다.
+This is an ASP.NET WebForms postback page, so it can't be fetched with plain requests and
+requires browser automation via Playwright: the default view only shows the last 6 months, so
+we set the 'From' year/month dropdowns (#drpFromYear, #drpFromMonth) to January 2003 (this
+table's start month) and click #btnSubmit to load the full period, then click the CSV export
+button (#imbExportText, an ASP.NET image button that starts the download immediately on click)
+to receive the file.
 
-TD = Broad Money(1행) − Currency outside DCs & Central Gov.(3행) (= Transferable
-Deposits + Quasi-money, 즉 현금을 제외한 전체 예금성 부채. Broad Money 산식과 정확히
-일치함을 확인). FCD = 'Foreign Currency Deposits' 두 행의 합(상업은행 몫 + specialized
-banks 몫 - 이 표는 예금기관 유형별로 같은 라벨의 행이 반복되는 구조라 첫 두 개를 그대로
-합산). 월간, 2003-01부터. 단위 백만 바트."""
+TD = Broad Money (row 1) minus Currency outside DCs & Central Gov. (row 3) (= Transferable
+Deposits + Quasi-money, i.e. all deposit-type liabilities excluding cash. Confirmed this
+matches the Broad Money formula exactly). FCD = sum of the two 'Foreign Currency Deposits' rows
+(the commercial-bank share + the specialized-banks share - this table repeats rows with the
+same label for each type of depository institution, so we simply sum the first two occurrences).
+Monthly, from 2003-01. Unit: million baht."""
 
 from __future__ import annotations
 
@@ -38,7 +40,7 @@ _PERIOD_HEADER_RE = re.compile(r"([A-Z]{3})\s+(\d{4})")
 
 
 def parse(content: bytes, country_code: str) -> pd.DataFrame:
-    raise NotImplementedError("THA는 render()로 Playwright를 통해 CSV를 받는다")
+    raise NotImplementedError("THA is handled via render() using Playwright to fetch the CSV")
 
 
 def _empty() -> pd.DataFrame:
@@ -70,7 +72,7 @@ def _download_csv() -> str | None:
             with open(path, "rb") as f:
                 return f.read().decode("utf-8-sig")
         except Exception:
-            logger.warning("[THA] BOT 포털 다운로드 실패", exc_info=True)
+            logger.warning("[THA] BOT portal download failed", exc_info=True)
             return None
         finally:
             browser.close()
@@ -109,7 +111,7 @@ def _parse_csv(text: str, country_code: str) -> pd.DataFrame:
     currency = find_row("1.1 Currency outside DCs & Central Gov.")
     fcd_rows = find_all_rows("Foreign Currency Deposits")
     if not broad_money or not currency or not fcd_rows:
-        logger.warning("[%s] 필요한 행을 못 찾음 (broad_money=%s currency=%s fcd_rows=%d)",
+        logger.warning("[%s] could not find required rows (broad_money=%s currency=%s fcd_rows=%d)",
                         country_code, bool(broad_money), bool(currency), len(fcd_rows))
         return _empty()
 

@@ -1,25 +1,29 @@
-"""Belize: Central Bank of Belize 'Statistical Digest'(연 1회 발간, 1977~최신년까지 전체
-시계열이 한 PDF에 누적) 안의 두 표를 조합한다.
-    TABLE 7: DOMESTIC BANKS: SUMMARY OF LIABILITIES  -> 'Deposits Total'(전체 통화 합계)
+"""Belize: combines two tables from the Central Bank of Belize 'Statistical Digest' (published
+annually, with the full time series from 1977 through the latest year accumulated in a single
+PDF).
+    TABLE 7: DOMESTIC BANKS: SUMMARY OF LIABILITIES  -> 'Deposits Total' (sum across all currencies)
     TABLE 8: DOMESTIC BANKS: BREAKDOWN OF LOCAL CURRENCY DEPOSITS -> 'Total Local Currency Deposits'
-FCD = Table7의 Deposits Total - Table8의 Total Local Currency Deposits
+FCD = Table 7's Deposits Total - Table 8's Total Local Currency Deposits
 
-두 함정을 실측으로 발견해 처리했다:
-1) 이 PDF는 페이지가 실제로 180도 뒤집혀 렌더링되어 있어 pdfplumber.extract_text()가
-   글자 단위로 역순인 텍스트를 준다(ABW/BHR 등에서 본 것과 같은 유형의 문제). 게다가 이
-   문서는 회전된 표라 extract_text()가 셀 하나당 한 줄씩 쪼개 버려서 좌표 기반 재조립도
-   까다로웠다 - 표준 OCR 폴백(페이지를 이미지로 렌더링 후 180도 회전, pytesseract)을 쓰는
-   편이 훨씬 안정적이었다.
-2) TABLE 7의 'Deposits' 하위 컬럼 개수가 연도에 따라 다르다(예: 1977년은 Demand/Savings/
-   Time 3개+Total, 2025년은 Demand/Savings·Chequing/Savings/Time 4개+Total로 늘어남).
-   그래서 몇 번째 값이 'Total'인지 컬럼 인덱스로 고정할 수 없다 - 대신 누적합이 자기 자신과
-   일치하는 지점(즉 앞선 값들의 합)을 'Total'로 자기검증 방식으로 찾는다.
-   TABLE 8은 구조가 안 바뀌어서 마지막 값이 항상 Total Local Currency Deposits이다.
+Two gotchas were found through hands-on testing and handled accordingly:
+1) This PDF's pages are actually rendered rotated 180 degrees, so pdfplumber.extract_text()
+   returns text with characters in reverse order (the same type of issue seen in ABW/BHR, etc.).
+   On top of that, because the table is rotated, extract_text() splits each cell into its own
+   line, which made coordinate-based reassembly difficult too — falling back to standard OCR
+   (rendering the page to an image, rotating 180 degrees, then pytesseract) proved far more
+   reliable.
+2) The number of sub-columns under 'Deposits' in TABLE 7 varies by year (e.g. 1977 has 3:
+   Demand/Savings/Time + Total, while 2025 has grown to 4: Demand/Savings·Chequing/Savings/Time
+   + Total). So which value is 'Total' can't be pinned to a fixed column index — instead, the
+   point where the running cumulative sum matches a value itself (i.e. the sum of the preceding
+   values) is self-verified as 'Total'. TABLE 8's structure hasn't changed, so its last value is
+   always Total Local Currency Deposits.
 
-TABLE 7/8은 이 문서에서 각각 11페이지, 10페이지에 걸쳐 있고(연속), 첫 페이지 제목에
-'TABLE 7'/'TABLE 8'이, 이후 페이지에는 'continued'가 붙는다. 각 표의 페이지 범위는
-문서 앞부분 목차가 아니라 실제 페이지를 순회하며 제목으로 찾는다(발간 연도가 바뀌면
-페이지 수도 바뀌므로 매번 동적으로 탐색).
+In this document TABLE 7 and TABLE 8 span 11 and 10 pages respectively (contiguous); the first
+page's title carries 'TABLE 7'/'TABLE 8', and subsequent pages carry 'continued'. The page range
+for each table is found dynamically by iterating over the actual pages and matching titles,
+rather than relying on the document's table of contents (since the page count changes from
+edition to edition).
 """
 
 import re
@@ -59,7 +63,7 @@ _OCR_RESOLUTIONS = (240, 250, 260, 275, 300)
 
 
 def _score_ocr_text(text: str) -> int:
-    """월 라벨을 가진 데이터 행이 몇 줄이나 정상적으로 잡히는지로 품질을 매긴다."""
+    """Scores quality by how many data rows with a valid month label were correctly captured."""
     score = 0
     for line in text.splitlines():
         m = _ROW_RE.match(line.strip())
@@ -69,10 +73,10 @@ def _score_ocr_text(text: str) -> int:
 
 
 def _ocr_page(page) -> str:
-    """해상도에 따라 tesseract가 표를 행 단위 대신 열 단위로 잘못 읽는 경우가 있어(원인
-    불명, 200/300/400dpi 등에서 산발적으로 재현됨), 여러 해상도로 시도해 보고 정상적인
-    '라벨+숫자' 행이 가장 많이 잡히는 결과를 채택한다(ABW 등에서 쓰던 회전값 선택과 같은
-    자기검증 방식)."""
+    """Depending on the resolution, tesseract sometimes misreads the table column-wise instead
+    of row-wise (cause unknown, reproduces sporadically at 200/300/400dpi, etc.), so several
+    resolutions are tried and the result with the most correctly captured 'label+numbers' rows
+    is chosen (the same self-verification approach used for rotation selection in ABW, etc.)."""
     import pytesseract
 
     best_text, best_score = "", -1
@@ -86,14 +90,15 @@ def _ocr_page(page) -> str:
 
 
 def _find_table_pages(pdf, marker: str) -> list[int]:
-    """제목에 marker(예: 'SUMMARY OF LIABILITIES')가 포함된 연속 페이지 인덱스를 찾는다.
-    'continued' 후속 페이지는 'TABLE 7:' 없이 본문 제목만 반복되므로 marker는 표 본문
-    제목(모든 페이지에 공통으로 등장)으로 준다."""
+    """Finds the contiguous page indices whose title contains marker (e.g.
+    'SUMMARY OF LIABILITIES'). Continuation pages ('continued') repeat only the body title
+    without 'TABLE 7:', so marker is given as the table's body title (which appears on every
+    page in common)."""
     hits = []
     in_block = False
     for i, page in enumerate(pdf.pages):
         text = page.extract_text() or ""
-        # 180도 회전된 페이지라 줄 순서와 각 줄의 문자 순서가 모두 뒤집혀 있다.
+        # The page is rotated 180 degrees, so both the line order and the character order within each line are reversed.
         head_lines = text.splitlines()[:8]
         first_lines = " ".join(line[::-1] for line in reversed(head_lines))
         if marker in first_lines:
@@ -105,7 +110,7 @@ def _find_table_pages(pdf, marker: str) -> list[int]:
 
 
 def _extract_period_rows(pages, value_count_min: int) -> dict[str, list[float]]:
-    """OCR 텍스트에서 {period: [numbers...]}를 뽑는다. period는 'YYYY-MM'."""
+    """Extracts {period: [numbers...]} from the OCR text. period is 'YYYY-MM'."""
     result: dict[str, list[float]] = {}
     current_year = None
     for page in pages:
@@ -136,7 +141,7 @@ def _extract_period_rows(pages, value_count_min: int) -> dict[str, list[float]]:
 
 
 def _deposits_total(values: list[float]) -> float | None:
-    """앞선 값들의 누적합과 일치하는 첫 지점을 'Total'로 본다(컬럼 수가 연도별로 달라 인덱스 고정 불가)."""
+    """Treats the first point that matches the cumulative sum of preceding values as 'Total' (the column count varies by year, so the index cannot be fixed)."""
     cum = 0.0
     for i, v in enumerate(values):
         if i >= 2 and abs(v - cum) < 1.0:
@@ -155,7 +160,7 @@ def parse(content: bytes, country_code: str) -> pd.DataFrame:
         t7_pages = [pdf.pages[i] for i in _find_table_pages(pdf, "DOMESTIC BANKS: SUMMARY OF LIABILITIES")]
         t8_pages = [pdf.pages[i] for i in _find_table_pages(pdf, "BREAKDOWN OF LOCAL CURRENCY DEPOSITS")]
 
-        logger.info("[%s] TABLE 7 %d페이지, TABLE 8 %d페이지 OCR 처리", country_code, len(t7_pages), len(t8_pages))
+        logger.info("[%s] OCR processing %d pages of TABLE 7, %d pages of TABLE 8", country_code, len(t7_pages), len(t8_pages))
 
         t7 = _extract_period_rows(t7_pages, value_count_min=4)
         t8 = _extract_period_rows(t8_pages, value_count_min=10)

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Effect } from "effect";
 import { deleteDepositRow, upsertDepositRow, upsertDepositRows } from "../lib/db";
 import { parseEvdsWorkbook } from "../lib/evdsImport";
@@ -44,6 +45,7 @@ function fromDepositRow(row: DepositRow): EditableRow {
 }
 
 export function ManualEntryTable({ countryCode, reason, rows, onChanged }: Props) {
+  const { t } = useTranslation();
   const [editable, setEditable] = useState<EditableRow[]>(() => rows.map(fromDepositRow));
   const [importState, setImportState] = useState<
     { status: "idle" } | { status: "busy" } | { status: "error"; message: string } | { status: "done"; summary: string }
@@ -58,13 +60,17 @@ export function ManualEntryTable({ countryCode, reason, rows, onChanged }: Props
       if (countryCode === "TUR") {
         const result = await parseEvdsWorkbook(file, countryCode);
         rowsToUpsert = result.rows;
-        summary = `${result.periodCount}개 기간 반영 (FCD 열: "${result.fcdColumnHeader}", TD 열: "${result.tdColumnHeader}")`;
+        summary = t("manualEntry.importSummaryEvds", {
+          count: result.periodCount,
+          fcd: result.fcdColumnHeader,
+          td: result.tdColumnHeader,
+        });
       } else if (countryCode === "LVA") {
         const result = await parseLvaWorkbook(file, countryCode);
         rowsToUpsert = result.rows;
-        summary = `${result.periodCount}개 기간 반영`;
+        summary = t("manualEntry.importSummaryLva", { count: result.periodCount });
       } else {
-        throw new Error(`${countryCode}에 대한 파일 업로드 파서가 없습니다`);
+        throw new Error(t("manualEntry.noParserError", { code: countryCode }));
       }
 
       const upsertResult = await Effect.runPromise(Effect.either(upsertDepositRows(rowsToUpsert)));
@@ -116,12 +122,12 @@ export function ManualEntryTable({ countryCode, reason, rows, onChanged }: Props
 
   async function save(row: EditableRow) {
     if (!PERIOD_RE.test(row.period)) {
-      update(row.key, { error: "period 형식이 잘못됐습니다 (예: 2024-01, 2024-Q1, 2024-Annual)" });
+      update(row.key, { error: t("manualEntry.periodInvalid") });
       return;
     }
     const value = Number(row.value);
     if (!Number.isFinite(value)) {
-      update(row.key, { error: "숫자가 아닙니다" });
+      update(row.key, { error: t("manualEntry.notANumber") });
       return;
     }
 
@@ -167,7 +173,7 @@ export function ManualEntryTable({ countryCode, reason, rows, onChanged }: Props
   return (
     <div className="manual-entry">
       <div className="panel-header">
-        <h3>Manual entry — {countryCode}</h3>
+        <h3>{t("manualEntry.title", { code: countryCode })}</h3>
         <span className="muted">{reason}</span>
       </div>
 
@@ -184,22 +190,22 @@ export function ManualEntryTable({ countryCode, reason, rows, onChanged }: Props
             }}
           />
           <span className="muted">
-            {countryCode === "TUR"
-              ? 'EVDS 내보내기(.xlsx) 업로드 — "6.FOREIGN EXCHANGE DEPOSIT ACCOUNTS"/"9.TOTAL" 열을 자동 인식'
-              : 'statdb.bank.lv 내보내기(.xlsx) 업로드 — "0104 breakdown by currency"(2014-12~현재) 또는 "04 Balance sheet of MFIs"(2010-06~2014-11 아카이브) 둘 다 자동 인식, 전체 기간 반영'}
+            {countryCode === "TUR" ? t("manualEntry.evdsHint") : t("manualEntry.lvaHint")}
           </span>
-          {importState.status === "busy" && <span className="muted"> 처리 중…</span>}
+          {importState.status === "busy" && <span className="muted"> {t("manualEntry.busy")}</span>}
           {importState.status === "error" && <span className="manual-row-error"> {importState.message}</span>}
-          {importState.status === "done" && <span className="muted"> ✓ {importState.summary}</span>}
+          {importState.status === "done" && (
+            <span className="muted"> {t("manualEntry.importDone", { summary: importState.summary })}</span>
+          )}
         </div>
       )}
 
       <table className="manual-table">
         <thead>
           <tr>
-            <th>Period</th>
-            <th>Indicator</th>
-            <th>Value</th>
+            <th>{t("manualEntry.periodHeader")}</th>
+            <th>{t("manualEntry.indicatorHeader")}</th>
+            <th>{t("manualEntry.valueHeader")}</th>
             <th />
           </tr>
         </thead>
@@ -241,10 +247,10 @@ export function ManualEntryTable({ countryCode, reason, rows, onChanged }: Props
                   disabled={row.saving || !row.dirty}
                   onClick={() => save(row)}
                 >
-                  {row.saving ? "…" : "저장"}
+                  {row.saving ? t("manualEntry.saving") : t("manualEntry.save")}
                 </button>
                 <button type="button" className="btn-small btn-danger" disabled={row.saving} onClick={() => remove(row)}>
-                  삭제
+                  {t("manualEntry.delete")}
                 </button>
                 {row.error && <span className="manual-row-error">{row.error}</span>}
               </td>
@@ -254,7 +260,7 @@ export function ManualEntryTable({ countryCode, reason, rows, onChanged }: Props
       </table>
 
       <button type="button" className="btn-small" onClick={addRow}>
-        + 행 추가
+        {t("manualEntry.addRow")}
       </button>
     </div>
   );

@@ -49,6 +49,35 @@
   justify-content: space-between;
 }
 
+.lang-toggle {
+  display: flex;
+  gap: 4px;
+}
+
+.lang-toggle button {
+  appearance: none;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-h);
+  border-radius: 6px;
+  padding: 4px 10px;
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  opacity: 0.65;
+}
+
+.lang-toggle button:hover {
+  opacity: 0.9;
+}
+
+.lang-toggle button.active {
+  opacity: 1;
+  background: var(--badge-bg);
+  border-color: currentColor;
+}
+
 .app-grid {
   display: grid;
   grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
@@ -239,6 +268,12 @@
 .num {
   text-align: right;
   font-variant-numeric: tabular-nums;
+}
+
+.freq-badge-group {
+  display: inline-flex;
+  gap: 4px;
+  flex-wrap: wrap;
 }
 
 .badge {

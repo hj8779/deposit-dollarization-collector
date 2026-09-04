@@ -1,10 +1,11 @@
-"""Guatemala: source_url(agregados-monetarios 페이지) 내부의 pim10.xls 링크에서 다운로드.
-legacy .xls, 연간 데이터. col0=연도, col4(0-idx)='MEDIOS DE PAGO (M2) - MONEDA EXTRANJERA'
-(M2 중 외화 표시 부분, 예금성 광의통화의 외화 비중 프록시).
+"""Guatemala: downloaded from the pim10.xls link found on the source_url (agregados-monetarios page).
+Legacy .xls, annual data. col0=year, col4(0-idx)='MEDIOS DE PAGO (M2) - MONEDA EXTRANJERA'
+(the foreign-currency-denominated portion of M2, used as a proxy for the foreign-currency
+share of broad deposit money).
 
-TD(총예금) = col5(0-idx) 'MEDIOS DE PAGO TOTALES' = M2 전체(MONEDA NACIONAL col3 + MONEDA
-EXTRANJERA col4, 실측으로 두 열 합이 col5와 정확히 일치함을 확인, 예: 2001년
-45173.3+2054.9=47228.2)."""
+TD(total deposits) = col5(0-idx) 'MEDIOS DE PAGO TOTALES' = total M2 (MONEDA NACIONAL col3 +
+MONEDA EXTRANJERA col4; empirically confirmed the sum of the two columns exactly matches
+col5, e.g. for 2001: 45173.3+2054.9=47228.2)."""
 
 from datetime import datetime, timezone
 

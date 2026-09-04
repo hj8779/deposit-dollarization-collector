@@ -1,17 +1,18 @@
 """Hungary: MNB monstatpubl — consolidated MFI liabilities (Table 3.2).
 
-소스 엑셀:
+Source Excel:
   https://statisztika.mnb.hu/timeseries/0708-monstatpubl-enxls.xls
-상세 페이지:
+Detail page:
   https://statisztika.mnb.hu/timeseries/data-10957
   "Balance sheets of monetary financial institutions and monetary aggregates"
 
-파일 내 여러 표 중 **Table 3.2** (Consolidated balance sheet of MFIs
-S.121+S.122+S.123, Liabilities, end of period) 를 사용한다.
-- 타 MFI 간 예금이 상계된 거주자 예금
-- Other MFIs 단독 표(2.a.2)보다 고객예금 달러화에 적합
+Of the several tables in the file, we use **Table 3.2** (Consolidated balance
+sheet of MFIs S.121+S.122+S.123, Liabilities, end of period).
+- Resident deposits with inter-MFI deposits netted out
+- Better suited to customer-deposit dollarization than the standalone Other
+  MFIs table (2.a.2)
 
-시트 헤더 구조 (HUF billions):
+Sheet header structure (HUF billions):
   Deposits of residents (col2 TOTAL)
     Central government: HUF (col4), Foreign currency (col5)
     Other residents:
@@ -22,7 +23,7 @@ FCD = CG FC + Overnight FC + Agreed-maturity FC  (col5+col9+col12)
 TD  = Deposits of residents total                 (col2)
 FCD_TD_RATIO = FCD/TD*100
 
-시계열: 1998-01 ~ 파일 최신월 (실측 2026-06), 월말 잔액.
+Time series: 1998-01 ~ latest month in the file (observed 2026-06), end-of-month balances.
 """
 
 from __future__ import annotations
@@ -65,24 +66,24 @@ def parse(content: bytes, country_code: str) -> pd.DataFrame:
         try:
             xl = pd.ExcelFile(BytesIO(content))
         except Exception as e:
-            logger.error("[%s] xls 열기 실패: %s", country_code, e)
+            logger.error("[%s] Failed to open xls: %s", country_code, e)
             return empty
 
     sheet = _SHEET if _SHEET in xl.sheet_names else None
     if sheet is None:
-        # 변형: 'Table 3.2' / '3.2' 등
+        # Variants: 'Table 3.2' / '3.2', etc.
         for name in xl.sheet_names:
             if "3.2" in name.replace(" ", "") or name.strip().endswith("3.2"):
                 sheet = name
                 break
     if sheet is None:
-        logger.error("[%s] Table 3.2 시트 없음: %s", country_code, xl.sheet_names[:10])
+        logger.error("[%s] Table 3.2 sheet not found: %s", country_code, xl.sheet_names[:10])
         return empty
 
     df = xl.parse(sheet, header=None)
     cols = _locate_columns(df)
     if cols is None:
-        logger.error("[%s] HUF/Foreign currency 열 매핑 실패", country_code)
+        logger.error("[%s] Failed to map HUF/Foreign currency columns", country_code)
         return empty
     td_col, fcd_cols = cols
 
@@ -138,15 +139,15 @@ def _to_period(value) -> str | None:
 
 
 def _locate_columns(df: pd.DataFrame) -> tuple[int, list[int]] | None:
-    """Deposits of residents 총액 열 + FC 구성 열(CG FC, overnight FC, maturity FC).
+    """Deposits of residents total column + FC component columns (CG FC, overnight FC, maturity FC).
 
-    고정 인덱스 폴백: td=2, fcd=[5,9,12] (MNB 현재 레이아웃).
+    Fixed-index fallback: td=2, fcd=[5,9,12] (current MNB layout).
     """
-    # 'Deposits of residents' 라벨이 있는 열 찾기 (보통 col2 위 헤더)
-    # 데이터 열: col2 = total deposits of residents (row with date has numbers)
-    # FC 열: 헤더 행에서 'Foreign currency' 이고 Deposits of residents 블록 안
+    # Find the column with the 'Deposits of residents' label (usually the header above col2)
+    # Data column: col2 = total deposits of residents (rows with a date carry numbers)
+    # FC columns: 'Foreign currency' in the header row, within the Deposits of residents block
 
-    # 헤더 행들
+    # Header rows
     fc_cols: list[int] = []
     for i in range(min(20, len(df))):
         for j in range(df.shape[1]):
@@ -154,7 +155,7 @@ def _locate_columns(df: pd.DataFrame) -> tuple[int, list[int]] | None:
             if isinstance(v, str) and v.strip().lower() == "foreign currency":
                 fc_cols.append(j)
 
-    # 고유 유지 순서
+    # Deduplicate while preserving order
     seen = set()
     fc_unique = []
     for c in fc_cols:
@@ -162,8 +163,8 @@ def _locate_columns(df: pd.DataFrame) -> tuple[int, list[int]] | None:
             seen.add(c)
             fc_unique.append(c)
 
-    # Deposits of residents 블록의 FC만: 보통 처음 3개 (CG, overnight, maturity)
-    # debt securities 쪽 FC(c19 등)는 예금 아님 — col index 기준으로 작은 쪽
+    # Only FC columns within the Deposits of residents block: usually the first 3 (CG, overnight, maturity)
+    # FC columns on the debt securities side (e.g. c19) are not deposits — prefer the smaller col indices
     deposit_fc = [c for c in fc_unique if c <= 14]
     if len(deposit_fc) >= 3:
         deposit_fc = deposit_fc[:3]
@@ -190,19 +191,19 @@ def _locate_columns(df: pd.DataFrame) -> tuple[int, list[int]] | None:
 
 def render(target: dict) -> pd.DataFrame:
     country_code = target["country_code"]
-    logger.info("[%s] monstatpubl 다운로드: %s", country_code, _XLS_URL)
+    logger.info("[%s] Downloading monstatpubl: %s", country_code, _XLS_URL)
     resp = requests.get(_XLS_URL, headers=_HEADERS, timeout=120)
     resp.raise_for_status()
     content = resp.content
     if not content.startswith(b"\xd0\xcf\x11\xe0") and not content.startswith(b"PK"):
-        logger.error("[%s] 엑셀이 아닌 응답 len=%d", country_code, len(content))
+        logger.error("[%s] Response is not an Excel file, len=%d", country_code, len(content))
         return pd.DataFrame(
             columns=["country_code", "year", "period", "indicator", "value", "updated_at"]
         )
     df = parse(content, country_code)
     if not df.empty:
         logger.info(
-            "[%s] %d행 (%s~%s)",
+            "[%s] %d rows (%s~%s)",
             country_code, len(df), df["period"].min(), df["period"].max(),
         )
     return df

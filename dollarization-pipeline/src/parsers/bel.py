@@ -1,15 +1,18 @@
-"""Belgium: National Bank of Belgium(NBB) 공식 SDMX-JSON REST API.
+"""Belgium: National Bank of Belgium (NBB) official SDMX-JSON REST API.
 
-dataflow BE2,DF_BSIMFI,1.0 (MFI Balance Sheet Items). MBSI_ITEM 코드 체계(자체 검증):
-    L2BE   = Deposits, Belgium(거주자) 전체 통화 합계  -> TD
+dataflow BE2,DF_BSIMFI,1.0 (MFI Balance Sheet Items). MBSI_ITEM code scheme (verified
+empirically):
+    L2BE   = Deposits, Belgium (resident), all currencies combined  -> TD
     L2BEEU = Deposits, Belgium, Euro
-    L2BEFC = Deposits, Belgium, Foreign currencies      -> FCD
-    (검증: 한 시점에서 L2BEEU + L2BEFC == L2BE 정확히 일치함을 실측으로 확인)
+    L2BEFC = Deposits, Belgium, Foreign currencies                  -> FCD
+    (verified: at any given point in time, L2BEEU + L2BEFC == L2BE exactly, confirmed by
+    direct measurement)
 
-SDMX-JSON 응답은 observations가 "{freq_idx}:{mbsi_idx}:{time_idx}": [value, ...] 형태의
-희소 딕셔너리이고, structure.dimensions.observation에 각 차원의 코드 배열이 순서대로 있어
-인덱스로 역참조해야 한다. 쿼리 키에 'M.L2BE+L2BEFC'처럼 필요한 두 시리즈만 지정하면
-전체 79개 항목이 아니라 이 둘만 응답에 포함되어 훨씬 가볍다.
+The SDMX-JSON response's observations is a sparse dict keyed like
+"{freq_idx}:{mbsi_idx}:{time_idx}": [value, ...], and structure.dimensions.observation holds
+each dimension's code array in order, so values must be looked up by index. Specifying only
+the two needed series in the query key (e.g. 'M.L2BE+L2BEFC') keeps the response to just those
+two instead of all 79 items, which is much lighter.
 """
 
 from datetime import datetime, timezone
@@ -19,8 +22,9 @@ import requests
 
 from src.collectors.base import INDICATOR
 
-# base.download()의 기본 Accept 헤더(text/html 위주)로는 이 API가 JSON을 주지 않고
-# 빈 응답/XML을 준다. Accept: application/json을 명시한 자체 요청이 필요해 __RENDER__로 처리.
+# With base.download()'s default Accept header (mostly text/html), this API doesn't return
+# JSON — it gives an empty response or XML instead. An explicit Accept: application/json
+# request is required, so this is handled via __RENDER__.
 FILE_URL = "__RENDER__"
 
 QUERY_URL = (
@@ -31,7 +35,7 @@ _HEADERS = {"User-Agent": "Mozilla/5.0", "Accept": "application/json"}
 
 
 def parse(content: bytes, country_code: str) -> pd.DataFrame:
-    raise NotImplementedError("BEL은 render()를 통해 처리한다 (Accept: application/json 헤더 필요)")
+    raise NotImplementedError("BEL is handled via render() (requires Accept: application/json header)")
 
 
 def render(target: dict) -> pd.DataFrame:

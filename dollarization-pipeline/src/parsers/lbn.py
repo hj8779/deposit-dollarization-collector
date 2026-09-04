@@ -1,18 +1,19 @@
 """Lebanon: Banque du Liban — resident deposits in FC / total deposits.
 
-BDL 웹은 Cloudflare 봇 방어가 강해 일반 requests로는 403이 난다.
-Playwright(Chromium)로 key figures / money supply 페이지에 접근해
-Excel/CSV 다운로드 링크를 해석한다.
+The BDL website has strong Cloudflare bot protection, so plain requests get
+a 403. We use Playwright (Chromium) to load the key figures / money supply
+pages and resolve the Excel/CSV download links from there.
 
-1차 목표 시리즈:
+Primary target series:
   - Deposits of Residents in Foreign Currencies  (FCD)
   - Total Deposits in the Commercial Banks / Resident Customers Deposits (TD)
 
-URL 후보:
+Candidate URLs:
   https://www.bdl.gov.lb/keyfiguressub.php?docId=97&code=3&filecode=321
   https://www.bdl.gov.lb/tabs/index/6/325/Money-Supply..html
 
-접근 불가 시 빈 프레임 반환 (adapter notes에 원인 기록).
+Returns an empty frame if the site is unreachable (the cause is recorded in
+adapter notes).
 """
 
 from __future__ import annotations
@@ -50,7 +51,7 @@ _HEADERS = {
 
 
 def parse(content: bytes, country_code: str) -> pd.DataFrame:
-    raise NotImplementedError("LBN는 render()로 Playwright 다운로드를 수행한다")
+    raise NotImplementedError("LBN performs the download via Playwright in render()")
 
 
 def _empty() -> pd.DataFrame:

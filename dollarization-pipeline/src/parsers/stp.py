@@ -1,38 +1,53 @@
-"""Sao Tome and Principe: Banco Central de S. Tomé e Príncipe (BCSTP) 웹사이트
-'Banco Central > Estatísticas Monetárias e Financeiras' 섹션에서 직접 배포하는
-xlsx 파일 'Depósitos Bancários por moeda e tipo_2018-2026.xlsx' 하나를 사용한다.
+"""Sao Tome and Principe: uses a single xlsx file,
+'Depósitos Bancários por moeda e tipo_2018-2026.xlsx', distributed directly
+from the Banco Central de S. Tomé e Príncipe (BCSTP) website's
+'Banco Central > Estatísticas Monetárias e Financeiras' section.
 
-이 파일은 매월 갱신되며 시트 'DEPÓSITOS BANCÁRIOS'에 상업은행 예금을
-거주자/비거주자 x 통화(자국통화/외화) x 부문(공공/비금융법인/가계/비영리단체)별로
-분해한 표를 담고 있다(단위: Milhões nDb, 즉 2018년 재화폐화(1000 STD=1 STN) 이후의
-신 도브라 백만 단위). 파일 자체가 2018-01부터 시작하므로 재화폐화로 인한 단위
-불연속 문제를 자연히 피한다(그 이전 데이터는 이 파일에 없음).
+This file is updated monthly, and sheet 'DEPÓSITOS BANCÁRIOS' holds a table
+breaking down commercial-bank deposits by resident/non-resident x currency
+(local currency/foreign currency) x sector (public/non-financial
+corporations/households/nonprofits) (units: Milhões nDb, i.e. millions of the
+new dobra following the 2018 redenomination [1000 STD=1 STN]). Since the file
+itself starts at 2018-01, it naturally avoids the unit discontinuity caused by
+the redenomination (data before that date is not in this file).
 
-행 구조(라벨은 열 C, 값은 열 D부터 월별로 이어짐, 헤더 날짜는 행 6):
-    (1) Residentes                    <- 거주자 예금 총액(자국통화+외화) = TD로 사용
-        (1.1) Moeda Nacional          <- 거주자, 자국통화
-        (1.2) Moeda Estrangeira       <- 거주자, 외화                    = FCD로 사용
-    (2) Não Residentes                <- 비거주자 예금(제외)
-    TOTAL((1)+(2))                    <- 거주자+비거주자 합계(제외, 본 프로젝트는 거주자만 대상)
+Row structure (labels in column C, values from column D onward monthly,
+header dates on row 6):
+    (1) Residentes                    <- total resident deposits (local
+                                          currency+foreign currency) = used as TD
+        (1.1) Moeda Nacional          <- residents, local currency
+        (1.2) Moeda Estrangeira       <- residents, foreign currency = used as FCD
+    (2) Não Residentes                <- non-resident deposits (excluded)
+    TOTAL((1)+(2))                    <- residents+non-residents combined
+                                          (excluded; this project targets
+                                          residents only)
 
-라벨 문자열은 파일마다 선행 공백/들여쓰기가 조금씩 다를 수 있어(예: ' (1) Residentes',
-'         (1.1) Moeda Nacional') 정규식으로 괄호 안 번호만 매칭해 탐색하고, 고정 행
-번호에 의존하지 않는다. 헤더 행도 '연-월 형태의 datetime 값이 다수 나오는 첫 행'을
-탐색해서 찾는다(향후 파일 레이아웃이 한두 행 밀려도 견고하도록).
+Label strings can vary slightly in leading whitespace/indentation from file to
+file (e.g. ' (1) Residentes', '         (1.1) Moeda Nacional'), so we search
+by matching only the number inside the parentheses via regex, rather than
+relying on fixed row numbers. The header row is likewise found by searching
+for "the first row where a lot of year-month-shaped datetime values appear"
+(so it stays robust if the file layout shifts by a row or two in the future).
 
-주의: (1) Residentes 자체는 국제수지 관점의 '총예금'이 아니라 '거주자 예금'만을
-가리킨다. 비거주자 예금까지 포함한 은행 전체 예금 총액을 원하면 TOTAL((1)+(2)) 행을
-쓰면 되지만, 본 프로젝트의 FCD/TD 지표는 '거주자 외화예금 비중'을 보는 것이 목적이므로
-TD도 거주자 기준(행 (1))으로 맞춘다.
+Note: (1) Residentes on its own does not represent "total deposits" in a
+balance-of-payments sense — it refers only to resident deposits. If you want
+the bank-wide deposit total including non-residents, use the TOTAL((1)+(2))
+row instead; but since this project's FCD/TD indicators are meant to capture
+"the share of resident foreign-currency deposits," TD is likewise kept on a
+resident basis (row (1)).
 
-과거 확장(2026-08-19 사용자 제보): BCSTP가 별도로 'Agregados Monetários_2001-2026.xlsx'
-(통화총량 시계열, 2001-12부터 매월)를 배포한다. 시트 'AGREGADOS MONETÁRIOS'의
-M3(=M2+외화예금) - M0의 'Moeda em Circulação'(유통현금) = TD, 'Depósitos em Moeda
-Estrangeira' 행 = FCD. 이 파일은 위 예금상세 파일과 달리 **거주자만이 아니라 은행
-시스템 전체 기준**이라 개념이 살짝 다르다(2018-01 교차검증: 이 파일 기준 ratio≈28.9%
-vs 상세 파일(거주자 전용) 기준 26.57% — 같은 자릿수대로 근접하나 동일하지는 않음).
-그래서 상세 파일이 커버하지 않는 2018-01 이전 구간에만 이 통화총량 파일을 보조로 써서
-연장한다(겹치는 달은 상세 파일 값을 우선)."""
+Historical extension (per a 2026-08-19 user report): BCSTP separately
+distributes 'Agregados Monetários_2001-2026.xlsx' (a monetary aggregates time
+series, monthly from 2001-12). In sheet 'AGREGADOS MONETÁRIOS',
+M3(=M2+foreign-currency deposits) - M0's 'Moeda em Circulação' (currency in
+circulation) = TD, and the 'Depósitos em Moeda Estrangeira' row = FCD. Unlike
+the deposit-detail file above, this file is on a **whole-banking-system
+basis, not resident-only**, so the concept differs slightly (cross-check at
+2018-01: ratio≈28.9% on this file vs. 26.57% on the detail file
+[residents-only] — close in order of magnitude but not identical). So we only
+use this monetary-aggregates file as a supplement to extend coverage before
+2018-01, where the detail file has no data (the detail file's values win on
+any overlapping month)."""
 
 import re
 from datetime import datetime, timezone
@@ -78,7 +93,7 @@ def _find_header_row(ws) -> int:
         )
         if date_count >= 3:
             return r
-    raise ValueError("날짜 헤더 행을 찾지 못했습니다")
+    raise ValueError("date header row not found")
 
 
 def _find_label_row(ws, pattern: re.Pattern, max_row: int) -> int | None:
@@ -90,7 +105,7 @@ def _find_label_row(ws, pattern: re.Pattern, max_row: int) -> int | None:
 
 
 def parse(content: bytes, country_code: str) -> pd.DataFrame:
-    raise NotImplementedError("STP는 render()로 상세/총량 xlsx 두 개를 합친다")
+    raise NotImplementedError("STP merges the two detail/aggregate xlsx files via render()")
 
 
 def _parse_detail(content: bytes, country_code: str) -> pd.DataFrame:
@@ -99,7 +114,7 @@ def _parse_detail(content: bytes, country_code: str) -> pd.DataFrame:
 
     wb = openpyxl.load_workbook(BytesIO(content), data_only=True)
     if _SHEET_NAME not in wb.sheetnames:
-        logger.warning("[%s] 시트 '%s'를 찾지 못했습니다 (시트 목록: %s)", country_code, _SHEET_NAME, wb.sheetnames)
+        logger.warning("[%s] sheet '%s' not found (available sheets: %s)", country_code, _SHEET_NAME, wb.sheetnames)
         return pd.DataFrame(columns=columns)
     ws = wb[_SHEET_NAME]
 
@@ -108,10 +123,10 @@ def _parse_detail(content: bytes, country_code: str) -> pd.DataFrame:
     fcd_row = _find_label_row(ws, _FCD_LABEL_RE, ws.max_row)
 
     if td_row is None or fcd_row is None:
-        logger.warning("[%s] TD(%s)/FCD(%s) 라벨 행을 찾지 못했습니다", country_code, td_row, fcd_row)
+        logger.warning("[%s] TD(%s)/FCD(%s) label row not found", country_code, td_row, fcd_row)
         return pd.DataFrame(columns=columns)
 
-    # 실제로 값이 채워진 마지막 열까지만 순회한다.
+    # Only iterate up to the last column that actually has a value.
     last_col = _FIRST_DATA_COL - 1
     for c in range(_FIRST_DATA_COL, ws.max_column + 1):
         if ws.cell(row=header_row, column=c).value is not None:
@@ -157,14 +172,15 @@ def _find_agg_label_row(ws, pattern: re.Pattern) -> int | None:
 
 
 def _parse_aggregates(content: bytes, country_code: str) -> pd.DataFrame:
-    """'Agregados Monetários' 통화총량 파일 — 은행 시스템 전체 기준(거주자 한정 아님).
+    """'Agregados Monetários' monetary aggregates file — whole-banking-system
+    basis (not resident-only).
     TD = M3 - Moeda em Circulação, FCD = Depósitos em Moeda Estrangeira."""
     now = datetime.now(timezone.utc).isoformat()
     columns = ["country_code", "year", "period", "indicator", "value", "updated_at"]
 
     wb = openpyxl.load_workbook(BytesIO(content), data_only=True)
     if _AGG_SHEET_NAME not in wb.sheetnames:
-        logger.warning("[%s] 시트 '%s'를 찾지 못했습니다 (시트 목록: %s)", country_code, _AGG_SHEET_NAME, wb.sheetnames)
+        logger.warning("[%s] sheet '%s' not found (available sheets: %s)", country_code, _AGG_SHEET_NAME, wb.sheetnames)
         return pd.DataFrame(columns=columns)
     ws = wb[_AGG_SHEET_NAME]
 
@@ -178,7 +194,7 @@ def _parse_aggregates(content: bytes, country_code: str) -> pd.DataFrame:
     fcd_row = _find_agg_label_row(ws, _AGG_FCD_LABEL_RE)
     if not (header_row and m3_row and currency_row and fcd_row):
         logger.warning(
-            "[%s] 통화총량 파일 행 미발견 (header=%s m3=%s currency=%s fcd=%s)",
+            "[%s] rows not found in monetary aggregates file (header=%s m3=%s currency=%s fcd=%s)",
             country_code, header_row, m3_row, currency_row, fcd_row,
         )
         return pd.DataFrame(columns=columns)
@@ -227,26 +243,27 @@ def render(target: dict) -> pd.DataFrame:
         resp.raise_for_status()
         agg = _parse_aggregates(resp.content, country_code)
         if not agg.empty:
-            logger.info("[%s] 통화총량 %d rows (%s~%s)", country_code, len(agg), agg["period"].min(), agg["period"].max())
+            logger.info("[%s] monetary aggregates %d rows (%s~%s)", country_code, len(agg), agg["period"].min(), agg["period"].max())
             frames.append(agg)
     except Exception as e:
-        logger.warning("[%s] 통화총량 파일 실패: %s", country_code, e)
+        logger.warning("[%s] monetary aggregates file failed: %s", country_code, e)
 
     try:
         resp = requests.get(_DETAIL_URL, headers=headers, timeout=90, verify=False)
         resp.raise_for_status()
         detail = _parse_detail(resp.content, country_code)
         if not detail.empty:
-            logger.info("[%s] 상세 %d rows (%s~%s)", country_code, len(detail), detail["period"].min(), detail["period"].max())
+            logger.info("[%s] detail %d rows (%s~%s)", country_code, len(detail), detail["period"].min(), detail["period"].max())
             frames.append(detail)
     except Exception as e:
-        logger.warning("[%s] 상세 파일 실패: %s", country_code, e)
+        logger.warning("[%s] detail file failed: %s", country_code, e)
 
     if not frames:
         return pd.DataFrame(columns=["country_code", "year", "period", "indicator", "value", "updated_at"])
 
-    # 통화총량 먼저, 상세 파일 나중 concat → drop_duplicates(keep='last')로
-    # 겹치는 달(2018-01~)은 거주자-기준 상세 값이 우선하도록.
+    # Concat monetary aggregates first, then detail file → with
+    # drop_duplicates(keep='last'), the resident-basis detail value wins for
+    # any overlapping month (2018-01~).
     out = (
         pd.concat(frames, ignore_index=True)
         .drop_duplicates(subset=["period", "indicator"], keep="last")

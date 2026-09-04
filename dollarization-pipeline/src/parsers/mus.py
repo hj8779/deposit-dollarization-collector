@@ -1,30 +1,35 @@
 """Mauritius: Bank of Mauritius — Monetary Developments PDFs.
 
-목록(페이지네이션 page=0..N):
+Listing (paginated via page=0..N):
   https://www.bom.mu/publications-and-statistics/statistics/monetary-and-financial-statistics/depository-corporation-survey?page=N
-링크 텍스트가 "Monetary Developments: <Month> <Year>" 형태인 것만 골라 쓴다(제목 표기가
-"MAY 2008"처럼 대문자거나 "December 2008"처럼 일반 표기인 두 가지가 섞여 있음 - 정규식은
-대소문자 무관하게 매칭).
+Only links whose text matches "Monetary Developments: <Month> <Year>" are used
+(titles appear in two styles — all caps like "MAY 2008" or normal case like
+"December 2008" — the regex matches case-insensitively).
 
-표 "COMPONENTS AND SOURCES OF BROAD MONEY LIABILITIES"는 시기별로 세 가지 상태가 섞여
-있음(문서 하나씩 실제로 열어 텍스트 추출 가능 여부/라벨을 확인함):
-  - 2008~2011: 텍스트 추출 가능, 구형 라벨(아래 OLD).
-  - 2012~2020: 표가 이미지로 스캔되어 있어 텍스트 추출이 안 됨(페이지 2가 비어 있음) →
-    OCR 필요. 라벨은 2018년경까지 구형(OLD), 이후 신형(NEW)으로 섞여 있음.
-  - 2021~현재: 텍스트 추출 가능, 신형 라벨(NEW).
+The "COMPONENTS AND SOURCES OF BROAD MONEY LIABILITIES" table has three
+distinct states depending on the period (confirmed by opening documents one
+by one to check whether text extraction works and which labels are used):
+  - 2008-2011: text is extractable, uses the old-style labels (OLD below).
+  - 2012-2020: the table is a scanned image, so text extraction fails (page 2
+    is blank) → OCR is required. Labels are a mix of old-style (OLD) up to
+    around 2018 and new-style (NEW) afterward.
+  - 2021-present: text is extractable, uses the new-style labels (NEW).
 
-OLD 라벨: '2. Transferable Deposits' / '1. Savings Deposits' / '2. Time Deposits' /
-          '3. Foreign Currency Deposits' (Narrow Money 밑에 있는 'II. Quasi-Money
-          Liabilities (1+2+3)' 총계행은 OCR에서 자주 깨져 안 쓰고, 대신 네 항목을 직접
-          더한다: TD = Transferable + Savings + Time + FCD)
-NEW 라벨: 'II. Deposit Liabilities'(총계) / 'II.2. Foreign Currency Deposits' (TD = 총계
-          그대로, FCD는 그 하위 항목)
+OLD labels: '2. Transferable Deposits' / '1. Savings Deposits' / '2. Time
+            Deposits' / '3. Foreign Currency Deposits' (the 'II. Quasi-Money
+            Liabilities (1+2+3)' total row under Narrow Money is frequently
+            garbled by OCR and not used; instead the four items are summed
+            directly: TD = Transferable + Savings + Time + FCD)
+NEW labels: 'II. Deposit Liabilities' (total) / 'II.2. Foreign Currency
+            Deposits' (TD = the total as-is, FCD is its sub-item)
 
-OCR은 pytesseract, psm 6(균일 텍스트 블록 가정)이 표 형태에서 라벨/숫자 정렬을 가장 잘
-보존함(기본 psm 3은 표를 여러 블록으로 쪼개 라벨과 숫자 열이 분리되어 나오는 경우가 있음).
-라벨 자체가 OCR로 깨져 인식이 안 되는 파일(예: 2018-01, 2018-09)은 신뢰할 수 있는 값을
-만들 수 없어 건너뛴다(숫자 줄 순서로 위치 추정하는 방식은 한 줄이라도 밀리면 잘못된 값이
-조용히 들어갈 위험이 있어 채택하지 않음).
+For OCR, pytesseract with psm 6 (assumes a uniform block of text) best
+preserves label/number alignment for tables (the default psm 3 sometimes
+splits the table into multiple blocks, separating label and number columns).
+Files where the labels themselves are too garbled by OCR to recognize (e.g.
+2018-01, 2018-09) are skipped rather than producing an unreliable value
+(inferring position from the order of number lines is not used, since a
+single misaligned line risks silently inserting an incorrect value).
 """
 
 from __future__ import annotations
@@ -52,7 +57,7 @@ _LIST_PAGE = (
     "https://www.bom.mu/publications-and-statistics/statistics/"
     "monetary-and-financial-statistics/depository-corporation-survey"
 )
-_MAX_LIST_PAGES = 40  # 확인 시점 기준 마지막 페이지=33; 여유를 두고 순회
+_MAX_LIST_PAGES = 40  # last page was 33 as of last check; iterate with margin
 
 _HEADERS = {
     "User-Agent": (
@@ -75,7 +80,7 @@ _LINK_RE = re.compile(
 
 
 def parse(content: bytes, country_code: str) -> pd.DataFrame:
-    raise NotImplementedError("MUS는 render()로 Monetary Developments PDF를 받는다")
+    raise NotImplementedError("MUS fetches Monetary Developments PDFs via render()")
 
 
 def _empty() -> pd.DataFrame:
@@ -83,7 +88,7 @@ def _empty() -> pd.DataFrame:
 
 
 def _list_issues() -> list[tuple[str, str]]:
-    """[(period, pdf_url), ...] — 목록 페이지네이션을 끝까지 순회해 실제 게시된 링크만 모은다."""
+    """[(period, pdf_url), ...] — walks the listing pagination to the end, collecting only actually published links."""
     out: list[tuple[str, str]] = []
     for page_no in range(_MAX_LIST_PAGES):
         url = _LIST_PAGE if page_no == 0 else f"{_LIST_PAGE}?page={page_no}"
@@ -102,8 +107,8 @@ def _list_issues() -> list[tuple[str, str]]:
                 continue
             period = f"{int(year_s)}-{month:02d}"
             out.append((period, urljoin(url, href)))
-    dedup = {period: url for period, url in out}  # 뒤 페이지가 갱신본일 가능성 낮음, 순서 무관
-    logger.info("[MUS] 목록에서 Monetary Developments %d건 발견 (%s~%s)",
+    dedup = {period: url for period, url in out}  # later pages are unlikely to be updated versions, order doesn't matter
+    logger.info("[MUS] found %d Monetary Developments issues in listing (%s~%s)",
                 len(dedup), min(dedup) if dedup else "-", max(dedup) if dedup else "-")
     return sorted(dedup.items())
 
@@ -135,14 +140,15 @@ def _ocr_table_page(content: bytes) -> str | None:
             img = page.to_image(resolution=350).original
             return pytesseract.image_to_string(img, config="--psm 6")
     except Exception:
-        logger.warning("[MUS] OCR 실패", exc_info=True)
+        logger.warning("[MUS] OCR failed", exc_info=True)
         return None
 
 
 def _num_after(text: str, label: str) -> float | None:
-    """label이 포함된 줄에서, 그 뒤에 오는 첫 숫자(콤마 또는 3자리 그룹 공백 구분)를 뽑는다.
-    OCR 결과는 '62 551'(공백으로 쪼개진 천단위)일 수도, '62,551'(콤마 보존)일 수도 있어
-    둘 다 처리한다."""
+    """Finds the line containing `label` and extracts the first number that follows it
+    (comma-separated, or space-separated in 3-digit groups). OCR output may render
+    thousands as '62 551' (split by a space) or '62,551' (comma preserved), so both
+    forms are handled."""
     for line in text.splitlines():
         idx = line.lower().find(label.lower())
         if idx == -1:
@@ -164,7 +170,7 @@ def _num_after(text: str, label: str) -> float | None:
 
 
 def _extract_new_format(text: str) -> tuple[float, float] | None:
-    """(fcd, td) — 'II. Deposit Liabilities' 총계 + 'Foreign Currency Deposits' 하위 항목."""
+    """(fcd, td) — 'II. Deposit Liabilities' total + 'Foreign Currency Deposits' sub-item."""
     fcd = _num_after(text, "Foreign Currency Deposits")
     td = _num_after(text, "Deposit Liabilities")
     if fcd is None or td is None or td <= 0:
@@ -173,8 +179,8 @@ def _extract_new_format(text: str) -> tuple[float, float] | None:
 
 
 def _extract_old_format(text: str) -> tuple[float, float] | None:
-    """(fcd, td) — Transferable + Savings + Time + FCD 직접 합산(총계행 라벨은 OCR로 자주
-    깨져 신뢰하지 않음)."""
+    """(fcd, td) — direct sum of Transferable + Savings + Time + FCD (the total row's
+    label is frequently garbled by OCR and not trusted)."""
     fcd = _num_after(text, "Foreign Currency Deposits")
     transferable = _num_after(text, "Transferable Deposits")
     savings = _num_after(text, "Savings Deposits")
@@ -199,7 +205,7 @@ def _parse_pdf(content: bytes, period: str, country_code: str) -> pd.DataFrame:
         if ocr_text:
             result = _extract_fcd_td(ocr_text)
     if result is None:
-        logger.warning("[%s] FCD/TD 라벨을 못 찾음: %s", country_code, period)
+        logger.warning("[%s] could not find FCD/TD labels: %s", country_code, period)
         return _empty()
 
     fcd, td = result
@@ -220,7 +226,7 @@ def render(target: dict) -> pd.DataFrame:
 
         issues = _list_issues()
         if not issues:
-            logger.error("[%s] 목록에서 발행본을 찾지 못함", country_code)
+            logger.error("[%s] no issues found in listing", country_code)
             return _empty()
 
         def _one(period: str, url: str) -> pd.DataFrame | None:
@@ -230,7 +236,7 @@ def render(target: dict) -> pd.DataFrame:
                     return None
                 return _parse_pdf(resp.content, period, country_code)
             except Exception:
-                logger.warning("[%s] %s 처리 실패", country_code, period, exc_info=True)
+                logger.warning("[%s] failed to process %s", country_code, period, exc_info=True)
                 return None
 
         frames: list[pd.DataFrame] = []

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Effect } from "effect";
 import { fetchDepositRows } from "../lib/db";
 import { useEffectQuery } from "../lib/useEffectQuery";
@@ -22,6 +23,7 @@ interface Props {
 const ALL_INDICATORS: Indicator[] = ["FCD", "TD", "FCD_TD_RATIO"];
 
 export function ChartForm({ countries, selectedCountry, onSelectCountry }: Props) {
+  const { t } = useTranslation();
   const [checkedIndicators, setCheckedIndicators] = useState<Set<Indicator>>(
     new Set(ALL_INDICATORS),
   );
@@ -67,19 +69,21 @@ export function ChartForm({ countries, selectedCountry, onSelectCountry }: Props
   return (
     <div className="panel">
       <div className="panel-header">
-        <h2>Chart</h2>
-        {country?.frequency_bucket && <span className="muted">주기: {country.frequency_bucket}</span>}
+        <h2>{t("chartForm.title")}</h2>
+        {country?.frequency_bucket && (
+          <span className="muted">{t("chartForm.frequencyLabel", { freq: country.frequency_bucket })}</span>
+        )}
       </div>
 
       <div className="chart-controls">
         <label className="field">
-          <span>국가</span>
+          <span>{t("chartForm.countryLabel")}</span>
           <select
             value={selectedCountry ?? ""}
             onChange={(e) => onSelectCountry(e.target.value)}
           >
             <option value="" disabled>
-              국가 선택…
+              {t("chartForm.countrySelectPlaceholder")}
             </option>
             {countries.map((c) => (
               <option key={c.country_code} value={c.country_code}>
@@ -90,7 +94,7 @@ export function ChartForm({ countries, selectedCountry, onSelectCountry }: Props
         </label>
 
         <div className="field">
-          <span>지표</span>
+          <span>{t("chartForm.indicatorLabel")}</span>
           <div className="indicator-toggles">
             {ALL_INDICATORS.map((indicator) => (
               <label key={indicator} className="checkbox-label">
@@ -109,22 +113,22 @@ export function ChartForm({ countries, selectedCountry, onSelectCountry }: Props
 
       {selectedCountry && manualInfo && (
         <div className={halfManual ? "manual-notice half-manual-notice" : "manual-notice"}>
-          {halfManual ? "◐ 하프매뉴얼" : "⚠ 수동"} {selectedCountry}: {manualInfo.reason}
+          {halfManual ? t("chartForm.manualBadgeHalf") : t("chartForm.manualBadgeFull")} {selectedCountry}: {manualInfo.reason}
           {manualInfo.sourceUrl && (
             <>
               {" "}
               <a href={manualInfo.sourceUrl} target="_blank" rel="noreferrer">
-                소스 열기
+                {t("chartForm.openSource")}
               </a>
             </>
           )}
         </div>
       )}
 
-      {!selectedCountry && <div className="chart-empty">왼쪽 표에서 국가를 선택하세요.</div>}
-      {selectedCountry && loading && <div className="chart-empty">불러오는 중…</div>}
+      {!selectedCountry && <div className="chart-empty">{t("chartForm.selectCountryEmpty")}</div>}
+      {selectedCountry && loading && <div className="chart-empty">{t("chartForm.loading")}</div>}
       {selectedCountry && error && (
-        <div className="panel error">데이터를 불러오지 못했습니다: {error.message}</div>
+        <div className="panel error">{t("chartForm.errorLoading", { message: error.message })}</div>
       )}
       {selectedCountry && !loading && !error && (
         <DepositChart points={points} visibleIndicators={visibleIndicators} />

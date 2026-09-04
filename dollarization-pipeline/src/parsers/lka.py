@@ -1,14 +1,14 @@
 """Sri Lanka: CBSL Banking Sector Liabilities — LKR vs FCY deposits.
 
-페이지:
+Page:
   https://www.cbsl.gov.lk/en/statistics/statistical-tables/financial-sector
-파일 (월/분기 갱신):
+File (updated monthly/quarterly):
   .../statistics/sheets/Table2.0_YYYYMMDD_e.xlsx
 
-시트 'Liabilities & Capital' — Banking Sector:
+Sheet 'Liabilities & Capital' — Banking Sector:
   row 'FCY Deposits' → FCD (Rs. Mn)
   row 'Deposits'     → TD  (Rs. Mn)
-  열: 분기말 (2022 Q1 …)
+  columns: quarter-end dates (2022 Q1 …)
 
 period: Q1→03, Q2→06, Q3→09, Q4→12
 """
@@ -51,7 +51,7 @@ _Q_TO_MONTH = {1: 3, 2: 6, 3: 9, 4: 12}
 
 
 def parse(content: bytes, country_code: str) -> pd.DataFrame:
-    raise NotImplementedError("LKA는 render()로 xlsx를 받는다")
+    raise NotImplementedError("LKA fetches the xlsx via render()")
 
 
 def _empty() -> pd.DataFrame:

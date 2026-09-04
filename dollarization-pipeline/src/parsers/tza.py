@@ -1,42 +1,51 @@
-"""Tanzania: Bank of Tanzania(BoT) 'Monthly Economic Review'(MER) PDF 시리즈.
+"""Tanzania: Bank of Tanzania (BoT) 'Monthly Economic Review' (MER) PDF series.
 
-목록 페이지 https://www.bot.go.tz/Publications/Filter/1 (필터 카테고리 1 = Monthly Economic
-Review; /Publications/Filter/16은 결제시스템/무역 통계용으로 통화 통계와 무관하다는 사실을
-재확인했다) 한 페이지에 전체 발간호(2002~현재, 약 280개)가 페이지네이션 없이 테이블로 노출된다.
-각 행은 `<a href=".../Monthly Economic Review/en/{token}.pdf">{Mon YY} - Monthly Economic
-Review</a>` 형태다. 파일명의 숫자 token은 업로드 타임스탬프일 뿐 실제 대상 기간과 무관하므로
-사용하지 않고, 링크 텍스트의 "Mon YY" 라벨도 참고용일 뿐 실제 파싱은 표 내부의 열 헤더
-("Mon-YY")에서 직접 기간을 읽어온다.
+The listing page https://www.bot.go.tz/Publications/Filter/1 (filter category 1 = Monthly
+Economic Review; confirmed that /Publications/Filter/16 is for payment-systems/trade
+statistics and unrelated to monetary statistics) exposes every issue (2002-present, roughly
+280 of them) in a single unpaginated table. Each row looks like
+`<a href=".../Monthly Economic Review/en/{token}.pdf">{Mon YY} - Monthly Economic
+Review</a>`. The numeric token in the filename is just an upload timestamp unrelated to the
+actual reporting period, so it is not used; the "Mon YY" label in the link text is also
+only a rough reference — the actual period is read directly from the column headers
+("Mon-YY") inside the table.
 
-각 호는 "Money Supply and Its Main Components"류 표(제목이 호마다 조금씩 다름: "Table 2.1:
-Money Supply and Components" / "...and its Main Components" / "Sources and Uses of Money
-Supply" / "Table 2.2.1"/"Table 2.3.1" 등 번호도 다름)에 최근 3개월(전전월 동월 작년, 전월,
-당월 -- 예: 'Nov-24 Oct-25 Nov-25')의 Outstanding stock(단위: Billion TZS)을 롤링 윈도우로
-싣는다. 표 안에 다음 행이 있다:
+Each issue carries a "Money Supply and Its Main Components"-style table (the title varies
+slightly across issues: "Table 2.1: Money Supply and Components" / "...and its Main
+Components" / "Sources and Uses of Money Supply" / numbering also varies, e.g. "Table
+2.2.1"/"Table 2.3.1") with a rolling 3-month window (same month last year, prior month,
+current month -- e.g. 'Nov-24 Oct-25 Nov-25') of Outstanding stock (unit: Billion TZS). The
+table contains these rows:
 
     Extended broad money (M3)        -> M3
-    Foreign currency deposits        -> FCD (거주자 외화예금)
+    Foreign currency deposits        -> FCD (resident foreign currency deposits)
     Other deposits
     Currency in circulation
     Transferable deposits
 
-TD(총예금, monetary-survey 정의) = Transferable deposits + Other deposits + FCD
-                                 (= M3 - Currency in circulation, 검증됨)
+TD (total deposits, monetary-survey definition) = Transferable deposits + Other deposits +
+                                                   FCD (= M3 - Currency in circulation,
+                                                   verified)
 FCD_TD_RATIO = FCD / TD * 100
 
-2026-02-18 발행 "Jan 26" 호(파일 2026021821282158.pdf)의 최신 열 Dec-25로 직접 검증:
+Directly verified against the Dec-25 column (the latest at the time) of the "Jan 26" issue
+published 2026-02-18 (file 2026021821282158.pdf):
 FCD=13,381.1, Other=17,944.2, Currency=8,492.3, M3=61,524.3
 -> TD = 61,524.3 - 8,492.3 = 53,032.0 (Transferable 21,706.7 + Other 17,944.2 + FCD 13,381.1
-   = 53,032.0, 일치) -> FCD_TD_RATIO = 25.23%. 사전 조사에서 제시된 수치와 일치한다.
+   = 53,032.0, matches) -> FCD_TD_RATIO = 25.23%. This matches the figure from prior
+   research.
 
-표는 벡터 罫線이 없는 텍스트 표라 pdfplumber.extract_tables()로는 못 읽는다. 대신
-extract_text()로 줄 단위 파싱한다. 오래된 호(대략 2014~2017년경)는 특정 글자(대문자 다음)
-뒤에 스퓨리어스 공백이 삽입되어 나오는 폰트 트래킹 문제가 있는데("M 3", "O ther deposits",
-"Extended broad m oney supply"), extract_text()의 x_tolerance 기본값(3) 대신 4를 쓰면
-이 스퓨리어스 공백이 사라지고 최신 호와 동일한 포맷으로 파싱된다(실측 확인됨). 그래도 실패하는
-극히 오래된 호(2013년 일부 등, 해당 표 자체가 없거나 이미지로 삽입된 것으로 추정)는 조용히
-건너뛴다 -- 표준 OCR 폴백은 이 케이스에는 해당하지 않는다(텍스트 자체가 존재하고 손상된 게
-아니라, 표가 아예 없거나 열 순서가 완전히 뒤섞인 벡터 레이아웃 문제라 OCR로도 해결되지 않음).
+These tables have no vector grid lines, so pdfplumber.extract_tables() cannot read them;
+extract_text() is used instead with line-by-line parsing. Older issues (roughly
+2014-2017) have a font-tracking quirk where a spurious space is inserted after certain
+characters (following a capital letter) — e.g. "M 3", "O ther deposits", "Extended broad
+m oney supply". Using x_tolerance=4 with extract_text() instead of the default (3) removes
+these spurious spaces and yields the same format as recent issues (confirmed empirically).
+A handful of extremely old issues still fail to parse even so (some from around 2013, where
+the table itself appears to be missing or embedded as an image); these are silently
+skipped -- the standard OCR fallback does not apply to this case (the text itself is
+present and not corrupted; rather, the table is simply absent, or its vector layout has the
+columns completely scrambled, so OCR would not fix it either).
 """
 
 import re
@@ -51,13 +60,13 @@ from src.utils.logger import get_logger
 
 logger = get_logger(__name__)
 
-FILE_URL = "__RENDER__"  # 발간호 전체(약 280개)를 순회해야 하므로 단일 파일 다운로드가 아니다.
+FILE_URL = "__RENDER__"  # Must crawl the full set of issues (~280), so not a single-file download.
 
 BASE_URL = "https://www.bot.go.tz"
 LIST_URL = f"{BASE_URL}/Publications/Filter/1"  # Category 1 = Monthly Economic Review
 
-# 목록 페이지의 각 발간호 행: <td>Sn.</td><td>업로드일</td><td>카테고리</td>
-# <td class="text-left"><a href="{pdf 경로}">{Mon YY} - Monthly Economic Review</a></td>
+# Each issue row on the listing page: <td>Sn.</td><td>upload date</td><td>category</td>
+# <td class="text-left"><a href="{pdf path}">{Mon YY} - Monthly Economic Review</a></td>
 _ROW_RE = re.compile(
     r'<tr>\s*<td>\d+\.</td>\s*<td>\s*([^<]+?)\s*</td>\s*<td>\s*([^<]+?)\s*</td>\s*'
     r'<td class="text-left">\s*<a href="([^"]+\.pdf)"[^>]*>\s*([^<]+?)\s*</a>',
@@ -69,16 +78,19 @@ _MONTHS = {
     "jul": 7, "aug": 8, "sep": 9, "oct": 10, "nov": 11, "dec": 12,
 }
 _HEADER_TOKEN_RE = re.compile(r"\b([A-Za-z]{3})-(\d{2})\b")
-# 표의 값은 전부 소수점 이하 정확히 1자리(예: '13,543.4')다. 일부 호(예: 2026년 6월호)는
-# 인접한 두 열 사이에 공백이 아예 없어("14,553.513,308.6") '\d+'로 탐욕적으로 매칭하면
-# 두 숫자가 하나로 합쳐진다. 소수점 이하를 '\d' 1자리로 고정하고 숫자 사이 구분자를 '\s*'
-# (0칸도 허용)로 두면, 공백이 없어도 소수점 자리에서 자연스럽게 다음 숫자로 끊어 읽힌다.
-# 첫 글자는 반드시 숫자여야 한다('\d[\d,]*'): 일부 2010년 전후 호는 정반대로 천 단위 콤마
-# 앞에 스퓨리어스 공백이 들어간다(예: "2 ,060.0"). 콤마로 시작하는 것도 허용하면(예:
-# 옛 '[\d,]+') 이런 줄에서 ",060.0"이 "60.0"이라는 가짜 숫자로 오매칭되어 값이 크게
-# 틀어진다(실제 발견 사례: 2010년 4월호에서 FCD가 2,060.0 대신 60.0으로 잘못 파싱됨).
-# 숫자가 선행 공백으로 쪼개진 행은 이 조건 때문에 아예 매칭되지 않고 조용히 스킵되는데,
-# 틀린 값을 만드는 것보다 그 달을 결측으로 두는 편이 안전하다.
+# All values in the table have exactly one decimal digit (e.g. '13,543.4'). In some issues
+# (e.g. the June 2026 one) there is no space at all between two adjacent columns
+# ("14,553.513,308.6"); greedily matching with '\d+' would merge the two numbers into one.
+# Pinning the fractional part to exactly one digit ('\d') and letting the separator between
+# numbers be '\s*' (allowing zero spaces) naturally breaks at the decimal point into the
+# next number, even when there's no whitespace. The leading character must be a digit
+# ('\d[\d,]*'): some issues around 2010 have the opposite problem, a spurious space before
+# a thousands comma (e.g. "2 ,060.0"). If a leading comma were also allowed (e.g. the old
+# '[\d,]+'), such a line would mis-match ",060.0" as the bogus number "60.0", throwing the
+# value way off (an actual case found: in the April 2010 issue, FCD was mis-parsed as 60.0
+# instead of 2,060.0). Rows where a number is split by a leading space simply fail to match
+# under this constraint and are silently skipped — leaving that month missing is safer than
+# producing a wrong value.
 _NUM = r"-?\d[\d,]*\.\d"
 _ROW_VALUES_RE = re.compile(
     rf"^(?P<label>[A-Za-z][A-Za-z0-9 /().%-]*?)\s+(?P<v1>{_NUM})\s*(?P<v2>{_NUM})\s*(?P<v3>{_NUM})"
@@ -95,11 +107,12 @@ _TARGETS = {
 
 
 def parse(content: bytes, country_code: str) -> pd.DataFrame:
-    raise NotImplementedError("TZA는 render()를 통해 처리한다 (발간호 목록을 전부 순회)")
+    raise NotImplementedError("TZA is handled via render() (crawls the full list of issues)")
 
 
 def _collect_pdf_links() -> list[tuple[str, str]]:
-    """(라벨, 절대 PDF URL) 목록을 반환한다. 목록 페이지 자체에 페이지네이션이 없다(전체 노출)."""
+    """Return a list of (label, absolute PDF URL). The listing page itself has no
+    pagination (everything is shown at once)."""
     html = download(LIST_URL).decode("utf-8", errors="ignore")
     links = []
     for _upload_date, _category, href, label in _ROW_RE.findall(html):
@@ -119,7 +132,8 @@ def _period_from_header_token(month_abbr: str, year_2digit: str) -> tuple[int, i
 
 
 def _extract_table_periods_and_row(text: str) -> tuple[list[tuple[int, int]], dict[str, dict[tuple[int, int], float]]] | None:
-    """페이지 텍스트에서 열 기간(최대 3개)과 타깃 행별 {기간: 값} 매핑을 추출한다."""
+    """Extract column periods (up to 3) and a per-target-row {period: value} mapping
+    from the page text."""
     lines = text.splitlines()
 
     periods: list[tuple[int, int]] | None = None
@@ -140,7 +154,7 @@ def _extract_table_periods_and_row(text: str) -> tuple[list[tuple[int, int]], di
             continue
         label_lc = " ".join(m.group("label").lower().split())
         if "million" in label_lc or "usd" in label_lc:
-            continue  # "...(Millions of USD)" 보조 행은 제외
+            continue  # exclude the auxiliary "...(Millions of USD)" row
 
         matched_key = None
         if label_lc.startswith(_TARGETS["OTHER"]):
@@ -170,7 +184,7 @@ def _parse_pdf(content: bytes, country_code: str) -> pd.DataFrame:
     now = datetime.now(timezone.utc).isoformat()
     rows = []
     with pdfplumber.open(BytesIO(content)) as pdf:
-        for page in pdf.pages[:12]:  # 통화 통계 표는 항상 앞부분(2~7페이지)에 있음
+        for page in pdf.pages[:12]:  # monetary statistics table is always near the front (pages 2-7)
             text = page.extract_text(x_tolerance=4) or ""
             if "foreign currency deposits" not in text.lower():
                 continue
@@ -213,7 +227,7 @@ def _parse_pdf(content: bytes, country_code: str) -> pd.DataFrame:
                         "value": value,
                         "updated_at": now,
                     })
-            break  # 표를 찾아 파싱했으면 이 PDF의 나머지 페이지는 볼 필요 없음
+            break  # once the table has been found and parsed, no need to look at the rest of this PDF's pages
 
     return pd.DataFrame(rows)
 
@@ -222,34 +236,35 @@ def render(target: dict) -> pd.DataFrame:
     country_code = target["country_code"]
 
     links = _collect_pdf_links()
-    logger.info("[%s] Monthly Economic Review 발간호 %d개 발견", country_code, len(links))
+    logger.info("[%s] found %d Monthly Economic Review issues", country_code, len(links))
 
     frames = []
     for label, url in links:
         try:
             content = download(url, referer=LIST_URL)
         except Exception:
-            logger.warning("[%s] 다운로드 실패, 스킵: %s (%s)", country_code, label, url)
+            logger.warning("[%s] download failed, skipping: %s (%s)", country_code, label, url)
             continue
 
         try:
             df = _parse_pdf(content, country_code)
         except Exception:
-            logger.warning("[%s] 파싱 실패, 스킵: %s (%s)", country_code, label, url)
+            logger.warning("[%s] parse failed, skipping: %s (%s)", country_code, label, url)
             continue
 
         if not df.empty:
             frames.append(df)
         else:
-            logger.info("[%s] 통화 통계 표를 찾지 못함, 스킵: %s", country_code, label)
+            logger.info("[%s] monetary statistics table not found, skipping: %s", country_code, label)
 
     if not frames:
         return pd.DataFrame(columns=["country_code", "year", "period", "indicator", "value", "updated_at"])
 
     merged = pd.concat(frames, ignore_index=True)
-    # 발간호가 최근 3개월치를 롤링 윈도우로 중복 보고하므로 (period, indicator) 기준 중복 제거.
-    # links는 최신순(목록 페이지 노출 순서)이므로 keep="first"가 가장 최근 발간호(더 정확한
-    # 확정치일 가능성이 높음)의 값을 우선한다.
+    # Each issue re-reports the last 3 months via a rolling window, so dedupe on
+    # (period, indicator). links are in most-recent-first order (as shown on the listing
+    # page), so keep="first" prefers the value from the most recent issue (more likely to
+    # be a finalized figure).
     merged = merged.drop_duplicates(subset=["period", "indicator"], keep="first")
     merged = merged.sort_values(["period", "indicator"]).reset_index(drop=True)
     return merged

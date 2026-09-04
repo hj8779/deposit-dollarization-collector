@@ -1,28 +1,29 @@
 """Hong Kong: HKMA Monthly Statistical Bulletin Table 2.2.1 (T020201.xls).
 
-페이지:
+Source page:
   https://www.hkma.gov.hk/eng/data-publications-and-research/data-and-statistics/economic-financial-data-for-hong-kong/#financialSector
-직접 파일:
+Direct file:
   https://www.hkma.gov.hk/media/eng/doc/market-data-and-statistics/monthly-statistical-bulletin/T020201.xls
 
-이전 실패 사유(요약 표의 'Foreign currency reserve assets' = 외환보유고)와 달리,
-이 표는 통화공급(Money supply)을 HK$/F.C./Total 로 분해한다.
+Unlike an earlier dead end (the summary table's 'Foreign currency reserve assets',
+which is foreign exchange reserves, not deposits), this table breaks down money
+supply (Money supply) into HK$/F.C./Total.
 
-시트:
-  - 'T2.2.1 (new series)' : 1997-04~최신 (권장 연속 시계열)
-  - 'T2.2.1 (old series)' : ~2002 전후까지 구 시계열 (1984-12~)
+Sheets:
+  - 'T2.2.1 (new series)' : 1997-04~latest (recommended for a continuous series)
+  - 'T2.2.1 (old series)' : old series up to roughly 2002 (1984-12~)
 
-표 제목: Adjusted for foreign currency swap deposits
-  - HK$ 열: 외화 swap 예금 포함(주2)
-  - F.C. 열: 외화 swap 예금 제외(주3)
-  - 단위: HK$ million
+Table title: Adjusted for foreign currency swap deposits
+  - HK$ column: includes foreign-currency swap deposits (note 2)
+  - F.C. column: excludes foreign-currency swap deposits (note 3)
+  - Units: HK$ million
 
-지표 (M2 기준 — 예금성 광의통화, 홍콩 달러화 연구에서 표준):
-  FCD = M2 F.C.   (외화 부문)
-  TD  = M2 Total  (= M2 HK$ + M2 F.C., 실측 항등)
+Indicators (M2-based — broad deposit money, standard in Hong Kong dollarization studies):
+  FCD = M2 F.C.   (foreign-currency portion)
+  TD  = M2 Total  (= M2 HK$ + M2 F.C., confirmed as an identity empirically)
   FCD_TD_RATIO = FCD/TD*100
 
-병합: 1997-04 이전은 old, 이후는 new(신시리즈 우선).
+Merging: old series covers periods before 1997-04, new series after (new series takes precedence).
 """
 
 from __future__ import annotations
@@ -37,7 +38,7 @@ from src.utils.logger import get_logger
 
 logger = get_logger(__name__)
 
-FILE_URL = "__RENDER__"  # referer 포함 다운로드는 render()에서
+FILE_URL = "__RENDER__"  # download with referer is handled in render()
 
 _XLS_URL = (
     "https://www.hkma.gov.hk/media/eng/doc/market-data-and-statistics/"
@@ -100,13 +101,13 @@ def _find_header_row(df: pd.DataFrame) -> int | None:
 
 
 def _m2_columns(df: pd.DataFrame, header_row: int) -> tuple[int, int] | None:
-    """헤더 행에서 M2 블록의 F.C. / Total 열 인덱스를 찾는다.
+    """Find the F.C. / Total column indices for the M2 block in the header row.
 
     new series: ... M1(HK,FC,Tot) M2(HK,FC,Tot) M3(HK,FC,Tot)
-    old series: 열 간격이 더 넓음(사이 빈 열).
-    M2 라벨은 보통 header_row-2 에 있다.
+    old series: wider column spacing (blank columns in between).
+    The M2 label is usually at header_row-2.
     """
-    # M2 라벨 열 찾기
+    # Find the M2 label column
     m2_label_col = None
     for r in range(max(0, header_row - 3), header_row):
         for j in range(df.shape[1]):
@@ -119,7 +120,7 @@ def _m2_columns(df: pd.DataFrame, header_row: int) -> tuple[int, int] | None:
     if m2_label_col is None:
         return None
 
-    # 헤더 행에서 m2_label_col 근처 오른쪽으로 HK$ / F.C. / Total 순
+    # Scan right from m2_label_col in the header row, in HK$ / F.C. / Total order
     fc_col = tot_col = None
     for j in range(m2_label_col, min(df.shape[1], m2_label_col + 8)):
         v = df.iat[header_row, j]
@@ -175,7 +176,7 @@ def parse(content: bytes, country_code: str) -> pd.DataFrame:
         try:
             xl = pd.ExcelFile(BytesIO(content))
         except Exception as e:
-            logger.error("[%s] xls 열기 실패: %s", country_code, e)
+            logger.error("[%s] Failed to open xls: %s", country_code, e)
             return _empty()
 
     sheets = xl.sheet_names
@@ -186,10 +187,10 @@ def parse(content: bytes, country_code: str) -> pd.DataFrame:
 
     if old_name:
         part = _parse_sheet(xl.parse(old_name, header=None))
-        # new series 시작(1997-04) 이전만 채택
+        # Only keep periods before the new series starts (1997-04)
         part = {p: v for p, v in part.items() if p < "1997-04"}
         logger.info(
-            "[%s] old series: %d개월 %s~%s",
+            "[%s] old series: %d months %s~%s",
             country_code, len(part),
             min(part) if part else "-", max(part) if part else "-",
         )
@@ -198,13 +199,13 @@ def parse(content: bytes, country_code: str) -> pd.DataFrame:
     if new_name:
         part = _parse_sheet(xl.parse(new_name, header=None))
         logger.info(
-            "[%s] new series: %d개월 %s~%s",
+            "[%s] new series: %d months %s~%s",
             country_code, len(part),
             min(part) if part else "-", max(part) if part else "-",
         )
-        merged.update(part)  # 신시리즈가 겹침 구간 덮어씀
+        merged.update(part)  # new series overrides overlapping periods
     elif not merged and sheets:
-        # 시트명 변형 대비: 첫 시트만
+        # Fallback for sheet-name variants: just use the first sheet
         part = _parse_sheet(xl.parse(sheets[0], header=None))
         merged.update(part)
 
@@ -238,19 +239,19 @@ def parse(content: bytes, country_code: str) -> pd.DataFrame:
 
 
 def render(target: dict) -> pd.DataFrame:
-    """FILE_URL 고정이지만 referer·헤더가 필요하면 여기로 우회."""
+    """FILE_URL is fixed, but route through here when referer/headers are needed."""
     country_code = target["country_code"]
     url = _XLS_URL
-    logger.info("[%s] T020201 다운로드: %s", country_code, url)
+    logger.info("[%s] Downloading T020201: %s", country_code, url)
     resp = requests.get(url, headers=_HEADERS, timeout=90)
     resp.raise_for_status()
     if not resp.content.startswith(b"\xd0\xcf\x11\xe0") and not resp.content.startswith(b"PK"):
-        logger.error("[%s] 엑셀이 아닌 응답 len=%d", country_code, len(resp.content))
+        logger.error("[%s] Response is not an Excel file, len=%d", country_code, len(resp.content))
         return _empty()
     df = parse(resp.content, country_code)
     if not df.empty:
         logger.info(
-            "[%s] %d행 (%s~%s)",
+            "[%s] %d rows (%s~%s)",
             country_code, len(df), df["period"].min(), df["period"].max(),
         )
     return df

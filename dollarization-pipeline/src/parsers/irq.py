@@ -5,7 +5,7 @@ Sheet1, "5- Money Supply" block:
 - row "M2"                              -> Broad money
 - row "Of which: Deposits component of M2" -> M2 minus currency outside banks;
   verified against Table 17 in the Annual Statistical Bulletin (matches exactly) ->
-  used as TD (총예금, local+foreign currency deposits together).
+  used as TD (total deposits, local+foreign currency deposits together).
 - row "Foreign currency deposits" (subset of the above) -> FCD.
 
 Column headers: row1 carries the year (forward-filled across that year's 12 month

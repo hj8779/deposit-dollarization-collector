@@ -1,38 +1,45 @@
-"""Djibouti: Banque Centrale de Djibouti(BCD) 'Dépôts des banques' 페이지
-(banque-centrale.dj/depots-des-banques/)에 게시된 PDF들. 각 PDF의 '3 - VENTILATION PAR
-DEVISES DES DEPOTS'(통화별 예금 구성) 표에서 'Dollars des Etats-Unis (USD)' +
-'Autres devises'(기타 외화) 행의 합 = FCD ('Francs Djibouti (FDJ)'는 자국통화라 제외).
+"""Djibouti: PDFs posted on the Banque Centrale de Djibouti (BCD) 'Dépôts des banques' page
+(banque-centrale.dj/depots-des-banques/). In each PDF's '3 - VENTILATION PAR DEVISES DES
+DEPOTS' (deposit breakdown by currency) table, FCD = the sum of the 'Dollars des Etats-Unis
+(USD)' + 'Autres devises' (other foreign currencies) rows ('Francs Djibouti (FDJ)' is excluded
+since it's the domestic currency).
 
-TD(총예금) = 같은 표의 'Total' 행(FDJ + USD + Autres devises 합계). 라벨 경계 계산에
-이미 TOTAL top이 포함되어 있어(OTHER 행 값 경계가 TOTAL의 앞쪽 값까지 잘못 삼키지 않도록),
-그대로 _values_for("TOTAL")로 값을 뽑아 쓴다.
+TD (total deposits) = the same table's 'Total' row (sum of FDJ + USD + Autres devises). The
+TOTAL row's top is already included in the label boundary calculation (so that the OTHER row's
+value range doesn't incorrectly swallow values belonging to the earlier part of TOTAL), so the
+value is simply pulled with _values_for("TOTAL").
 
-이 표는 숫자를 천단위 공백으로 묶어 쓰는데(예: '212 382' = 212,382), 같은 줄에 있는
-연속된 값들이 전부 공백으로 구분돼 있어 텍스트만으로는 어디까지가 한 숫자이고 어디부터
-다음 숫자인지 구분이 안 된다(예: '212 382 213 384 213 584 ...'는 순서대로 212382,
-213384, 213584, ... 인데 전부 공백 구분이라 텍스트 파싱만으론 모호함). 게다가 파일마다
-표 레이아웃이 미묘하게 다르다: 어떤 파일은 헤더가 두 줄로 쪼개져(최근 분기가 앞줄, 과거
-분기가 뒷줄) 데이터도 같은 방식으로 라벨 앞/뒤에 걸쳐 쪼개지고, 어떤 파일은 라벨과 값이
-같은 줄에 붙어 있다.
+This table groups digits with a thousands-separator space (e.g. '212 382' = 212,382), and
+since consecutive values on the same line are all space-separated, text alone can't tell where
+one number ends and the next begins (e.g. '212 382 213 384 213 584 ...' is, in order, 212382,
+213384, 213584, ... but is ambiguous from text parsing alone since everything is
+space-delimited). On top of that, the table layout differs subtly from file to file: in some
+files the header is split across two lines (recent quarter on the first line, older quarters
+on the second), and the data is split the same way before/after the label; in others, the
+label and values sit on the same line.
 
-그래서 텍스트 줄 단위가 아니라 pdfplumber의 단어 좌표(extract_words, x0)를 이용해 표를
-복원한다: 헤더 행의 기간 토큰(예: 'mars-21', 'Sept. 2017', 'déc-20' 등 표기가 파일마다
-다름)들의 x0 좌표를 열(컬럼) 기준점으로 삼고, 각 데이터 숫자 단어를 x0가 가장 가까운
-컬럼에 배정한 뒤(같은 컬럼에 배정된 여러 단어는 x0 오름차순으로 이어붙여 '212'+'382' ->
-212382 처럼 합친다) 컬럼별로 값을 복원한다. 이 방식은 공백 구분 숫자의 모호성과 줄바꿈
-위치가 파일마다 다른 문제를 동시에 해결한다.
+So instead of working line-by-line on text, the table is reconstructed using pdfplumber's word
+coordinates (extract_words, x0): the x0 coordinates of the header row's period tokens (e.g.
+'mars-21', 'Sept. 2017', 'déc-20' — the notation varies by file) are used as column reference
+points, each data-number word is assigned to the column with the nearest x0 (multiple words
+assigned to the same column are concatenated in ascending x0 order, e.g. '212'+'382' ->
+212382), and values are reconstructed per column. This approach simultaneously resolves both
+the ambiguity of space-separated numbers and the file-to-file variation in line-break
+placement.
 
-분기별 시리즈는 2017-03부터 시작한다. 그 이전(2009~2016)은 연차보고서
-(banque-centrale.dj/rapports-annuel-de-la-banque/)의 'Evolution/Composantes de la
-masse monétaire' 표(연도별 5개년 롤링 윈도우, 보고서마다 표 레이아웃이 두 가지 변형으로
-존재)에서 'Dépôts en devises'(=FCD) 및 'Dépôts à vue' + 'Dépôts sur livrets'(또는 구형
-표기 'Autres dépôts à vue FDJ') + 'Dépôts à terme' + 'Dépôts en devises'(=TD) 행을 뽑아
-2017년 이전 구간만 보강한다(2017년 이후는 분기 데이터가 이미 더 세밀하므로 중복 삽입하지
-않음). 표가 두 가지 레이아웃으로 나뉘는데(연도 헤더 'Composantes'행과 정확히 같은 top인
-경우와 'Autres' 라벨로 '기타예금'을 표기하는 구형 Annexe 표), 헤더는 'Composantes' 텍스트가
-아니라 같은 top에 연속된 4자리 연도 토큰이 3개 이상 있는 행(페이지에서 제일 위쪽 그룹)으로
-찾고, 두 번째 예금 행은 'livrets' 라벨이 없으면 'Autres' 라벨로 대체 탐색해 두 레이아웃을
-모두 지원한다.
+The quarterly series starts at 2017-03. The earlier period (2009-2016) is backfilled from the
+annual reports (banque-centrale.dj/rapports-annuel-de-la-banque/)'s 'Evolution/Composantes de
+la masse monétaire' table (a 5-year rolling window per report, with the table layout existing
+in two variants across reports): the 'Dépôts en devises' (=FCD) row and the 'Dépôts à vue' +
+'Dépôts sur livrets' (or the older notation 'Autres dépôts à vue FDJ') + 'Dépôts à terme' +
+'Dépôts en devises' (=TD) rows are extracted, and only the pre-2017 period is backfilled (2017
+onward is skipped since the quarterly data is already more granular, to avoid duplicate
+inserts). The table comes in two layouts (one where the year header row has the same top as
+'Composantes', and an older Annexe-table variant that labels the 'other deposits' row
+'Autres'), so instead of matching the 'Composantes' text, the header is located as the row
+(the topmost group on the page) with 3 or more consecutive 4-digit year tokens at the same
+top, and the second deposit row falls back to searching for the 'Autres' label when no
+'livrets' label is found — supporting both layouts.
 """
 
 import re
@@ -52,8 +59,9 @@ LIST_URL = "https://banque-centrale.dj/depots-des-banques/"
 _HEADERS = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36"}
 
 _SECTION_TITLE_RE = re.compile(r"ventilation\s+par\s+devises", re.I)
-# pdfplumber의 extract_words()는 라벨을 'Dollars'/'des'/'Etats-Unis'/'(USD)'처럼 단어 단위로
-# 쪼개므로, 한 단어 안에서 전체 구문을 찾는 대신 구분되는 첫 단어만으로 앵커를 잡는다.
+# pdfplumber's extract_words() splits labels into individual words like
+# 'Dollars'/'des'/'Etats-Unis'/'(USD)', so instead of matching the full phrase within one
+# word, anchor on just the distinguishing first word.
 _USD_LABEL_RE = re.compile(r"^dollars$", re.I)
 _OTHER_LABEL_RE = re.compile(r"^autres$", re.I)
 _FDJ_LABEL_RE = re.compile(r"^francs$", re.I)
@@ -72,7 +80,7 @@ _MONTHS = {
 
 
 def parse(content: bytes, country_code: str) -> pd.DataFrame:
-    raise NotImplementedError("DJI는 render()를 통해 처리한다 (게시글 목록을 순회해야 함)")
+    raise NotImplementedError("DJI is handled via render() (needs to walk the post listing)")
 
 
 def _collect_pdf_links() -> list[str]:
@@ -107,8 +115,9 @@ _YEAR_ONLY_RE = re.compile(r"^(19|20)\d{2}$")
 
 
 def _extract_period_columns(header_words: list[dict]) -> list[tuple[float, str]]:
-    """헤더 기간 토큰을 (x0, 'YYYY-MM') 목록으로 뽑는다. 'mars-21'처럼 한 단어에 붙어 있는
-    경우와 'Mars.' + '2019'처럼 월/연도가 별개 단어(공백)로 떨어져 있는 경우를 모두 처리한다."""
+    """Extracts header period tokens as a list of (x0, 'YYYY-MM'). Handles both cases where
+    month/year are joined in one word (e.g. 'mars-21') and where they're separate
+    space-delimited words (e.g. 'Mars.' + '2019')."""
     ordered = sorted(header_words, key=lambda w: w["x0"])
     columns: list[tuple[float, str]] = []
     used_idx: set[int] = set()
@@ -153,20 +162,26 @@ def _parse_pdf(content: bytes, country_code: str) -> pd.DataFrame:
                 continue
 
             all_words = page.extract_words()
-            # 0. 같은 페이지에 표 1/2/3(예금 종류별/예금주체별/통화별)이 함께 있고 1·2번 표도
-            #    동일한 기간 헤더(예: 'Juin-25')를 반복 사용해 혼동될 수 있어, '3 - VENTILATION
-            #    PAR DEVISES' 제목이 나오는 지점 아래쪽 단어만 이 표의 것으로 취급한다.
+            # 0. Tables 1/2/3 (by deposit type / by depositor sector / by currency) appear
+            #    together on the same page, and tables 1 and 2 reuse the same period header
+            #    (e.g. 'Juin-25'), which could cause confusion — so only words below the point
+            #    where the '3 - VENTILATION PAR DEVISES' title appears are treated as belonging
+            #    to this table.
             devises_title_words = [w for w in all_words if w["text"].upper().startswith("DEVISES")]
             if not devises_title_words:
                 continue
             section_top = min(w["top"] for w in devises_title_words)
             words = [w for w in all_words if w["top"] >= section_top]
 
-            # 1. 헤더 기간 토큰(중복 없이, top이 낮은(=위쪽) 것부터, 같은 top이면 x0 순)으로 컬럼 정의.
-            #    'Selon les devises' 텍스트가 나오는 top 이후 ~ 첫 통화 라벨 전까지가 헤더 영역이다.
-            # 'Total' 행도 다른 통화 행과 똑같이 앞/뒤로 값이 쪼개질 수 있어(예: 최근 분기
-            # 합계가 'Total' 라벨보다 먼저 나옴), OTHER 행의 값 수집 범위가 Total의 앞쪽
-            # 값까지 잘못 삼키지 않도록 TOTAL도 라벨 중 하나로 취급해 경계 계산에 포함한다.
+            # 1. Define columns from header period tokens (deduplicated, ordered by top
+            #    (ascending = higher up first), then by x0 for ties). The header region runs
+            #    from the top where 'Selon les devises' appears down to just before the first
+            #    currency label.
+            # The 'Total' row can also have its values split before/after the label just like
+            # the other currency rows (e.g. the most recent quarter's total appears before the
+            # 'Total' label), so TOTAL is also treated as one of the labels and included in the
+            # boundary calculation, to prevent the OTHER row's value range from incorrectly
+            # swallowing values belonging to the earlier part of Total.
             label_tops_by_kind = {
                 "FDJ": [w["top"] for w in words if _FDJ_LABEL_RE.search(w["text"])],
                 "USD": [w["top"] for w in words if _USD_LABEL_RE.search(w["text"])],
@@ -174,7 +189,7 @@ def _parse_pdf(content: bytes, country_code: str) -> pd.DataFrame:
                 "TOTAL": [w["top"] for w in words if _TOTAL_RE.match(w["text"])],
             }
             if not label_tops_by_kind["USD"] or not label_tops_by_kind["OTHER"]:
-                logger.warning("[%s] USD/Autres devises 라벨을 찾지 못함", country_code)
+                logger.warning("[%s] Could not find USD/Autres devises label", country_code)
                 continue
             first_label_top = min(min(v) for v in label_tops_by_kind.values() if v)
 
@@ -182,14 +197,15 @@ def _parse_pdf(content: bytes, country_code: str) -> pd.DataFrame:
             columns = _extract_period_columns(header_candidates)
             if not columns:
                 continue
-            columns.sort(key=lambda c: c[0])  # x0 오름차순 = 시간순(왼쪽=과거, 오른쪽=최근)
+            columns.sort(key=lambda c: c[0])  # ascending x0 = chronological order (left=older, right=most recent)
             n_periods = len(columns)
 
-            # 2. 라벨들을 top 순으로 나열하고, 인접 라벨 top의 중간지점을 경계로 삼아 값
-            #    영역을 나눈다. 파일에 따라 한 행의 값이 라벨 줄 앞(구형: 최근 분기가 먼저
-            #    나옴)과 뒤(과거 분기)에 걸쳐 나뉘어 있는 경우가 있는데, 중간지점 경계 방식은
-            #    앞뒤 어느 쪽에 값이 있든 '가장 가까운 라벨'에 자동으로 배정되어 두 레이아웃을
-            #    모두 처리한다.
+            # 2. List the labels in top order, and split the value region using the midpoint
+            #    between adjacent label tops as the boundary. Depending on the file, a row's
+            #    values may be split before the label line (older format: most recent quarter
+            #    appears first) and after it (older quarters); the midpoint-boundary approach
+            #    automatically assigns values to the "nearest label" regardless of which side
+            #    they're on, handling both layouts.
             all_label_tops = sorted(
                 (top, kind) for kind, tops in label_tops_by_kind.items() for top in tops
             )
@@ -231,7 +247,7 @@ def _parse_pdf(content: bytes, country_code: str) -> pd.DataFrame:
             other_vals = _values_for("OTHER")
             total_vals = _values_for("TOTAL")
             if usd_vals is None or other_vals is None:
-                logger.warning("[%s] USD/Autres devises 값을 찾지 못함", country_code)
+                logger.warning("[%s] Could not find USD/Autres devises values", country_code)
                 continue
 
             for i, period in enumerate(p for _, p in columns):
@@ -262,11 +278,11 @@ def _parse_pdf(content: bytes, country_code: str) -> pd.DataFrame:
     return pd.DataFrame(rows_out)
 
 
-# --- 연차보고서(2009~2016 보강용) ---------------------------------------------
+# --- Annual reports (for backfilling 2009-2016) ---------------------------------------------
 
 ANNUAL_REPORTS_URL = "https://banque-centrale.dj/rapports-annuel-de-la-banque/"
-# 분기 시리즈가 시작하는 첫 해. 이 해 이후는 분기 데이터가 이미 더 세밀하므로
-# 연차보고서 값을 중복 삽입하지 않는다.
+# The first year the quarterly series starts. From this year onward, the quarterly data is
+# already more granular, so annual-report values are not inserted (to avoid duplicates).
 _QUARTERLY_SERIES_START_YEAR = 2017
 
 _YEAR_TOKEN_RE = re.compile(r"^(19|20)\d{2}$")
@@ -291,9 +307,9 @@ def _collect_annual_report_links() -> list[str]:
 
 
 def _extract_masse_monetaire_table(page) -> dict | None:
-    """'Evolution/Composantes de la masse monétaire' 5개년 표를 한 페이지에서 찾아
-    {연도(str): {'vue','second'(livrets/autres),'terme','devises'} 정수값} 형태로 반환한다.
-    표를 못 찾거나 값이 불완전하면 None."""
+    """Locates the 5-year 'Evolution/Composantes de la masse monétaire' table on a page and
+    returns it as {year(str): {'vue','second'(livrets/autres),'terme','devises'} integer
+    values}. Returns None if the table can't be found or values are incomplete."""
     words = page.extract_words()
 
     year_tokens = [w for w in words if _YEAR_TOKEN_RE.match(w["text"])]
@@ -398,7 +414,7 @@ def _parse_annual_report(content: bytes, country_code: str) -> pd.DataFrame:
                     "country_code": country_code, "year": year, "period": period,
                     "indicator": INDICATOR_TD, "value": float(td), "updated_at": now,
                 })
-            break  # 페이지당 표는 하나만 취급(같은 페이지의 구조표/% 표는 건너뜀)
+            break  # only one table handled per page (structure/% tables on the same page are skipped)
 
     return pd.DataFrame(rows_out)
 
@@ -407,7 +423,7 @@ def render(target: dict) -> pd.DataFrame:
     country_code = target["country_code"]
 
     links = _collect_pdf_links()
-    logger.info("[%s] Depots des banques PDF %d개 발견", country_code, len(links))
+    logger.info("[%s] Found %d Depots des banques PDFs", country_code, len(links))
 
     frames = []
     for url in links:
@@ -415,30 +431,30 @@ def render(target: dict) -> pd.DataFrame:
             response = requests.get(url, headers=_HEADERS, timeout=60)
             response.raise_for_status()
         except Exception:
-            logger.warning("[%s] 다운로드 실패, 스킵: %s", country_code, url)
+            logger.warning("[%s] Download failed, skipping: %s", country_code, url)
             continue
 
         df = _parse_pdf(response.content, country_code)
         if not df.empty:
             frames.append(df)
-        logger.info("[%s] %s -> %d개 기간", country_code, url.rsplit("/", 1)[-1], len(df))
+        logger.info("[%s] %s -> %d periods", country_code, url.rsplit("/", 1)[-1], len(df))
 
     try:
         annual_links = _collect_annual_report_links()
-        logger.info("[%s] 연차보고서 %d개 발견 (2017년 이전 보강용)", country_code, len(annual_links))
+        logger.info("[%s] Found %d annual reports (for pre-2017 backfill)", country_code, len(annual_links))
         for url in annual_links:
             try:
                 response = requests.get(url, headers=_HEADERS, timeout=60)
                 response.raise_for_status()
             except Exception:
-                logger.warning("[%s] 연차보고서 다운로드 실패, 스킵: %s", country_code, url)
+                logger.warning("[%s] Annual report download failed, skipping: %s", country_code, url)
                 continue
             df = _parse_annual_report(response.content, country_code)
             if not df.empty:
                 frames.append(df)
-            logger.info("[%s] %s -> %d행 (연차)", country_code, url.rsplit("/", 1)[-1], len(df))
+            logger.info("[%s] %s -> %d rows (annual)", country_code, url.rsplit("/", 1)[-1], len(df))
     except Exception:
-        logger.warning("[%s] 연차보고서 수집 단계 실패, 분기 데이터만 사용", country_code, exc_info=True)
+        logger.warning("[%s] Annual report collection step failed, using quarterly data only", country_code, exc_info=True)
 
     if not frames:
         return pd.DataFrame(columns=["country_code", "year", "period", "indicator", "value", "updated_at"])

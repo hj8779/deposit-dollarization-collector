@@ -1,13 +1,15 @@
 """Zambia: Bank of Zambia "Fortnightly Time Series" xlsx
 (boz.zm/statistics/monetary-and-financial-statistics → 'FORTNIGHTLYTIMESERIES...xlsx').
 
-시트 'Comm. Banks Deposit Liabilities'(Table 12): 'Total Kwacha Liabilities to the
-Public'(자국통화, 콰차) / "Foreign currency Deposits ($'000)"(외화, 달러 표시) 두 통화가
-섞여 있어, 시트 'K-USD Exchange Rates'의 Mid-rate로 FX예금을 콰차로 환산한 뒤 합산한다.
-날짜가 정확히 일치하지 않는 주(공휴일 등)는 가장 가까운 이전 영업일 환율을 쓴다.
+Sheet 'Comm. Banks Deposit Liabilities' (Table 12) mixes two currencies: 'Total Kwacha
+Liabilities to the Public' (national currency, kwacha) and "Foreign currency Deposits
+($'000)" (foreign currency, denominated in USD). The FX deposits are converted to kwacha
+using the Mid-rate from sheet 'K-USD Exchange Rates' and then summed. For weeks whose date
+doesn't line up exactly (holidays, etc.), the rate from the nearest prior business day is
+used.
 
-FCD_kwacha = FX예금($'000) × mid-rate. TD_kwacha = Total Kwacha Liabilities + FCD_kwacha.
-주간(매주 금요일 마감), 2014-01부터. 단위 K'000(천 콰차)."""
+FCD_kwacha = FX deposits ($'000) × mid-rate. TD_kwacha = Total Kwacha Liabilities +
+FCD_kwacha. Weekly (each Friday close), from 2014-01. Unit: K'000 (thousand kwacha)."""
 
 from __future__ import annotations
 
@@ -29,7 +31,7 @@ _HEADERS = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit
 
 
 def parse(content: bytes, country_code: str) -> pd.DataFrame:
-    raise NotImplementedError("ZMB는 render()로 xlsx를 받는다")
+    raise NotImplementedError("ZMB fetches the xlsx via render()")
 
 
 def _empty() -> pd.DataFrame:
@@ -56,7 +58,7 @@ def render(target: dict) -> pd.DataFrame:
     country_code = target["country_code"]
     xlsx_url = _find_xlsx_url()
     if not xlsx_url:
-        logger.warning("[%s] Fortnightly Time Series xlsx 링크를 찾지 못함", country_code)
+        logger.warning("[%s] Fortnightly Time Series xlsx link not found", country_code)
         return _empty()
 
     resp = requests.get(xlsx_url, headers=_HEADERS, timeout=90)
@@ -71,7 +73,7 @@ def render(target: dict) -> pd.DataFrame:
         if isinstance(date, datetime) and isinstance(rate, (int, float)):
             fx_rates[date.date()] = float(rate)
     if not fx_rates:
-        logger.warning("[%s] 환율 데이터를 못 찾음", country_code)
+        logger.warning("[%s] exchange rate data not found", country_code)
         return _empty()
     sorted_fx_dates = sorted(fx_rates)
 
@@ -110,7 +112,7 @@ def render(target: dict) -> pd.DataFrame:
     if not rows:
         return _empty()
 
-    # 같은 (period,indicator)에 여러 주가 몰릴 수 있어(월 5주 등) 그 달의 마지막 관측치를 채택
+    # Multiple weeks can fall into the same (period, indicator) (e.g. a 5-week month), so the last observation of that month is kept
     df = pd.DataFrame(rows)
     out = (
         df.sort_values(["period"])

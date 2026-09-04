@@ -1,11 +1,13 @@
-"""Angola: BNA(Banco Nacional de Angola) 'Nova Série' 통계 페이지, 'Agregados Monetários' 다운로드.
-페이지가 단순 <a href>가 아니라 클릭 시 JS로 파일을 내려받는 방식이라 Playwright로 클릭 후
-다운로드 이벤트를 받아야 한다. legacy .xls, 시트 'IA2.AggrMon'(Quadro I.A.2 Agregados Monetários).
+"""Angola: BNA(Banco Nacional de Angola) 'Nova Série' statistics page, 'Agregados Monetários' download.
+The page doesn't use a plain <a href> — clicking it downloads the file via JS — so it has to be
+driven with Playwright, clicking and then catching the download event. Legacy .xls, sheet
+'IA2.AggrMon' (Quadro I.A.2 Agregados Monetários).
 
-레이아웃: col B(index 1)=지표명, col C(index 2)~=월별 시계열(row4=Excel 날짜 시리얼, 가로 확장).
-    row25 'Total dos depósitos em moeda externa'      -> FCD (메모 항목, 공식 합계치)
-    row12 'Depósitos transferíveis'(총액, 소계)         -> TD 구성요소 1
-    row17 'Outros depósitos'(총액, 소계)                -> TD 구성요소 2
+Layout: col B (index 1) = indicator name, col C (index 2) onward = monthly time series (row 4 =
+Excel date serial, extending horizontally).
+    row25 'Total dos depósitos em moeda externa'      -> FCD (memo item, official total)
+    row12 'Depósitos transferíveis' (total, subtotal) -> TD component 1
+    row17 'Outros depósitos' (total, subtotal)        -> TD component 2
     TD = row12 + row17
 """
 
@@ -21,8 +23,8 @@ logger = get_logger(__name__)
 
 FILE_URL = "__RENDER__"
 
-# bna.ao가 응답이 매우 느리거나 간헐적으로 타임아웃되는 경우가 잦아(사이트 자체 이슈),
-# 다른 국가의 render()보다 넉넉한 타임아웃과 재시도를 둔다.
+# bna.ao frequently responds very slowly or times out intermittently (a site-side issue), so
+# use a more generous timeout and retry count than other countries' render().
 _NAV_TIMEOUT_MS = 60000
 _MAX_ATTEMPTS = 3
 
@@ -35,7 +37,7 @@ _FIRST_DATA_COL = 2
 
 
 def parse(content: bytes, country_code: str) -> pd.DataFrame:
-    raise NotImplementedError("AGO는 render()를 통해 처리한다 (Playwright 클릭 다운로드 방식)")
+    raise NotImplementedError("AGO is handled via render() (Playwright click-to-download)")
 
 
 def _download_workbook_path(url: str, country_code: str) -> str:
@@ -59,7 +61,7 @@ def _download_workbook_path(url: str, country_code: str) -> str:
         except Exception as e:
             last_error = e
             logger.warning(
-                "[%s] bna.ao 접근/다운로드 실패(시도 %d/%d): %s",
+                "[%s] Failed to access/download bna.ao (attempt %d/%d): %s",
                 country_code, attempt, _MAX_ATTEMPTS, str(e)[:120],
             )
             playwright.stop()
@@ -75,7 +77,7 @@ def render(target: dict) -> pd.DataFrame:
     try:
         tmp_path = _download_workbook_path(url, country_code)
     except Exception:
-        logger.warning("[%s] %d회 재시도 후에도 접근 실패, 스킵", country_code, _MAX_ATTEMPTS)
+        logger.warning("[%s] Still failed to access after %d retries, skipping", country_code, _MAX_ATTEMPTS)
         return pd.DataFrame(columns=["country_code", "year", "period", "indicator", "value", "updated_at"])
 
     wb = xlrd.open_workbook(tmp_path)

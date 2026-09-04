@@ -10,14 +10,16 @@ Monetary Sector > I. MONEY AND BANKING
   I.23  Outstanding time deposits (Deposito) Rupiah & foreign currency
         https://www.bi.go.id/SEKI/tabel/TABEL1_23.xls
 
-각 파일은 연대별 시트 + 최신 롤링 시트(1.xx_1). 시트마다 상단 총계 행:
-  'Rupiah' — 루피아 예금 합계
-  'Valas'  — 외화 예금 합계 (구르드 환산이 아니라 Rp 환산 외화 잔액)
-  (1.xx_2 시트는 Memo/정부·비거주자 항목이라 제외)
+Each file has yearly sheets plus a latest rolling sheet (1.xx_1). Each sheet has a
+top-level totals row:
+  'Rupiah' — total Rupiah deposits
+  'Valas'  — total foreign-currency deposits (Rp-converted FX balance, not converted to USD)
+  (the 1.xx_2 sheets are excluded, as they cover Memo / government-and-nonresident items)
 
 FCD = Valas(I.21) + Valas(I.22) + Valas(I.23)
 TD  = (Rupiah+Valas) of I.21 + I.22 + I.23
-단위: Miliar Rp (십억 루피아). 실측 2026-06 FCD ≈ 1,606.2 조 Rp (기사 DPK Valas와 일치).
+Unit: Miliar Rp (billions of Rupiah). Observed 2026-06 FCD ≈ 1,606.2 trillion Rp
+(consistent with reported DPK Valas figures).
 """
 
 from __future__ import annotations
@@ -64,7 +66,7 @@ _MONTHS = {
 
 
 def parse(content: bytes, country_code: str) -> pd.DataFrame:
-    raise NotImplementedError("IDN는 render()로 I.21/I.22/I.23 세 파일을 합산한다")
+    raise NotImplementedError("IDN aggregates the three files I.21/I.22/I.23 via render()")
 
 
 def _empty() -> pd.DataFrame:
@@ -98,15 +100,17 @@ def _to_period_cell(value) -> str | None:
 
 
 def _periods_from_sheet(df: pd.DataFrame) -> dict[int, str]:
-    """열 인덱스 -> 'YYYY-MM'.
+    """Column index -> 'YYYY-MM'.
 
-    SEKI 최근 시트는 연도 라벨이 해당 연 *1월*이 아니라 마지막 관측월
-    (예: 2026이 Jun 열, 2024가 Dec 열)에만 붙는 경우가 있다.
-    연도 셀을 단순 forward-fill 하면 중간 월이 이전 연도로 잘못 붙거나
-    누락되므로, 월 약어 순서(Dec→Jan 등 month wrap)로 연도를 증가시킨다.
-    1월 열의 연도 라벨만 신뢰해 재설정한다.
+    In the most recent SEKI sheets, the year label is sometimes attached only
+    to the last observed month rather than to *January* of that year
+    (e.g. 2026 attached to the Jun column, 2024 attached to the Dec column).
+    A naive forward-fill of the year cell would misattach or drop intermediate
+    months, so instead we increment the year based on the month-abbreviation
+    sequence (detecting the Dec→Jan wrap). Only year labels attached to the
+    January column are trusted as anchors and used to reset the running year.
     """
-    # 1) datetime 헤더 행
+    # 1) datetime header row
     for i in range(min(12, len(df))):
         hits: dict[int, str] = {}
         for j in range(2, df.shape[1]):
@@ -115,7 +119,7 @@ def _periods_from_sheet(df: pd.DataFrame) -> dict[int, str]:
                 hits[j] = p
         if len(hits) >= 3:
             return hits
-    # 2) 연도 행 + 바로 아래 월 약어 행 (월 순서 기반 연도 증가)
+    # 2) year row + month-abbreviation row directly below it (year increments based on month order)
     for i in range(min(10, len(df))):
         ymap: dict[int, int] = {}
         for j in range(2, df.shape[1]):
@@ -150,14 +154,15 @@ def _periods_from_sheet(df: pd.DataFrame) -> dict[int, str]:
                 continue
             m = mmap[j]
             if j in ymap and m == 1:
-                # 1월에 붙은 연도 라벨만 확정 앵커
+                # Only a year label attached to January is treated as a confirmed anchor
                 current_year = ymap[j]
             elif current_year is None:
                 before = [c for c in ymap if c <= j]
                 current_year = ymap[max(before)] if before else ymap[min(ymap)]
             elif prev_month is not None and m < prev_month:
-                # Dec→Jan (또는 연말 wrap): 연도 +1
-                # (비-1월 연도 라벨은 무시 — 최근 시트에서 Jun/Dec에 붙는 오류 방지)
+                # Dec→Jan (i.e. year-end wrap): increment year
+                # (non-January year labels are ignored — avoids misattachment seen
+                # in recent sheets where labels land on Jun/Dec)
                 if j in ymap and m == 1:
                     current_year = ymap[j]
                 else:
@@ -170,12 +175,12 @@ def _periods_from_sheet(df: pd.DataFrame) -> dict[int, str]:
 
 
 def _extract_rupiah_valas(content: bytes) -> dict[str, tuple[float, float]]:
-    """시트들을 순회하며 period -> (Rupiah, Valas). 뒤 시트가 앞 시트를 덮어씀."""
+    """Iterate over sheets to build period -> (Rupiah, Valas). Later sheets overwrite earlier ones."""
     xl = pd.ExcelFile(BytesIO(content), engine="xlrd")
     series: dict[str, tuple[float, float]] = {}
     for sheet in xl.sheet_names:
         if sheet.endswith("_2"):
-            continue  # memo / 비거주·정부 메모
+            continue  # memo / government-nonresident memo
         df = xl.parse(sheet, header=None)
         periods = _periods_from_sheet(df)
         if not periods:
@@ -204,7 +209,7 @@ def _extract_rupiah_valas(content: bytes) -> dict[str, tuple[float, float]]:
                 rupiah_row = i
             elif s == "Valas" and valas_row is None:
                 valas_row = i
-        # 본표 총계는 상단(대략 15행 이내)
+        # the main table's totals row is near the top (within roughly 15 rows)
         if rupiah_row is None or valas_row is None or rupiah_row > 15:
             continue
         for j, period in periods.items():

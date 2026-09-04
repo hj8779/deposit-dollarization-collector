@@ -1,11 +1,12 @@
-"""Bahamas: Central Bank of The Bahamas 'Quarterly Statistical Digest' PDF 시리즈
-(publications/qsd 목록 페이지, 페이지네이션 ?page=2..6). 각 호는 Table 2.5 'Financial Survey'에
-연간(수년치 롤링) + 분기(최근 1개년) + 월간(최근 ~15개월 롤링 윈도우) 데이터를 함께 싣는다.
-연속된 월별 시계열을 재구성하려면 발간호를 전부(약 93개, 2005~현재) 받아야 한다.
+"""Bahamas: Central Bank of The Bahamas 'Quarterly Statistical Digest' PDF series
+(publications/qsd listing page, paginated ?page=2..6). Each issue includes Table 2.5
+'Financial Survey' with annual (multi-year rolling), quarterly (most recent year), and monthly
+(a rolling window of roughly the last ~15 months) data together. Reconstructing a continuous
+monthly time series requires fetching all issues (about 93, from 2005 to the present).
 
-Table 2.5는 벡터 罫線이 없어 pdfplumber.extract_tables()가 헤더 3줄만 잡고 데이터 행을
-못 찾는다. extract_text()로 줄 단위 파싱한다. 데이터 행은 '기간 라벨 + 숫자 14개'
-형식이고, 14개 값의 순서는:
+Table 2.5 has no vector gridlines, so pdfplumber.extract_tables() only picks up the 3 header
+lines and fails to find the data rows. It is parsed line-by-line with extract_text() instead.
+Data rows follow the format 'period label + 14 numbers', and the order of the 14 values is:
     1 Net Foreign Assets
     2 Domestic Credit: To Government (Net)
     3 Domestic Credit: To Private Sector
@@ -19,15 +20,16 @@ Table 2.5는 벡터 罫線이 없어 pdfplumber.extract_tables()가 헤더 3줄�
     11 Quasi Money: Fixed Deposits
     12 Quasi Money: Foreign Currency Deposits   -> FCD
     13 Quasi Money TOTAL
-    14 Other Items (NET), 괄호로 표시된 음수
-기간 라벨 형식이 세 가지다: 그냥 연도만 있는 줄(예: '2024')은 연간 데이터 행이거나,
-혹은 뒤따르는 QTR./월 행들의 연도 컨텍스트를 설정하는 헤더 줄. 연도 뒤에 숫자 14개가
-바로 붙어 있으면 연간 데이터 행, 숫자가 없으면 컨텍스트 헤더.
+    14 Other Items (NET), negative values shown in parentheses
+There are three forms a period label line can take: a line with just a year (e.g. '2024') is
+either an annual data row, or a header line that sets the year context for the QTR./month rows
+that follow it. If the year is immediately followed by 14 numbers, it's an annual data row; if
+there are no numbers, it's a context header.
 
-TD(총예금) = Demand Deposits(index6 Domestic Banks + index7 Central Bank) + Quasi Money
-TOTAL(index12, = Savings+Fixed+FCD 합계). M1 TOTAL(index8)=Currency(index5)+Demand deposits
-항등식과 Quasi TOTAL=Savings+Fixed+FCD 항등식을 실측 검증했다(2016: M1 2460.6=280.5+2167.6+
-12.6; Quasi 4469.5=1295.6+2866.3+307.6).
+TD (total deposits) = Demand Deposits (index6 Domestic Banks + index7 Central Bank) + Quasi
+Money TOTAL (index12, = sum of Savings+Fixed+FCD). Verified against actual data that the
+identities M1 TOTAL(index8)=Currency(index5)+Demand deposits and Quasi TOTAL=Savings+Fixed+FCD
+hold (2016: M1 2460.6=280.5+2167.6+12.6; Quasi 4469.5=1295.6+2866.3+307.6).
 """
 
 import re
@@ -45,7 +47,7 @@ logger = get_logger(__name__)
 FILE_URL = "__RENDER__"
 
 LIST_URL = "https://www.centralbankbahamas.com/publications/qsd"
-_LIST_PAGES = range(1, 7)  # 페이지 1~6
+_LIST_PAGES = range(1, 7)  # pages 1~6
 _HEADERS = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36"}
 
 _MONTHS = {
@@ -55,14 +57,14 @@ _MONTHS = {
 _NUM = r"\(?-?[\d,]+\.\d+\)?"
 _ROW_RE = re.compile(rf"^(?P<label>\S+\.?(?:\s+[IVX]+)?)\s+(?P<values>(?:{_NUM}\s*){{14}})$")
 _YEAR_ONLY_RE = re.compile(r"^(\d{4})$")
-_FCD_VALUE_INDEX = 11  # 0-based, 14개 값 중 12번째
+_FCD_VALUE_INDEX = 11  # 0-based, the 12th of 14 values
 _DEMAND_DOMESTIC_INDEX = 6
 _DEMAND_CENTRAL_BANK_INDEX = 7
 _QUASI_TOTAL_INDEX = 12
 
 
 def parse(content: bytes, country_code: str) -> pd.DataFrame:
-    raise NotImplementedError("BHS는 render()를 통해 처리한다 (발간호를 전부 순회)")
+    raise NotImplementedError("BHS is handled via render() (iterates over every issue)")
 
 
 def _to_float(token: str) -> float:
@@ -173,7 +175,7 @@ def render(target: dict) -> pd.DataFrame:
     country_code = target["country_code"]
 
     links = _collect_pdf_links()
-    logger.info("[%s] Quarterly Statistical Digest %d개 발견", country_code, len(links))
+    logger.info("[%s] Found %d Quarterly Statistical Digest issues", country_code, len(links))
 
     frames = []
     for url in links:
@@ -181,7 +183,7 @@ def render(target: dict) -> pd.DataFrame:
             response = requests.get(url, headers=_HEADERS, timeout=45)
             response.raise_for_status()
         except Exception:
-            logger.warning("[%s] 다운로드 실패, 스킵: %s", country_code, url)
+            logger.warning("[%s] Download failed, skipping: %s", country_code, url)
             continue
 
         df = _parse_pdf(response.content, country_code)

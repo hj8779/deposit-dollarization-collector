@@ -1,23 +1,27 @@
 """Haiti: BRH Table 20R — Bilan consolidé des banques commerciales.
 
-페이지: https://www.brh.ht/statistiques/monnaie/
-연간:  https://www.brh.ht/wp-content/uploads/2018/08/bilanbcmannuel.pdf
-월간:  https://www.brh.ht/wp-content/uploads/bilanconsolidemensuel.pdf
+Source page: https://www.brh.ht/statistiques/monnaie/
+Annual:  https://www.brh.ht/wp-content/uploads/2018/08/bilanbcmannuel.pdf
+Monthly: https://www.brh.ht/wp-content/uploads/bilanconsolidemensuel.pdf
 
-표 구조 (millions de gourdes, 상업은행 통합):
+Table structure (millions de gourdes, consolidated commercial banks):
   Engagements envers le secteur privé
-    Dépôts en gourdes   — 자국통화 예금
-    Dépôts en dollars   — 외화(달러) 예금  ← FCD (구르드 환산액)
+    Dépôts en gourdes   — domestic-currency deposits
+    Dépôts en dollars   — foreign-currency (dollar) deposits  ← FCD (in gourde equivalent)
 
 FCD = Dépôts en dollars
 TD  = Dépôts en gourdes + Dépôts en dollars
-     (= Engagements envers le secteur privé, 실측 항등)
+     (= Engagements envers le secteur privé, confirmed as an identity empirically)
 
-유의사항:
-- 달러 예금도 구르드로 표시(연말/월말 환율 환산). 원래 USD 잔액은 환율로 역산 필요.
-- 상업은행만 포함(caisses populaires 등 제외).
-- 연간 PDF 연도 헤더는 '1961' 후 2006~최신처럼 간격이 있을 수 있음(표 그대로 사용).
-- 숫자 추출 시 PDF가 천단위 공백을 넣는 경우가 있어(예: '3 1,730.79') 공백 제거 후 파싱.
+Notes:
+- Dollar deposits are also reported in gourdes (converted at the end-of-period/
+  end-of-month exchange rate). Recovering the original USD balance would require
+  dividing back out by the exchange rate.
+- Covers commercial banks only (excludes caisses populaires, etc.).
+- The annual PDF's year header may have a gap after '1961' before resuming at
+  2006~present (used as-is from the table).
+- The PDF sometimes inserts spaces as thousands separators when extracting
+  numbers (e.g. '3 1,730.79'), so spaces are stripped before parsing.
 """
 
 from __future__ import annotations
@@ -58,7 +62,7 @@ _MONTHS = {
 
 
 def parse(content: bytes, country_code: str):
-    raise NotImplementedError("HTI는 render()로 연·월 PDF를 병합한다")
+    raise NotImplementedError("HTI merges annual and monthly PDFs via render()")
 
 
 def _empty():
@@ -91,7 +95,7 @@ def _fix_num(token: str) -> float | None:
 
 
 def _numbers_after_label(line: str) -> list[float | None]:
-    """라벨 뒤 숫자 토큰 파싱 (PDF 천단위 공백 허용)."""
+    """Parse numeric tokens after the label (tolerates PDF thousands-separator spaces)."""
     m = re.match(r"^([^\d\-\(]+)\s+(.*)$", line.strip())
     if not m:
         return []
@@ -246,7 +250,7 @@ def render(target: dict):
     try:
         monthly = _download(_MONTHLY_URL)
         part = _parse_monthly(monthly)
-        # 월간이 연말 연간값을 덮어씀(더 최신 잠정치 가능)
+        # Monthly data overrides the year-end annual value (may reflect more recent provisional figures)
         merged.update(part)
         logger.info(
             "[%s] monthly Table 20R: %d months %s~%s",

@@ -1,17 +1,17 @@
 """Namibia: Bank of Namibia Monetary and Financial Statistics — Set of Table.
 
-페이지:
+Page:
   https://www.bon.com.na/Economic-information/Statistical-information/Monetary-and-fincancial-statistics.aspx
 
-연도별 XLSX (Set of Table YYYY):
+Per-year XLSX (Set of Table YYYY):
   Table II.5 Deposits of Other Depository Corporations
-  단위: N$ Million (end period)
+  Unit: N$ Million (end period)
 
 FCD = sum of all "In foreign currency" rows under Total Deposits
-      (broad money 포함/제외 모두 — Total Deposits 하위)
+      (covers both rows included in and excluded from broad money — all under Total Deposits)
 TD  = Total Deposits (code DODCtd)
 
-여러 연도 파일을 병합해 월별 시계열을 구성한다.
+Merges multiple yearly files to build the monthly time series.
 """
 
 from __future__ import annotations
@@ -48,7 +48,7 @@ _HEADERS = {
 
 
 def parse(content: bytes, country_code: str) -> pd.DataFrame:
-    raise NotImplementedError("NAM은 render()로 BoN xlsx를 받는다")
+    raise NotImplementedError("NAM fetches the BoN xlsx via render()")
 
 
 def _empty() -> pd.DataFrame:

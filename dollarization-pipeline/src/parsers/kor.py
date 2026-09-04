@@ -1,11 +1,12 @@
-"""Korea (Republic of): BOK ECOS 예금은행 총수신(말잔).
+"""Korea (Republic of): BOK ECOS deposit banks total deposits (end-of-period balance).
 
-API (sample 키로 기간 청크 조회; 선택적으로 ECOS_API_KEY 환경변수 사용):
+API (queried in date chunks using the sample key; optionally uses the ECOS_API_KEY env var):
   https://ecos.bok.or.kr/api/StatisticSearch/{key}/json/kr/{start}/{end}/104Y013/M/{from}/{to}/{item}
 
-통계: 104Y013 예금은행 총수신(말잔), 단위 십억원
-  FCD  BCB2 외화예금
-  TD   BCB1 원화예금 + BCB2 외화예금   (예금 합계; CD·금융채 등 수신합계 BCB8 제외)
+Statistic: 104Y013 deposit banks total deposits (end-of-period balance), unit: KRW billion
+  FCD  BCB2 foreign-currency deposits
+  TD   BCB1 KRW deposits + BCB2 foreign-currency deposits   (total deposits; excludes CDs,
+       financial debentures, etc. covered by the overall funding total BCB8)
 
 FCD_TD_RATIO = FCD/TD*100
 """
@@ -28,8 +29,8 @@ logger = get_logger(__name__)
 FILE_URL = "__RENDER__"
 
 _STAT = "104Y013"
-_ITEM_KRW = "BCB1"  # 원화예금
-_ITEM_FC = "BCB2"  # 외화예금
+_ITEM_KRW = "BCB1"  # KRW deposits
+_ITEM_FC = "BCB2"  # foreign-currency deposits
 _API_TMPL = (
     "https://ecos.bok.or.kr/api/StatisticSearch/{key}/json/kr/"
     "{start}/{end}/{stat}/M/{pfrom}/{pto}/{item}"
@@ -43,14 +44,14 @@ _HEADERS = {
     "Accept": "application/json,*/*",
 }
 
-# sample 키는 요청당 최대 10건 → 월 단위 10개월씩 슬라이스
+# the sample key caps each request at 10 records -> slice into 10-month chunks
 _CHUNK_MONTHS = 10
 _START_YEAR = 1995
 _START_MONTH = 1
 
 
 def parse(content: bytes, country_code: str) -> pd.DataFrame:
-    raise NotImplementedError("KOR는 render()로 ECOS API를 호출한다")
+    raise NotImplementedError("KOR calls the ECOS API via render()")
 
 
 def _empty() -> pd.DataFrame:

@@ -1,6 +1,6 @@
 """Nepal: NRB Monthly Statistics (Banking) xlsx + Annual Report fallback.
 
-월별 파일:
+Monthly files:
   https://www.nrb.org.np/category/monthly-statistics/
   e.g. contents/uploads/YYYY/MM/{NepaliMonth}_{year}_Publish.xlsx
 
@@ -8,8 +8,8 @@ Sheet C8: per-BFI balance sheet
   DEPOSITS row → TD (sum across BFIs)
   under Current/Savings/Fixed/Call/Others: "Foreign" rows → FCD
 
-단위: NPR million.
-연차보고서 2020/21 폴백: FCD=117674.8, TD=4662729.3 (mid-July 2021).
+Unit: NPR million.
+Annual report 2020/21 fallback: FCD=117674.8, TD=4662729.3 (mid-July 2021).
 """
 
 from __future__ import annotations
@@ -62,7 +62,7 @@ _NEPALI_MONTH = {
 
 
 def parse(content: bytes, country_code: str) -> pd.DataFrame:
-    raise NotImplementedError("NPL은 render()로 xlsx를 받는다")
+    raise NotImplementedError("NPL fetches the xlsx via render()")
 
 
 def _empty() -> pd.DataFrame:

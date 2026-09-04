@@ -1,9 +1,9 @@
 """Kuwait: CBK Monthly Monetary Statistical Bulletin PDF.
 
-페이지:
+Page:
   https://www.cbk.gov.kw/en/statistics-and-publication/bulletins-and-periodicals/monthly-monetary-statistical-bulletin
-다운로드:
-  /en/redirects/download?compId=...&esIndex=reports  (페이지 최신 링크)
+Download:
+  /en/redirects/download?compId=...&esIndex=reports  (latest link on the page)
 
 Table 15 / 15-1 Local Banks : Residents Deposits By Type (Million KD):
   Private Sector Deposits:
@@ -11,8 +11,9 @@ Table 15 / 15-1 Local Banks : Residents Deposits By Type (Million KD):
   FCD = In Foreign Currency (private sector, residents)
   TD  = Total private sector deposits (KD + FC)
 
-각 월보 PDF 표에 연말 + 최근 ~13개월 롤링이 있으므로,
-목록 페이지의 **모든 download?compId= 링크**를 순회·병합하면 과거가 확장된다.
+Each monthly bulletin PDF's table shows year-end plus a rolling ~13 months, so
+iterating and merging **every download?compId= link** on the listing page extends
+the historical coverage.
 """
 
 
@@ -60,7 +61,7 @@ _MONTHS = {
 
 
 def parse(content: bytes, country_code: str) -> pd.DataFrame:
-    raise NotImplementedError("KWT는 render()로 PDF를 받는다")
+    raise NotImplementedError("KWT fetches the PDF via render()")
 
 
 def _empty() -> pd.DataFrame:

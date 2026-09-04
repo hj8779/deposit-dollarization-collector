@@ -1,23 +1,28 @@
-"""Switzerland: SNB(Swiss National Bank) 데이터 포털(data.snb.ch) cube 'babilpobm'
-("Banks' balance sheet items by currency for selected bank categories – monthly").
-data.snb.ch 자체는 SPA(필터 UI)라 페이지를 그냥 로드해서는 표/파일이 없지만, 뒤에 깔끔한
-REST API(/api/cube/{cubeId}/data/csv/{lang})가 있어 requests로 바로 호출한다.
+"""Switzerland: SNB (Swiss National Bank) data portal (data.snb.ch), cube 'babilpobm'
+("Banks' balance sheet items by currency for selected bank categories - monthly").
+data.snb.ch itself is an SPA (filter UI), so simply loading the page yields no table or
+file, but behind it there is a clean REST API (/api/cube/{cubeId}/data/csv/{lang}) that can
+be called directly with requests.
 
-사용자가 처음 제안한 방식은 UI에서 통화를 EUR/USD로 개별 선택해 두 값을 더하는 것이었으나,
-API의 통화(WAEHRUNG) 차원은 CHF/EUR/USD 개별 항목과 'T'(전체 통화 합계)만 제공하고 엔·파운드
-등 나머지 통화는 개별 항목이 없다(사용자도 이 한계를 지적함). 대신 전체 합계(T)에서
-CHF만 빼면 EUR+USD뿐 아니라 그 외 모든 외화까지 포함한 더 완전한 FCD를 얻을 수 있어 이
-방식을 쓴다: FCD = Total(WAEHRUNG=T) - CHF(WAEHRUNG=CHF).
+The approach initially proposed by the user was to select EUR and USD individually in the
+UI and sum the two values, but the API's currency (WAEHRUNG) dimension only offers
+individual CHF/EUR/USD entries plus 'T' (total across all currencies) — there are no
+individual entries for other currencies like JPY or GBP (the user also flagged this
+limitation). Instead, subtracting CHF from the overall total (T) yields a more complete FCD
+that includes not just EUR+USD but all other foreign currencies as well, so that approach is
+used: FCD = Total(WAEHRUNG=T) - CHF(WAEHRUNG=CHF).
 
-필터:
-    D0(Balance sheet items) = VKE ('Amounts due in respect of customer deposits', 부채/고객예금)
-    INLANDAUSLAND(Domestic and foreign) = I (Domestic, 거주자)
+Filters:
+    D0(Balance sheet items) = VKE ('Amounts due in respect of customer deposits', liabilities/customer deposits)
+    INLANDAUSLAND(Domestic and foreign) = I (Domestic, residents)
     BANKENGRUPPE(Bank category) = A40 (All banks)
     WAEHRUNG(Currency) = T, CHF
 
-시계열은 1987-12부터 있지만, CHF 개별 통화 값 자체가 1996-11까지는 비어 있어(전체
-합계만 존재하고 통화별 분해가 아직 없던 시기) FCD를 계산할 수 없다 - 그래서 CHF 값이
-있는 1996-12부터만 수집한다(그 이전은 소스 자체에 통화별 분해가 없어 산출 불가).
+The time series goes back to 1987-12, but the CHF-specific values are empty until 1996-11
+(a period when only the overall total existed and no currency breakdown was yet available),
+so FCD cannot be computed for that range — data is collected only from 1996-12 onward, when
+CHF values become available (before that, the source itself lacks a currency breakdown, so
+it cannot be derived).
 """
 
 import csv

@@ -1,8 +1,9 @@
-"""Burundi: sheet 'Mensuelle', col A=날짜, col D='Dépôts en devises des résidents'.
+"""Burundi: sheet 'Mensuelle', col A=date, col D='Dépôts en devises des résidents'.
 
-TD(총예금) = col B(Dépôts à vue, 요구불예금) + col C(Dépôts à terme et d'épargne, 정기/저축예금)
-+ col D(Dépôts en devises des résidents, FCD). 거주자 예금 전체(통화 무관)에 해당하며,
-col E~K(Etablissements de Microfinances/기관간 예금, 중앙은행/정부 부채 등)는 제외한다."""
+TD (total deposits) = col B(Dépôts à vue, demand deposits) + col C(Dépôts à terme et d'épargne,
+term/savings deposits) + col D(Dépôts en devises des résidents, FCD). This covers all resident
+deposits regardless of currency; col E~K (Etablissements de Microfinances / interbank deposits,
+central bank/government liabilities, etc.) are excluded."""
 
 from datetime import datetime, timezone
 from io import BytesIO
@@ -12,7 +13,7 @@ import pandas as pd
 
 from src.collectors.base import INDICATOR, INDICATOR_TD
 
-FILE_URL = None  # target['source_url']를 그대로 사용
+FILE_URL = None  # uses target['source_url'] as-is
 
 
 def parse(content: bytes, country_code: str) -> pd.DataFrame:

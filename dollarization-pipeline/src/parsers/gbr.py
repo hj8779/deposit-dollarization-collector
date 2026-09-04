@@ -1,28 +1,36 @@
-"""United Kingdom: Bank of England 'Interactive Database'(IADB, boeapps/database) 통계 시리즈.
+"""United Kingdom: Bank of England 'Interactive Database' (IADB, boeapps/database) statistics series.
 
-https://www.bankofengland.co.uk/statistics/tables#m4 의 'A7.1 - Liquid assets outside M4'
-표에서 'Foreign currency deposits at UK MFIs' 열의 EC 코드를 확인했다: LPMVYAY
-(짧은 코드 VYAY). 사전조사에서 제시된 VSUC/VSUF/VSUG/VWNI는 실측 결과 전부 오답으로 확인됨
-(VWNI='Sterling deposits at Channel Islands and IoM institutions', VSUC='Non-residents'
-sterling deposits at banks in the BIS area', VSUF/VSUG='Gilts maturing within 1 year / 1-5
-years' 등, 모두 FCD와 무관한 같은 표의 다른 열이었다). 실제 확인된 시리즈:
+Verified the EC code for the 'Foreign currency deposits at UK MFIs' column in
+the 'A7.1 - Liquid assets outside M4' table at
+https://www.bankofengland.co.uk/statistics/tables#m4: LPMVYAY (short code
+VYAY). The codes VSUC/VSUF/VSUG/VWNI suggested by preliminary research all
+turned out to be wrong upon verification (VWNI='Sterling deposits at Channel
+Islands and IoM institutions', VSUC='Non-residents' sterling deposits at banks
+in the BIS area', VSUF/VSUG='Gilts maturing within 1 year / 1-5 years', etc. —
+all unrelated columns in the same table, unrelated to FCD). Series actually
+confirmed:
 
     LPMVYAY = "Monthly amounts outstanding of monetary financial institutions' all foreign
                currency deposits from private sector (in sterling millions) NSA"   -> FCD
     LPMVRJX = "...sterling retail deposits (excluding notes and coin) from private sector..." NSA
     LPMVRJV = "...sterling wholesale M4 liabilities to private sector..." NSA
 
-VRJX+VRJV = M4에서 notes/coin을 제외한, private sector가 보유한 파운드화 예금 총액(=A2.2.1
-'Components of M4' 표의 retail+wholesale deposits 합, M4 자체 코드 AUYM과는 notes&coin
-차이만큼만 다름을 실측으로 확인). FCD와 정의(scope: M4 private sector = 가계+PNFC+OFC)가
-일치하므로 TD = VRJX + VRJV + VYAY(전 통화 예금 총액)로 구성한다.
+VRJX+VRJV = total sterling deposits held by the private sector, excluding
+notes/coin, out of M4 (= the sum of retail+wholesale deposits in the A2.2.1
+'Components of M4' table; empirically confirmed this differs from the M4 code
+AUYM itself only by the notes&coin component). Since the scope matches FCD's
+definition (M4 private sector = households + PNFC + OFC), TD is constructed as
+TD = VRJX + VRJV + VYAY (total deposits across all currencies).
 
-다운로드 방식: IADB의 옛 CSV export 엔드포인트(_iadb-fromshowcolumns.asp?csv.x=yes&...)는
-현재 "Invalid series code value supplied" 에러만 반환해 더 이상 동작하지 않는다(사전조사가
-언급한 CSV 직다운로드는 이제 막힘). 대신 통계 페이지의 'View chart' 링크가 실제로 쓰는
-fromshowcolumns.asp(EC 코드에 LPM 접두어 필요)에 SeriesCodes를 콤마로 여러 개 넘기면 한 번의
-GET 요청으로 각 시리즈가 열로 묶인 HTML 표(<table id="stats-table">)를 돌려준다. 이 표를
-정규식으로 파싱한다(별도 JS 렌더링/Playwright 불필요, requests로 충분).
+Download method: the IADB's old CSV export endpoint
+(_iadb-fromshowcolumns.asp?csv.x=yes&...) now only returns an "Invalid series
+code value supplied" error and no longer works (the direct CSV download
+mentioned by preliminary research is now blocked). Instead, we use
+fromshowcolumns.asp, which is what the statistics page's 'View chart' link
+actually calls (EC codes need the LPM prefix): passing multiple SeriesCodes
+comma-separated in a single GET request returns an HTML table
+(<table id="stats-table">) with each series as a column. This table is parsed
+with a regex (no separate JS rendering/Playwright needed, requests suffices).
 """
 
 import re
@@ -45,8 +53,8 @@ FILE_URL = (
     f"&SeriesCodes={','.join(_SERIES)}&UsingCodes=Y&Filter=N&title=GBR_FCD&VPD=Y"
 )
 
-# "30 Jun 82" 같은 영국식 2자리 연도 날짜 뒤에 시리즈 개수만큼(FCD, 예금-소매, 예금-도매) 셀이 온다.
-# 값이 없는 초기 구간은 "n/a"로 채워진다.
+# British-style two-digit-year dates like "30 Jun 82" are followed by one cell per series
+# (FCD, retail deposits, wholesale deposits). Early periods with no value are filled with "n/a".
 _ROW_RE = re.compile(
     r"<tr><td[^>]*>(\d{1,2} [A-Za-z]{3} \d{2})</td>"
     r"<td[^>]*>([\d,]+|n/a)</td><td[^>]*>([\d,]+|n/a)</td><td[^>]*>([\d,]+|n/a)</td></tr>"
@@ -69,7 +77,7 @@ def parse(content: bytes, country_code: str) -> pd.DataFrame:
         retail = _to_float(retail_raw)
         wholesale = _to_float(wholesale_raw)
         if fcd is None or retail is None or wholesale is None:
-            continue  # 세 시리즈 중 하나라도 결측이면(초기 구간 등) 그 달은 스킵
+            continue  # skip the month if any of the three series is missing (e.g. early periods)
 
         dt = datetime.strptime(date_str, "%d %b %y")
         year, period = dt.year, f"{dt.year}-{dt.month:02d}"
@@ -90,6 +98,6 @@ def parse(content: bytes, country_code: str) -> pd.DataFrame:
             })
 
     if not rows:
-        logger.warning("[%s] BoE IADB 응답에서 파싱된 행 없음", country_code)
+        logger.warning("[%s] No rows parsed from BoE IADB response", country_code)
 
     return pd.DataFrame(rows, columns=["country_code", "year", "period", "indicator", "value", "updated_at"])

@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""파이프라인 로그 파일을 훑어 국가별 이슈를 요약한다.
+"""Scan a pipeline log file and summarize issues per country.
 
-사용:
+Usage:
   python scripts/analyze_run_log.py ../log-260813-1219.md
-  python scripts/analyze_run_log.py runs/run-....json   # JSON 리포트면 그대로 pretty-print
+  python scripts/analyze_run_log.py runs/run-....json   # if it's a JSON report, pretty-print as-is
 """
 
 from __future__ import annotations
@@ -44,11 +44,11 @@ def analyze_log(text: str) -> dict:
             )
         if d["level"] == "ERROR" and code and "TIMEOUT" in msg:
             timeouts.append(code)
-        if d["logger"] in ("__main__", "__mp_main__") and code and "행 수집" in msg:
-            mm = re.search(r"(\d+)행 수집", msg)
+        if d["logger"] in ("__main__", "__mp_main__") and code and "Collected" in msg and "rows" in msg:
+            mm = re.search(r"Collected (\d+) rows", msg)
             if mm:
                 success_rows[code] = int(mm.group(1))
-        if "수집 결과 없음" in msg and code:
+        if "No results collected" in msg and code:
             empty.append(code)
         if d["level"] == "ERROR" and d["logger"] in ("__main__",) and code and "TIMEOUT" not in msg:
             hard_fail_main.append(code)
@@ -60,9 +60,8 @@ def analyze_log(text: str) -> dict:
             e
             for e in events
             if e["level"] in ("WARNING", "ERROR")
-            or "실패" in e["msg"]
-            or "스킵" in e["msg"]
             or "failed" in e["msg"].lower()
+            or "skip" in e["msg"].lower()
         ]
         if issues:
             soft[code] = {
@@ -75,7 +74,7 @@ def analyze_log(text: str) -> dict:
     # summary line parse
     summary = None
     for raw in text.splitlines():
-        if "수집 요약:" in raw:
+        if "Collection summary:" in raw:
             summary = raw.strip()
 
     return {
@@ -86,9 +85,10 @@ def analyze_log(text: str) -> dict:
         "empty_mentions": sorted(set(empty)),
         "parser_soft_issues": dict(sorted(soft.items(), key=lambda x: -x[1]["n_issues"])),
         "note": (
-            "success_with_rows = 최종 'N행 수집' 로그가 있는 국가. "
-            "중간 다운로드 실패 INFO/WARNING이 많아도 최종 행이 있으면 성공 집계됨. "
-            "empty = 예외 없이 빈 DF. fail(요약) = 파이프라인 ERROR 문자열 반환만."
+            "success_with_rows = countries with a final 'Collected N rows' log line. "
+            "Still counted as success even with many intermediate download-failure INFO/WARNING "
+            "entries, as long as a final row count exists. "
+            "empty = empty DF with no exception. fail (summary) = only pipeline ERROR strings returned."
         ),
     }
 
@@ -118,7 +118,7 @@ def main(argv: list[str]) -> int:
         if v.get("final_success_rows") and v["n_issues"] >= 3
     ]
     if both:
-        print("\n# 중간 이슈가 많았지만 최종 성공(부분 성공) 국가:")
+        print("\n# Countries with many intermediate issues but eventual success (partial success):")
         for c in both:
             print(f"  {c}: rows={soft[c]['final_success_rows']} issues={soft[c]['n_issues']}")
     return 0

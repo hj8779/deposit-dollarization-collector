@@ -1,18 +1,21 @@
-"""Bulgaria: BNB(Bulgarian National Bank) 'Short Monetary Survey' XLSX, 시트 'MS_short'(첫 번째 탭).
-가로로 확장되는 시계열(row2=날짜, col2~=월별). 통화별(BGN/외화) 분해가 'in BGN'/
-'in foreign currency' 두 줄짜리 하위 행으로 여러 카테고리에 반복해서 나온다(자산 항목에도,
-부채/예금 항목에도 똑같은 라벨로 나옴).
+"""Bulgaria: BNB (Bulgarian National Bank) 'Short Monetary Survey' XLSX, sheet 'MS_short'
+(first tab). A horizontally expanding time series (row2=date, col2~=monthly). The
+currency breakdown (BGN/foreign currency) appears as a pair of sub-rows, 'in BGN' /
+'in foreign currency', repeated under multiple categories (the same labels show up under
+both asset items and liability/deposit items).
 
-FCD/TD는 '예금'에 해당하는 카테고리만 골라야 한다(자산 측 FOREIGN ASSETS, DOMESTIC CREDIT,
-CLAIMS ON... 등에도 'in foreign currency' 하위 행이 있어 전부 더하면 안 됨). 규칙: 바로 위
-상위(비들여쓰기) 카테고리 라벨에 'deposit'이 포함된 경우만 집계한다. 이 조건으로 걸리는
-카테고리는 정확히 4개:
+For FCD/TD, only the categories that correspond to 'deposits' must be selected (asset-side
+categories like FOREIGN ASSETS, DOMESTIC CREDIT, CLAIMS ON..., etc. also have 'in foreign
+currency' sub-rows, and summing everything would be wrong). Rule: only aggregate when the
+immediately preceding parent (non-indented) category label contains 'deposit'. Exactly 4
+categories match this condition:
     Overnight deposits
     Deposits with agreed maturity up to 2 years
     Deposits redeemable at notice up to 3 months
     Deposits with agreed maturity over 2 years and deposits redeemable at notice over 3 months
-FCD = 이 4개 카테고리의 'in foreign currency' 값 합
-TD  = 이 4개 카테고리의 'in BGN' + 'in foreign currency' 값 합 (= 카테고리 총액 합과 동일)
+FCD = sum of 'in foreign currency' values across these 4 categories
+TD  = sum of 'in BGN' + 'in foreign currency' values across these 4 categories (equals the sum
+      of category totals)
 """
 
 from datetime import datetime, timezone
@@ -35,7 +38,7 @@ def parse(content: bytes, country_code: str) -> pd.DataFrame:
     wb = openpyxl.load_workbook(BytesIO(content), data_only=True)
     ws = wb[_SHEET_NAME]
 
-    # 1) 'deposit' 카테고리 아래의 'in BGN'/'in foreign currency' 행 번호를 찾는다.
+    # 1) Find the row numbers of 'in BGN'/'in foreign currency' rows under 'deposit' categories.
     bgn_rows, fc_rows = [], []
     current_parent = ""
     for r in range(3, ws.max_row + 1):
@@ -55,7 +58,7 @@ def parse(content: bytes, country_code: str) -> pd.DataFrame:
     if not fc_rows:
         return pd.DataFrame(columns=["country_code", "year", "period", "indicator", "value", "updated_at"])
 
-    # 2) 날짜 컬럼별로 위 행들의 값을 합산.
+    # 2) Sum the values of the rows above, per date column.
     rows = []
     for c in range(_FIRST_DATA_COL, ws.max_column + 1):
         date_val = ws.cell(row=_HEADER_ROW, column=c).value

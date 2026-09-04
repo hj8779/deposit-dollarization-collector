@@ -1,17 +1,18 @@
-"""외화예금 데이터 자동 수집 파이프라인 실행 엔트리포인트.
+"""Entry point for the foreign-currency deposit data collection pipeline.
 
-국가 수집은 서로 독립이므로 **연속 워커 풀**(끝난 즉시 다음 국가)로 돌리고,
-UPSERT는 별도 스레드가 N국 모이면 일괄 처리한다.
+Countries are collected independently, so we run a **continuous worker pool**
+(the moment one finishes, the next country starts) while a separate UPSERT
+thread batches writes once N countries have accumulated.
 
-사용 예:
+Usage examples:
   python main.py --status success --only-with-parser --workers 8 --timeout-sec 120
   python main.py --workers 8 --timeout-sec 120 --upsert-batch-size 5
   python main.py --skip-existing
-  python main.py --max-db-rows 30          # DB에 30행 이하(또는 없음)인 국가만
+  python main.py --max-db-rows 30          # only countries with <=30 DB rows (or none)
   python main.py --list-db-stats
-  python main.py --db-summary              # 적재 데이터 기간/지표 요약
-  python main.py --upload-targets          # targets.json → country_metadata UPSERT
-  python main.py --migrate-indicators      # foreign_currency_deposits → FCD
+  python main.py --db-summary              # summary of loaded data period/indicators
+  python main.py --upload-targets          # targets.json -> country_metadata UPSERT
+  python main.py --migrate-indicators      # foreign_currency_deposits -> FCD
   python main.py --init-db
 """
 
@@ -56,7 +57,7 @@ ROOT = Path(__file__).resolve().parent
 TARGETS_PATH = ROOT / "config" / "targets.json"
 _UPSERT_SENTINEL = object()
 
-# .env 로드 (SUPABASE_DB_URL 등)
+# Load .env (SUPABASE_DB_URL, etc.)
 load_dotenv(ROOT / ".env")
 load_dotenv()  # cwd fallback
 
@@ -101,12 +102,13 @@ def apply_db_filters(
     max_db_rows: int | None = None,
     min_db_rows: int | None = None,
 ) -> list[dict]:
-    """Supabase에 이미 있는 행 수 기준으로 대상 필터.
+    """Filter targets based on the row count already present in Supabase.
 
-    - skip_existing: DB에 1행이라도 있으면 스킵
-    - skip_if_rows_gte N: DB 행 수 >= N 이면 스킵 (부분 재수집 방지)
-    - max_db_rows N: DB 행 수 <= N 이거나 **아예 없는** 국가만 (저행수/미수집 파서 점검용)
-    - min_db_rows N: DB 행 수 >= N 인 국가만
+    - skip_existing: skip if the country already has at least 1 row in the DB
+    - skip_if_rows_gte N: skip if DB row count >= N (avoids partial re-collection)
+    - max_db_rows N: only countries with DB row count <= N or **no rows at all**
+      (useful for auditing thin/uncollected parsers)
+    - min_db_rows N: only countries with DB row count >= N
     """
     if not any(
         [
@@ -119,7 +121,7 @@ def apply_db_filters(
         return targets
 
     counts = count_rows_by_country()
-    logger.info("DB 국가별 행 수 로드: %d개국", len(counts))
+    logger.info("Loaded DB row counts per country: %d countries", len(counts))
 
     kept = []
     skipped = []
@@ -145,33 +147,33 @@ def apply_db_filters(
         sample = ", ".join(f"{c}({n})" for c, n, _ in skipped[:15])
         more = "…" if len(skipped) > 15 else ""
         logger.info(
-            "DB 필터로 %d개국 스킵 (예: %s%s)",
+            "Skipped %d countries via DB filter (e.g. %s%s)",
             len(skipped),
             sample,
             more,
         )
-    logger.info("DB 필터 후 수집 대상: %d개국", len(kept))
+    logger.info("Countries to collect after DB filter: %d", len(kept))
     return kept
 
 
 def _collect_one(target: dict) -> tuple[str, pd.DataFrame | None, str | None]:
-    """단일 국가 수집. 반환: (country_code, df|None, error|None)."""
+    """Collect a single country. Returns: (country_code, df|None, error|None)."""
     code = target.get("country_code", "?")
     strategy = get_strategy(target.get("data_type"))
     try:
         df = strategy.collect_and_parse(target)
     except Exception as e:
-        logger.exception("[%s] 수집 실패", code)
+        logger.exception("[%s] Collection failed", code)
         return code, None, f"ERROR: {e}"
     if df is None or df.empty:
-        logger.info("[%s] 수집 결과 없음", code)
+        logger.info("[%s] No results collected", code)
         return code, None, None
-    logger.info("[%s] %d행 수집", code, len(df))
+    logger.info("[%s] Collected %d rows", code, len(df))
     return code, df, None
 
 
 def _collect_one_worker(target: dict, conn) -> None:
-    """별도 프로세스에서 수집 후 Pipe로 결과 전송 (하드 타임아웃용)."""
+    """Collect in a separate process and send the result over a Pipe (for hard timeouts)."""
     load_dotenv(ROOT / ".env")
     load_dotenv()
     code = target.get("country_code", "?")
@@ -200,7 +202,7 @@ def _collect_one_hard_timeout(
     target: dict,
     timeout_sec: float,
 ) -> tuple[str, pd.DataFrame | None, str | None]:
-    """국가 1개를 자식 프로세스에서 돌리고, 초과 시 terminate/kill."""
+    """Run a single country in a child process and terminate/kill it if it exceeds the timeout."""
     code = target.get("country_code", "?")
     if timeout_sec <= 0:
         return _collect_one(target)
@@ -222,7 +224,7 @@ def _collect_one_hard_timeout(
 
     if proc.is_alive():
         logger.error(
-            "[%s] TIMEOUT after %.0fs (elapsed %.0fs) — 프로세스 강제 종료 후 스킵",
+            "[%s] TIMEOUT after %.0fs (elapsed %.0fs) — forcibly terminating process and skipping",
             code,
             timeout_sec,
             elapsed,
@@ -230,7 +232,7 @@ def _collect_one_hard_timeout(
         proc.terminate()
         proc.join(timeout=10)
         if proc.is_alive():
-            logger.error("[%s] terminate 실패 → kill()", code)
+            logger.error("[%s] terminate failed -> kill()", code)
             proc.kill()
             proc.join(timeout=5)
         parent_conn.close()
@@ -251,7 +253,7 @@ def _collect_one_hard_timeout(
 
 
 # ---------------------------------------------------------------------------
-# Upsert worker (별도 스레드)
+# Upsert worker (runs in its own thread)
 # ---------------------------------------------------------------------------
 
 
@@ -262,7 +264,7 @@ def _upsert_worker_loop(
     stop_event: Event,
     stats: dict,
 ) -> None:
-    """수집 완료 DataFrame을 모아 N국마다 UPSERT."""
+    """Buffer completed DataFrames and UPSERT them every N countries."""
     buffer: list[pd.DataFrame] = []
     codes: list[str] = []
 
@@ -274,7 +276,7 @@ def _upsert_worker_loop(
         n_countries = len(codes)
         if dry_run:
             logger.info(
-                "UPSERT 워커 dry-run flush (%s): %d국 / %d행 — DB 스킵",
+                "UPSERT worker dry-run flush (%s): %d countries / %d rows — skipping DB",
                 reason,
                 n_countries,
                 len(df),
@@ -283,7 +285,7 @@ def _upsert_worker_loop(
             n = upsert_long_format(df)
             stats["upserted"] = stats.get("upserted", 0) + n
             logger.info(
-                "UPSERT 워커 flush (%s): %d국 / %d행 적재 (누적 %d)",
+                "UPSERT worker flush (%s): %d countries / %d rows written (cumulative %d)",
                 reason,
                 n_countries,
                 n,
@@ -312,7 +314,7 @@ def _upsert_worker_loop(
 
 
 # ---------------------------------------------------------------------------
-# Continuous worker pool (배치 장벽 없음)
+# Continuous worker pool (no batch barrier)
 # ---------------------------------------------------------------------------
 
 
@@ -324,18 +326,24 @@ def run_pipeline(
     upsert_batch_size: int = 5,
     report_path: Path | None = None,
 ) -> pd.DataFrame:
-    """연속 워커 풀로 수집 + 별도 UPSERT 워커.
+    """Continuous worker pool for collection plus a separate UPSERT worker.
 
-    - workers: 동시에 돌릴 수집 슬롯 수. 하나가 끝나면 즉시 다음 국가 시작.
-    - timeout_sec: 국가당 하드 타임아웃(프로세스 kill). 0=무제한(스레드 직접 실행).
-    - upsert_batch_size: 성공 수집 N국 모이면 UPSERT 워커가 일괄 적재.
-    - report_path: 국가별 결과 JSON 리포트 경로 (None이면 runs/ 아래 자동 생성)
+    - workers: number of collection slots to run concurrently. As soon as one
+      finishes, the next country starts immediately.
+    - timeout_sec: hard timeout per country (process kill). 0 = unlimited
+      (runs directly in a thread).
+    - upsert_batch_size: once N countries have been collected successfully,
+      the UPSERT worker writes them in a batch.
+    - report_path: path for the per-country result JSON report (auto-generated
+      under runs/ if None)
 
-    결과 분류 (중요):
-      success  — DataFrame 행 있음 (중간 WARNING/부분 스킵이 있어도 성공으로 잡힘)
-      empty    — 예외 없이 빈 결과 (파서가 내부에서 실패를 삼킨 경우 포함)
-      fail     — 파이프라인까지 예외 문자열이 올라온 경우 (ERROR: ...)
-      timeout  — 하드 타임아웃으로 프로세스 kill
+    Result classification (important):
+      success  — DataFrame has rows (still counted as success even if there
+                 were intermediate WARNINGs or partial skips)
+      empty    — empty result with no exception (includes cases where the
+                 parser swallowed a failure internally)
+      fail     — an exception string propagated up to the pipeline (ERROR: ...)
+      timeout  — process killed due to hard timeout
     """
     workers = max(1, int(workers))
     upsert_batch_size = max(1, int(upsert_batch_size))
@@ -361,7 +369,7 @@ def run_pipeline(
     upsert_thread.start()
 
     logger.info(
-        "실행 모드: continuous workers=%d, timeout_sec=%s (hard=%s), upsert_batch_size=%d",
+        "Run mode: continuous workers=%d, timeout_sec=%s (hard=%s), upsert_batch_size=%d",
         workers,
         timeout_sec or "none",
         timeout_sec > 0,
@@ -378,14 +386,14 @@ def run_pipeline(
     in_flight: dict = {}
 
     with ThreadPoolExecutor(max_workers=workers) as ex:
-        # 초기 슬롯 채우기
+        # fill initial slots
         while idx < len(pending_targets) and len(in_flight) < workers:
             t = pending_targets[idx]
             idx += 1
             fut = ex.submit(_job, t)
             in_flight[fut] = t
             logger.debug(
-                "제출 [%s] (in_flight=%d, queue_left=%d)",
+                "Submitted [%s] (in_flight=%d, queue_left=%d)",
                 t.get("country_code"),
                 len(in_flight),
                 len(pending_targets) - idx,
@@ -399,7 +407,7 @@ def run_pipeline(
                 try:
                     code, df, err = fut.result()
                 except Exception as e:
-                    logger.exception("[%s] future 예외", code)
+                    logger.exception("[%s] Future raised an exception", code)
                     code, df, err = code, None, f"ERROR: {e}"
 
                 if err is not None:
@@ -451,20 +459,20 @@ def run_pipeline(
                     all_frames.append(df)
                     upsert_q.put((code, df))
 
-                # 슬롯 비는 즉시 다음 국가 제출
+                # submit the next country as soon as a slot frees up
                 if idx < len(pending_targets):
                     t = pending_targets[idx]
                     idx += 1
                     nf = ex.submit(_job, t)
                     in_flight[nf] = t
                     logger.debug(
-                        "제출 [%s] (in_flight=%d, queue_left=%d)",
+                        "Submitted [%s] (in_flight=%d, queue_left=%d)",
                         t.get("country_code"),
                         len(in_flight),
                         len(pending_targets) - idx,
                     )
 
-    # 수집 종료 → upsert 워커 마무리
+    # collection finished -> wrap up the upsert worker
     upsert_q.put(_UPSERT_SENTINEL)
     upsert_q.join()
     stop_event.set()
@@ -474,7 +482,7 @@ def run_pipeline(
     elapsed = time.monotonic() - t_run0
 
     logger.info(
-        "수집 요약: 성공 %d / 빈결과 %d / 실패 %d / 타임아웃 %d / 수집행 %d / UPSERT %d (%.0fs)",
+        "Collection summary: success %d / empty %d / fail %d / timeout %d / rows collected %d / UPSERT %d (%.0fs)",
         ok,
         empty,
         fail,
@@ -484,7 +492,7 @@ def run_pipeline(
         elapsed,
     )
     if success_info:
-        # targets.json 주기: annual/semi_annual 은 저행수 경고에서 제외
+        # targets.json frequency: annual/semi_annual are excluded from thin-row warnings
         freq_by_code = {
             str(t.get("country_code", "")).upper(): normalize_frequency_bucket(
                 t.get("update_frequency")
@@ -507,44 +515,44 @@ def run_pipeline(
             )
         ]
         logger.info(
-            "성공 국가 (%d): %s",
+            "Successful countries (%d): %s",
             len(success_info),
             ", ".join(f"{s['country_code']}({s['rows']})" for s in sorted(success_info, key=lambda x: x["country_code"])),
         )
         if thin:
             logger.warning(
-                "성공이지만 저행수(≤30, annual 제외) (%d) — 파서 점검 후보: %s",
+                "Succeeded but thin row count (<=30, annual excluded) (%d) — parser check candidates: %s",
                 len(thin),
                 ", ".join(f"{s['country_code']}({s['rows']})" for s in thin),
             )
         if thin_expected:
             logger.info(
-                "저행수이지만 annual/semi_annual 예외 (%d): %s",
+                "Thin row count but exempted as annual/semi_annual (%d): %s",
                 len(thin_expected),
                 ", ".join(f"{s['country_code']}({s['rows']})" for s in thin_expected),
             )
     if empty_codes:
         logger.warning(
-            "빈결과 국가 (%d) — 파서가 예외 없이 빈 DF 반환(내부 soft-fail 포함): %s",
+            "Countries with empty results (%d) — parser returned an empty DF without raising (includes internal soft-fails): %s",
             len(empty_codes),
             ", ".join(sorted(empty_codes)),
         )
     if timeout_codes:
         logger.warning(
-            "타임아웃 국가 (%d): %s",
+            "Countries that timed out (%d): %s",
             len(timeout_codes),
             ", ".join(timeout_codes),
         )
     if fail_codes:
         logger.warning(
-            "실패 국가 (%d) — 파이프라인까지 예외 전파: %s",
+            "Failed countries (%d) — exception propagated up to the pipeline: %s",
             len(fail_codes),
             ", ".join(fail_codes),
         )
     if dry_run:
-        logger.info("dry-run 모드: DB 저장은 UPSERT 워커에서도 스킵됨")
+        logger.info("dry-run mode: DB writes are also skipped in the UPSERT worker")
 
-    # JSON 리포트 저장
+    # save JSON report
     report = {
         "finished_at": time.strftime("%Y-%m-%dT%H:%M:%S"),
         "elapsed_sec": round(elapsed, 1),
@@ -566,10 +574,10 @@ def run_pipeline(
         "timeout": sorted(timeout_codes),
         "outcomes": sorted(outcomes, key=lambda x: x["country_code"]),
         "notes": {
-            "success": "DataFrame 행 있음. 파서 내부 WARNING/부분 스킵이 있어도 성공으로 집계.",
-            "empty": "예외 없이 빈 결과. 파서가 실패를 삼키고 empty를 반환한 경우 포함.",
-            "fail": "collect 경로에서 ERROR 문자열이 반환된 경우만.",
-            "timeout": "하드 타임아웃으로 프로세스 kill.",
+            "success": "DataFrame has rows. Counted as success even with internal parser WARNINGs/partial skips.",
+            "empty": "Empty result without an exception. Includes cases where the parser swallowed a failure and returned empty.",
+            "fail": "Only when an ERROR string was returned from the collect path.",
+            "timeout": "Process killed due to a hard timeout.",
         },
     }
     try:
@@ -581,9 +589,9 @@ def run_pipeline(
         out = Path(out)
         out.parent.mkdir(parents=True, exist_ok=True)
         out.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
-        logger.info("실행 리포트 저장: %s", out)
+        logger.info("Run report saved: %s", out)
     except Exception:
-        logger.exception("실행 리포트 저장 실패")
+        logger.exception("Failed to save run report")
 
     return result
 
@@ -595,29 +603,29 @@ def cmd_init_db() -> None:
         n = count_rows(engine)
         m = count_metadata_rows(engine)
         logger.info(
-            "DB 준비 완료. deposit_dollarization=%d행, country_metadata=%d행",
+            "DB ready. deposit_dollarization=%d rows, country_metadata=%d rows",
             n,
             m,
         )
         sample = fetch_sample(5, engine)
         if len(sample):
-            logger.info("샘플:\n%s", sample.to_string(index=False))
+            logger.info("Sample:\n%s", sample.to_string(index=False))
     finally:
         engine.dispose()
 
 
 def cmd_list_db_stats(max_db_rows: int | None = None) -> None:
-    """국가별 DB 행 수 출력. max_db_rows 주면 그 이하만."""
+    """Print DB row count per country. If max_db_rows is given, only show countries at or below it."""
     counts = count_rows_by_country()
     if not counts:
-        logger.info("DB에 데이터 없음 (또는 연결 실패)")
+        logger.info("No data in DB (or connection failed)")
         return
     items = sorted(counts.items(), key=lambda x: (x[1], x[0]))
     if max_db_rows is not None:
         items = [(c, n) for c, n in items if n <= max_db_rows]
-        logger.info("DB 행 수 ≤ %d 인 국가 (%d개):", max_db_rows, len(items))
+        logger.info("Countries with DB row count <= %d (%d):", max_db_rows, len(items))
     else:
-        logger.info("DB 국가별 행 수 (%d개국, 오름차순):", len(items))
+        logger.info("DB row count per country (%d countries, ascending):", len(items))
     for code, n in items:
         print(f"  {code:4}  {n:6d}")
     # also list targets with parser but missing from DB
@@ -629,7 +637,7 @@ def cmd_list_db_stats(max_db_rows: int | None = None) -> None:
     }
     missing = sorted(with_parser - set(counts))
     if missing:
-        logger.info("파서 있으나 DB 0행 (%d): %s", len(missing), ", ".join(missing))
+        logger.info("Has parser but 0 rows in DB (%d): %s", len(missing), ", ".join(missing))
 
 
 def cmd_db_summary(
@@ -639,7 +647,7 @@ def cmd_db_summary(
     show_all: bool = True,
     exclude_annual_from_thin: bool = True,
 ) -> None:
-    """deposit_dollarization 적재 현황 요약 (+ optional JSON)."""
+    """Summarize the current state of the deposit_dollarization table (+ optional JSON)."""
     summary = summarize_deposit_data(
         thin_threshold=thin_threshold,
         exclude_annual_from_thin=exclude_annual_from_thin,
@@ -658,7 +666,7 @@ def cmd_db_summary(
     summary["parser_but_no_data"] = missing
     if missing:
         logger.info(
-            "파서 있으나 deposit 0행 (%d): %s",
+            "Has parser but 0 deposit rows (%d): %s",
             len(missing),
             ", ".join(missing[:40]) + ("…" if len(missing) > 40 else ""),
         )
@@ -670,7 +678,7 @@ def cmd_db_summary(
             json.dumps(summary, ensure_ascii=False, indent=2, default=str),
             encoding="utf-8",
         )
-        logger.info("DB 요약 JSON 저장: %s", report_path)
+        logger.info("DB summary JSON saved: %s", report_path)
 
 
 def cmd_upload_targets(
@@ -679,7 +687,7 @@ def cmd_upload_targets(
     countries: list[str] | None = None,
     status: str | None = None,
 ) -> int:
-    """config/targets.json → country_metadata UPSERT."""
+    """UPSERT config/targets.json -> country_metadata."""
     path = targets_path or TARGETS_PATH
     targets = load_targets(path)
     targets = filter_targets(
@@ -689,94 +697,94 @@ def cmd_upload_targets(
         only_with_parser=False,
     )
     if not targets:
-        logger.error("업로드할 targets가 없습니다.")
+        logger.error("No targets to upload.")
         return 0
     n = upsert_country_metadata(
         targets,
         parsers_dir=ROOT / "src" / "parsers",
     )
-    logger.info("targets 업로드 완료: %d개국 → country_metadata", n)
+    logger.info("Targets upload complete: %d countries -> country_metadata", n)
     return n
 
 
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(description="Dollarization ratio ETL → Supabase")
-    p.add_argument("--dry-run", action="store_true", help="수집만, DB 저장 생략")
-    p.add_argument("--countries", type=str, default="", help="ISO3 콤마 목록")
-    p.add_argument("--status", type=str, default="", help="adapter.status 필터")
+    p.add_argument("--dry-run", action="store_true", help="Collect only, skip DB write")
+    p.add_argument("--countries", type=str, default="", help="Comma-separated ISO3 list")
+    p.add_argument("--status", type=str, default="", help="Filter by adapter.status")
     p.add_argument(
         "--only-with-parser",
         action="store_true",
-        help="src/parsers/{cc}.py 있는 국가만",
+        help="Only countries with src/parsers/{cc}.py",
     )
     p.add_argument(
         "--init-db",
         action="store_true",
-        help="테이블 생성/확인만 (deposit_dollarization + country_metadata)",
+        help="Only create/verify tables (deposit_dollarization + country_metadata)",
     )
     p.add_argument(
         "--migrate-indicators",
         action="store_true",
-        help="레거시 indicator foreign_currency_deposits → FCD 일괄 이전",
+        help="Bulk-migrate legacy indicator foreign_currency_deposits -> FCD",
     )
     p.add_argument(
         "--list-db-stats",
         action="store_true",
-        help="Supabase 국가별 행 수 출력 후 종료",
+        help="Print row count per country in Supabase, then exit",
     )
     p.add_argument(
         "--db-summary",
         action="store_true",
-        help="DB 적재 데이터 요약(기간/지표/저행수) 출력 후 종료",
+        help="Print DB summary (period/indicators/thin rows), then exit",
     )
     p.add_argument(
         "--upload-targets",
         action="store_true",
-        help="config/targets.json을 country_metadata 테이블에 UPSERT 후 종료",
+        help="UPSERT config/targets.json into the country_metadata table, then exit",
     )
     p.add_argument(
         "--thin-threshold",
         type=int,
         default=30,
         metavar="N",
-        help="--db-summary 저행수 기준 (기본 30)",
+        help="Thin-row threshold for --db-summary (default 30)",
     )
     p.add_argument(
         "--include-annual-thin",
         action="store_true",
-        help="저행수 목록에 annual/semi_annual 국가도 포함 (기본: 예외 처리)",
+        help="Include annual/semi_annual countries in the thin-row list (default: exempted)",
     )
     p.add_argument(
         "--summary-json",
         type=str,
         default="",
-        help="--db-summary 결과를 JSON으로 저장할 경로",
+        help="Path to save the --db-summary result as JSON",
     )
     p.add_argument("--targets", type=str, default=str(TARGETS_PATH))
     p.add_argument(
         "--workers",
         type=int,
         default=4,
-        help="동시 수집 워커 수 (기본 4). 끝난 즉시 다음 국가 시작",
+        help="Number of concurrent collection workers (default 4). Next country starts as soon as one finishes",
     )
     p.add_argument(
         "--timeout-sec",
         type=float,
         default=0,
-        help="국가당 최대 초 (0=무제한). 초과 시 프로세스 강제 종료",
+        help="Max seconds per country (0=unlimited). Process is force-killed on exceeding it",
     )
     p.add_argument(
         "--upsert-batch-size",
         type=int,
         default=5,
-        help="성공 수집 N국 모이면 UPSERT 워커가 일괄 적재 (기본 5)",
+        help="UPSERT worker writes in a batch once N countries have been collected successfully (default 5)",
     )
     # backward-compat aliases
     p.add_argument(
         "--batch-size",
         type=int,
         default=None,
-        help=argparse.SUPPRESS,  # deprecated → upsert-batch-size
+        help=argparse.SUPPRESS,  # deprecated -> upsert-batch-size
     )
     p.add_argument("--upsert-each", action="store_true", help=argparse.SUPPRESS)
 
@@ -784,34 +792,34 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument(
         "--skip-existing",
         action="store_true",
-        help="DB에 이미 1행 이상 있는 국가 스킵",
+        help="Skip countries that already have at least 1 row in the DB",
     )
     p.add_argument(
         "--skip-if-rows-gte",
         type=int,
         default=None,
         metavar="N",
-        help="DB 행 수 ≥ N 인 국가 스킵",
+        help="Skip countries with DB row count >= N",
     )
     p.add_argument(
         "--max-db-rows",
         type=int,
         default=None,
         metavar="N",
-        help="DB 행 수 ≤ N (또는 미수집) 국가만 수집 — 저행수 파서 점검용",
+        help="Only collect countries with DB row count <= N (or not yet collected) — for auditing thin-row parsers",
     )
     p.add_argument(
         "--min-db-rows",
         type=int,
         default=None,
         metavar="N",
-        help="DB 행 수 ≥ N 인 국가만",
+        help="Only countries with DB row count >= N",
     )
     p.add_argument(
         "--report",
         type=str,
         default="",
-        help="실행 리포트 JSON 경로 (기본: runs/run-YYYYMMDD-HHMMSS.json)",
+        help="Path for the run report JSON (default: runs/run-YYYYMMDD-HHMMSS.json)",
     )
     return p
 
@@ -824,16 +832,16 @@ def main(argv: list[str] | None = None) -> int:
             cmd_init_db()
             return 0
         except Exception:
-            logger.exception("init-db 실패")
+            logger.exception("init-db failed")
             return 1
 
     if args.migrate_indicators:
         try:
             stats = migrate_legacy_indicators()
-            logger.info("migrate-indicators 결과: %s", stats)
+            logger.info("migrate-indicators result: %s", stats)
             return 0 if stats.get("remaining_legacy", 0) == 0 else 2
         except Exception:
-            logger.exception("migrate-indicators 실패")
+            logger.exception("migrate-indicators failed")
             return 1
 
     if args.list_db_stats:
@@ -841,7 +849,7 @@ def main(argv: list[str] | None = None) -> int:
             cmd_list_db_stats(max_db_rows=args.max_db_rows)
             return 0
         except Exception:
-            logger.exception("list-db-stats 실패")
+            logger.exception("list-db-stats failed")
             return 1
 
     if args.db_summary:
@@ -855,7 +863,7 @@ def main(argv: list[str] | None = None) -> int:
             )
             return 0
         except Exception:
-            logger.exception("db-summary 실패")
+            logger.exception("db-summary failed")
             return 1
 
     if args.upload_targets:
@@ -869,7 +877,7 @@ def main(argv: list[str] | None = None) -> int:
             )
             return 0 if n >= 0 else 1
         except Exception:
-            logger.exception("upload-targets 실패")
+            logger.exception("upload-targets failed")
             return 1
 
     targets = load_targets(Path(args.targets))
@@ -882,7 +890,7 @@ def main(argv: list[str] | None = None) -> int:
         only_with_parser=args.only_with_parser,
     )
 
-    # DB 기반 스킵/저행수 필터
+    # DB-based skip/thin-row filters
     try:
         targets = apply_db_filters(
             targets,
@@ -892,23 +900,23 @@ def main(argv: list[str] | None = None) -> int:
             min_db_rows=args.min_db_rows,
         )
     except Exception:
-        logger.exception("DB 필터 적용 실패 — 필터 없이 진행하려면 옵션을 빼세요")
+        logger.exception("Failed to apply DB filter — drop the option to proceed without filtering")
         return 1
 
     if not targets:
-        logger.error("필터 후 대상 국가가 없습니다.")
+        logger.error("No target countries remain after filtering.")
         return 1
 
     upsert_batch = args.upsert_batch_size
     if args.batch_size is not None:
         upsert_batch = args.batch_size
-        logger.warning("--batch-size 는 deprecated → --upsert-batch-size 로 사용됨")
+        logger.warning("--batch-size is deprecated -> use --upsert-batch-size")
     if args.upsert_each:
         upsert_batch = 1
-        logger.warning("--upsert-each 는 deprecated → --upsert-batch-size 1")
+        logger.warning("--upsert-each is deprecated -> --upsert-batch-size 1")
 
     logger.info(
-        "총 %d개 국가 수집 시작 (dry_run=%s, workers=%d, timeout=%s, upsert_batch=%d)",
+        "Starting collection for %d countries (dry_run=%s, workers=%d, timeout=%s, upsert_batch=%d)",
         len(targets),
         args.dry_run,
         args.workers,
@@ -926,14 +934,14 @@ def main(argv: list[str] | None = None) -> int:
             report_path=Path(args.report) if args.report.strip() else None,
         )
     except Exception:
-        logger.exception("파이프라인 실패")
+        logger.exception("Pipeline failed")
         return 1
 
-    logger.info("파이프라인 종료. 수집 %d행", len(result))
+    logger.info("Pipeline finished. Collected %d rows", len(result))
     return 0
 
 
 if __name__ == "__main__":
-    # macOS spawn 안전
+    # safe for macOS spawn
     mp.freeze_support()
     sys.exit(main())

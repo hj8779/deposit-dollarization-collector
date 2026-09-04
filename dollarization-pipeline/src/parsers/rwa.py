@@ -1,8 +1,8 @@
 """Rwanda: National Bank of Rwanda(BNR) 'Depository Corporations Survey' XLSX.
 
-bnr.rw는 React SPA(정적 HTML에 데이터/파일 링크 없음)라 원래 저장돼 있던
-`https://www.bnr.rw/index.php?id=46`는 더 이상 유효하지 않다. 실제 데이터는 SPA가 호출하는
-JSON 엔드포인트 뒤에 있다:
+bnr.rw is a React SPA (the static HTML carries no data/file links), so the
+originally stored `https://www.bnr.rw/index.php?id=46` is no longer valid. The
+actual data sits behind a JSON endpoint that the SPA calls:
 
     GET https://www.bnr.rw/mstat
         -> [{"name": "Depository corporation survey <Month> <Year>",
@@ -11,34 +11,48 @@ JSON 엔드포인트 뒤에 있다:
             {"name": "Central bank survey ...", ...},
             {"name": "Other depository corporation survey ...", ...}]
 
-이 엔드포인트는 페이지네이션/과거이력 없이 항상 "현재 게시된 최신 파일 3종"만 반환한다. 그 중
-이름이 'Depository corporation survey'로 시작하는 항목(전체 예금취급기관 통합 서베이,
-category_id=16)의 xlsx를 받는다.
+This endpoint has no pagination/history and always returns just the "3
+currently published latest files." We take the xlsx for the item whose name
+starts with 'Depository corporation survey' (the full, consolidated
+depository-corporations survey, category_id=16).
 
-다만 파일 URL 자체(`/documents/Depository_corporation_survey_<Mon>_<year>.xlsx`)는 예측 가능한
-패턴이고, 실측 결과 /mstat이 더 이상 나열하지 않는 과거 달의 파일도 서버에는 최근 ~12개월
-가량은 그대로 남아있음을 확인했다(2015~2024년 옛 파일은 이미 삭제돼 없음 — 완전한 과거 아카이브는
-아니고 딱 최근 롤링 구간만). 그래서 /mstat 최신 항목뿐 아니라 최근 24개월치 URL을 직접 패턴으로
-만들어 존재 여부를 확인·다운로드한다 — 파이프라인이 매달 정확히 실행되지 않아도 그 사이 빠진
-달을 이 방식으로 메울 수 있다.
+However, the file URL pattern itself
+(`/documents/Depository_corporation_survey_<Mon>_<year>.xlsx`) is predictable,
+and empirically we confirmed that even months /mstat no longer lists still
+remain on the server for roughly the last ~12 months (files from 2015-2024
+have already been deleted — this is not a full historical archive, just a
+recent rolling window). So in addition to /mstat's latest entries, we build
+the last 24 months of URLs directly from the pattern, check whether they
+exist, and download them — this backfills any months missed because the
+pipeline didn't run exactly monthly.
 
-xlsx는 시트 'DCs' 1개, 헤더 행(월말 날짜, datetime)이 가로로 나열되고 그 아래 행 라벨(1열)에
-계정과목이 들여쓰기로 위계 표시된다. 필요한 두 행:
-    'Deposits'                    (Broad money M2의 'Money M1' 하위, 'Currency in circulation'
-                                    다음 행) = TD(총예금, 거주자 예금취급기관 대상 전체 통화)
-    'Foreign currency deposits'   (위 'Deposits' 아래, Rwf 예금과의 통화별 분해) = FCD
-주의: 'Deposits'라는 라벨이 표 상단(Central government (net) 하위, row15 부근)에도 별도로
-나오는데 이는 정부의 중앙은행 예금(자산 측 상계 항목)이라 TD가 아니다. 그래서 앵커로 먼저
-'Money M1' 라벨을 찾고 그 다음에 나오는 'Deposits' 행만 TD로 채택한다.
+The xlsx has a single sheet 'DCs'; the header row (month-end dates, datetime)
+runs horizontally, and the row labels (column 1) below it show account items
+with indentation indicating hierarchy. Two rows are needed:
+    'Deposits'                    (under Broad money M2's 'Money M1', the row
+                                    right after 'Currency in circulation') = TD
+                                    (total deposits, all currencies at resident
+                                    depository corporations)
+    'Foreign currency deposits'   (under the 'Deposits' row above, the
+                                    currency breakdown vs. Rwf deposits) = FCD
+Note: the label 'Deposits' also appears separately near the top of the table
+(under Central government (net), around row 15), but that one is government
+deposits at the central bank (an asset-side offsetting item), not TD. So we
+first locate the 'Money M1' label as an anchor and only take the 'Deposits'
+row that follows it as TD.
 
-값 단위는 Frw billion. 실측 검증(2024-12-31 컬럼): TD=4,850.81, FCD=1,855.60
-(ratio≈38.25%) — NISR 'Rwanda Statistical Yearbook 2025'가 보고한 2024-06 스냅샷
-(TD=4,850.810bn, FCD=1,855.597bn, 38.25%)과 소수점 수준까지 일치. 즉 같은 계열의 데이터이며
-BNR 원본이 월별(실측 파일 기준 2024-12~2026-05, 일부 월 공백)로 더 세밀하다.
+Values are in Frw billion. Empirical validation (2024-12-31 column): TD=4,850.81,
+FCD=1,855.60 (ratio≈38.25%) — matches, down to the decimal, the 2024-06 snapshot
+reported by NISR's 'Rwanda Statistical Yearbook 2025' (TD=4,850.810bn,
+FCD=1,855.597bn, 38.25%). So this is the same underlying series, and the BNR
+source is more granular at monthly frequency (2024-12~2026-05 based on the
+files actually observed, with some monthly gaps).
 
-파일이 매월 교체되며 오래된 파일 URL은 결국 사라지므로(연도별 아카이브 없음), 이 파서는 /mstat의
-최신 항목 + 최근 24개월 URL 패턴 프로브를 함께 수집한다. 파이프라인이 주기적으로 재실행되면서
-윈도우가 이동해도 upsert로 시계열이 누적된다.
+Since the file is replaced every month and old file URLs eventually disappear
+(no yearly archive), this parser collects both /mstat's latest entry and a
+probe over the last 24 months of URL patterns. As the pipeline reruns
+periodically and the window shifts, the time series still accumulates via
+upsert.
 """
 
 import json
@@ -92,14 +106,14 @@ def parse(content: bytes, country_code: str) -> pd.DataFrame:
     try:
         wb = openpyxl.load_workbook(BytesIO(content), data_only=True)
     except Exception as e:
-        logger.error("[%s] xlsx 열기 실패: %s", country_code, e)
+        logger.error("[%s] failed to open xlsx: %s", country_code, e)
         return empty
 
     ws = wb[_SHEET_NAME] if _SHEET_NAME in wb.sheetnames else wb.active
 
     header_row = _find_header_row(ws)
     if header_row is None:
-        logger.error("[%s] 날짜 헤더 행을 찾지 못함", country_code)
+        logger.error("[%s] date header row not found", country_code)
         return empty
 
     m1_row = _find_row(ws, "Money M1")
@@ -108,7 +122,7 @@ def parse(content: bytes, country_code: str) -> pd.DataFrame:
 
     if td_row is None or fcd_row is None:
         logger.error(
-            "[%s] TD/FCD 행 미발견 (m1_row=%s, td_row=%s, fcd_row=%s)",
+            "[%s] TD/FCD row not found (m1_row=%s, td_row=%s, fcd_row=%s)",
             country_code, m1_row, td_row, fcd_row,
         )
         return empty
@@ -284,7 +298,7 @@ def render(target: dict) -> pd.DataFrame:
             if len(live):
                 frames.append(live)
     except Exception as e:
-        logger.error("[%s] /mstat 실패: %s", country_code, e)
+        logger.error("[%s] /mstat failed: %s", country_code, e)
 
     # 1b) Backfill recent months whose file fell off /mstat's "latest 3" but is
     # still reachable by predictable URL.
@@ -297,7 +311,7 @@ def render(target: dict) -> pd.DataFrame:
                 country_code, len(probed), probed["period"].min(), probed["period"].max(),
             )
     except Exception as e:
-        logger.warning("[%s] URL probe 실패: %s", country_code, e)
+        logger.warning("[%s] URL probe failed: %s", country_code, e)
 
     # 2) NISR yearbook annual June series (extends history; re-fetched each run)
     yb = _from_yearbook(country_code)

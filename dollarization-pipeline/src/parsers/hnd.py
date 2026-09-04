@@ -1,32 +1,35 @@
 """Honduras: BCH Panorama de las Sociedades de Depósito (MFSM).
 
-페이지:
+Source page:
   https://www.bch.hn/estadisticas-y-publicaciones-economicas/sector-monetario/panorama-financiero
-파일 (SharePoint 문서고 LIBPANORAMA FINANCIERO):
+File (SharePoint document library LIBPANORAMA FINANCIERO):
   Panorama de las Sociedades de Depósito.xls
-  — 예금수취기관 통합 재무상태표(은행·기타 예금기관 등). 상업은행 단독 표보다
-    거주자 예금 커버가 넓어 1차 소스로 채택.
+  — Consolidated balance sheet of deposit-taking institutions (banks and other
+    deposit-taking corporations). Chosen as the primary source because it covers
+    resident deposits more broadly than the commercial-banks-only table.
 
-시트 'socdep', 단위: millones de lempiras (HNL).
-헤더(행9~10) 중 DSA(Dinero en Sentido Amplio) 블록:
+Sheet 'socdep', units: millones de lempiras (HNL).
+Within the header (rows 9-10), the DSA (Dinero en Sentido Amplio / broad money) block:
 
   col13  Billetes y monedas en poder del público
-  col14  Depósitos transferibles — MN (moneda nacional)
-  col15  Depósitos transferibles — ME (moneda extranjera)
+  col14  Depósitos transferibles — MN (moneda nacional / domestic currency)
+  col15  Depósitos transferibles — ME (moneda extranjera / foreign currency)
   col16  Otros depósitos — MN
   col17  Otros depósitos — ME
   col18  Valores C/P — MN
   col19  Valores C/P — ME
-  col20  DSA 합계  (= 13..19, 실측 항등)
+  col20  DSA total  (= 13..19, confirmed as an identity empirically)
 
 FCD = transferibles ME + otros depósitos ME  (col15+col17)
-TD  = 모든 예금 MN+ME                  (col14+15+16+17)
-     (통화·증권 제외, 예금 잔액 기준 달러화율)
+TD  = all deposits MN+ME                     (col14+15+16+17)
+     (excludes currency in circulation and securities; dollarization ratio based on deposit balances)
 
-날짜: 'dic-01' / datetime 혼재. 초기는 연말(dic)만, 이후 월별.
+Dates: mix of 'dic-01' strings and datetime values. Early records are year-end (dic)
+only, later ones are monthly.
 
-페이지가 SharePoint SPA라 정적 HTML에 링크가 거의 없어, 목록은 Playwright로
-렌더 후 'Sociedades de Depósito' xls를 찾거나 알려진 경로로 폴백한다.
+Because the page is a SharePoint SPA, the static HTML has almost no links, so the
+document listing is rendered via Playwright to locate the 'Sociedades de Depósito'
+xls, falling back to a known path if that fails.
 """
 
 from __future__ import annotations
@@ -83,13 +86,13 @@ def parse(content: bytes, country_code: str) -> pd.DataFrame:
         try:
             xl = pd.ExcelFile(BytesIO(content))
         except Exception as e:
-            logger.error("[%s] xls 열기 실패: %s", country_code, e)
+            logger.error("[%s] Failed to open xls: %s", country_code, e)
             return empty
 
     sheet = "socdep" if "socdep" in xl.sheet_names else xl.sheet_names[0]
     df = xl.parse(sheet, header=None)
 
-    # MN/ME 헤더 행 찾기
+    # Find the MN/ME header row
     me_row = None
     for i in range(min(20, len(df))):
         vals = [str(df.iat[i, j]).strip().upper() if pd.notna(df.iat[i, j]) else "" for j in range(df.shape[1])]
@@ -97,37 +100,37 @@ def parse(content: bytes, country_code: str) -> pd.DataFrame:
             me_row = i
             break
     if me_row is None:
-        logger.error("[%s] MN/ME 헤더 행 없음", country_code)
+        logger.error("[%s] MN/ME header row not found", country_code)
         return empty
 
-    # Depósitos transferibles / Otros depósitos 라벨 행(보통 me_row-1)
+    # Row with the Depósitos transferibles / Otros depósitos labels (usually me_row-1)
     label_row = me_row - 1
-    # 열 위치: 첫 'ME' 쌍이 transferibles, 다음이 otros
+    # Column positions: the first 'ME' pair is transferibles, the next is otros
     me_cols = [j for j in range(df.shape[1]) if isinstance(df.iat[me_row, j], str) and df.iat[me_row, j].strip().upper() == "ME"]
     mn_cols = [j for j in range(df.shape[1]) if isinstance(df.iat[me_row, j], str) and df.iat[me_row, j].strip().upper() == "MN"]
     if len(me_cols) < 2 or len(mn_cols) < 2:
-        logger.error("[%s] MN/ME 열 부족 mn=%s me=%s", country_code, mn_cols, me_cols)
+        logger.error("[%s] Not enough MN/ME columns mn=%s me=%s", country_code, mn_cols, me_cols)
         return empty
 
-    # 라벨로 transferibles/otros 확인(가능하면)
+    # Confirm transferibles/otros via labels where possible
     transf_me = me_cols[0]
     otros_me = me_cols[1]
     transf_mn = mn_cols[0]
     otros_mn = mn_cols[1]
     for j in mn_cols + me_cols:
-        # 상위 라벨은 보통 해당 블록 시작 열에만 있음
+        # The parent label is usually only present in the block's starting column
         pass
-    # 라벨 행에서 'transferible' / 'otros dep' 탐색
+    # Search the label row for 'transferible' / 'otros dep'
     for j in range(df.shape[1]):
         v = df.iat[label_row, j]
         if not isinstance(v, str):
             continue
         s = v.lower()
         if "transferible" in s:
-            # 이 열부터 MN,ME
+            # MN,ME start from this column
             if j in mn_cols:
                 transf_mn = j
-            # ME는 j+1 인 경우가 많음
+            # ME is often at j+1
             if j + 1 < df.shape[1] and j + 1 in me_cols:
                 transf_me = j + 1
             elif j in me_cols:
@@ -215,7 +218,7 @@ def _to_period(value) -> str | None:
 
 
 def _resolve_xls_url() -> str:
-    """Playwright로 페이지에서 Sociedades de Depósito xls 링크 탐색."""
+    """Use Playwright to find the Sociedades de Depósito xls link on the page."""
     try:
         from playwright.sync_api import sync_playwright
     except ImportError:
@@ -233,7 +236,7 @@ def _resolve_xls_url() -> str:
             )
             browser.close()
     except Exception as e:
-        logger.warning("[HND] 페이지 렌더 실패, 폴백 URL: %s", e)
+        logger.warning("[HND] Page render failed, using fallback URL: %s", e)
         return _FALLBACK_XLS
 
     candidates = []
@@ -246,8 +249,8 @@ def _resolve_xls_url() -> str:
         blob = f"{text} {href_l}"
         if ".xls" not in href_l:
             continue
-        # 목표: "Panorama de las Sociedades de Depósito" (통합 PSD)
-        # 제외: Otras Sociedades de Depósito, Bancos Comerciales 등 하위 부문
+        # Target: "Panorama de las Sociedades de Depósito" (consolidated PSD)
+        # Exclude: Otras Sociedades de Depósito, Bancos Comerciales, and other sub-sector tables
         if "otras sociedades" in blob:
             continue
         if "banco comercial" in blob or "bancos comercial" in blob:
@@ -265,7 +268,7 @@ def _resolve_xls_url() -> str:
             score += 20
         if "panorama" in blob:
             score += 5
-        # 파일명에 'sociedades de depósito' 전체가 있으면 가산
+        # Bonus if the full phrase 'sociedades de depósito' appears in the filename
         if re.search(r"sociedades[_%20 ]+de[_%20 ]+dep", href_l):
             score += 10
         if score > 0:
@@ -274,10 +277,10 @@ def _resolve_xls_url() -> str:
     if candidates:
         candidates.sort(key=lambda x: (-x[0], x[1]))
         url = candidates[0][1]
-        logger.info("[HND] 페이지에서 xls 선택: %s", url)
+        logger.info("[HND] Selected xls from page: %s", url)
         return url
 
-    logger.warning("[HND] 적합 xls 링크 없음, 폴백 URL")
+    logger.warning("[HND] No suitable xls link found, using fallback URL")
     return _FALLBACK_XLS
 
 
@@ -289,15 +292,15 @@ def render(target: dict) -> pd.DataFrame:
         if not candidate.lower().startswith("http"):
             continue
         try:
-            logger.info("[%s] Panorama Sociedades de Depósito 다운로드: %s", country_code, candidate)
+            logger.info("[%s] Downloading Panorama Sociedades de Depósito: %s", country_code, candidate)
             resp = requests.get(candidate, headers=_HEADERS, timeout=120, verify=False)
             resp.raise_for_status()
             if resp.content.startswith(b"\xd0\xcf\x11\xe0") or resp.content.startswith(b"PK"):
                 content = resp.content
                 break
-            logger.warning("[%s] 엑셀이 아닌 응답 len=%d", country_code, len(resp.content))
+            logger.warning("[%s] Response is not an Excel file, len=%d", country_code, len(resp.content))
         except Exception as e:
-            logger.warning("[%s] 다운로드 실패 (%s): %s", country_code, candidate, e)
+            logger.warning("[%s] Download failed (%s): %s", country_code, candidate, e)
     if content is None:
         return pd.DataFrame(
             columns=["country_code", "year", "period", "indicator", "value", "updated_at"]
@@ -305,7 +308,7 @@ def render(target: dict) -> pd.DataFrame:
     df = parse(content, country_code)
     if not df.empty:
         logger.info(
-            "[%s] %d행 (%s~%s)",
+            "[%s] %d rows (%s~%s)",
             country_code, len(df), df["period"].min(), df["period"].max(),
         )
     return df

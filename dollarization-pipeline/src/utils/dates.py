@@ -6,6 +6,6 @@ def utcnow_iso() -> str:
 
 
 def current_quarter(dt: datetime | None = None) -> tuple[int, int]:
-    """(year, quarter) 튜플을 반환한다. quarter는 1~4."""
+    """Return a (year, quarter) tuple. quarter is 1-4."""
     dt = dt or datetime.now(timezone.utc)
     return dt.year, (dt.month - 1) // 3 + 1

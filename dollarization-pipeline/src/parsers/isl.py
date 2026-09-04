@@ -1,23 +1,25 @@
 """Iceland: CBI Databank monetary deposits — sheet III (by currency).
 
 UI: https://databank.is/report/monetary?page=FINSTATS.MONETARY.DEPOSITS.TABLE
-우상단 Excel 버튼은 SPA/JS지만, 실제 파일 URL은 번역 키로 공개된다.
+The Excel button in the top-right is an SPA/JS control, but the actual file URL
+is exposed via a translation key.
 
   GET https://databank.is/api/translation/en
   key  FINSTATS.MONETARY.DEPOSITS.EXCEL
-  →   https://sedlabanki.is/library?itemid=...
+  ->  https://sedlabanki.is/library?itemid=...
 
-Excel 시트:
+Excel sheet:
   III  Innlán eftir gjaldmiðlum / Deposits by currencies
-       단위: m.kr. (백만 ISK), 월말
-       행 (라벨 col B, 시계열 col C~):
-         Innlán alls / Deposits total          → TD
-         Erlendir gjaldmiðlar / Foreign currencies → FCD
-         (하위의 통화별 분해·Unspecified·거주/비거주 세부 블록은 무시)
+       Unit: m.kr. (million ISK), end of month
+       Rows (label in col B, time series in col C onward):
+         Innlán alls / Deposits total          -> TD
+         Erlendir gjaldmiðlar / Foreign currencies -> FCD
+         (the currency-by-currency breakdown, Unspecified, and
+         resident/nonresident detail blocks below are ignored)
 
 FCD_TD_RATIO = FCD / TD * 100
 
-시계열: 실측 1993-09 ~ 파일 최신월 (예: 2026-06).
+Time coverage: observed 1993-09 through the latest month in the file (e.g. 2026-06).
 """
 
 from __future__ import annotations
@@ -41,7 +43,7 @@ FILE_URL = "__RENDER__"
 _PAGE = "https://databank.is/report/monetary?page=FINSTATS.MONETARY.DEPOSITS.TABLE"
 _TRANSLATION_API = "https://databank.is/api/translation/en"
 _EXCEL_KEY = "FINSTATS.MONETARY.DEPOSITS.EXCEL"
-# 번역 API 장애 시 폴백 (itemid는 간헐 갱신될 수 있음)
+# fallback used if the translation API fails (itemid may occasionally be updated)
 _FALLBACK_EXCEL = (
     "https://sedlabanki.is/library?itemid=19c3efc3-28e8-4850-a4ef-9795b5ca5cde"
 )
@@ -58,7 +60,7 @@ _HEADERS = {
 
 
 def parse(content: bytes, country_code: str) -> pd.DataFrame:
-    raise NotImplementedError("ISL는 render()로 번역 API→Excel을 받는다")
+    raise NotImplementedError("ISL fetches Excel via the translation API in render()")
 
 
 def _empty() -> pd.DataFrame:
@@ -209,7 +211,7 @@ def _parse_sheet_iii(content: bytes, country_code: str) -> pd.DataFrame:
         ["foreign currenc"],
         must_not=["unspecified", "ótilgr", "euro", "dollar", "pound", "yen", "krone", "franc"],
     )
-    # 첫 번째 Foreign currencies 행이 총계(Deposits total 바로 아래)
+    # the first "Foreign currencies" row is the total (directly below Deposits total)
     if fcd_row is None:
         fcd_row = _find_row(df, ["erlendir gjaldmiðlar"], must_not=["ótilgr"])
 
@@ -220,9 +222,10 @@ def _parse_sheet_iii(content: bytes, country_code: str) -> pd.DataFrame:
         )
         return _empty()
 
-    # FCD 행이 TD 총계 블록 안(거주/비거주 세부분 앞)에 오도록 보정
+    # correct so the FCD row falls within the TD totals block (before the
+    # resident/nonresident breakdown)
     if fcd_row < td_row:
-        # 총계 이후 첫 foreign currencies
+        # first "foreign currencies" row after the totals row
         for i in range(td_row + 1, min(td_row + 15, len(df))):
             lab = _label_at(df, i).lower()
             if "foreign currenc" in lab and "unspecified" not in lab and "ótilgr" not in lab:

@@ -1,35 +1,37 @@
-"""Seychelles: Central Bank of Seychelles(CBS) 'Monetary Survey.xlsx' (Statistics > Statistics Data
-페이지의 StaExcel 직접 링크), 시트 'Depository Corporation Survey'.
+"""Seychelles: Central Bank of Seychelles(CBS) 'Monetary Survey.xlsx' (direct StaExcel link from
+the Statistics > Statistics Data page), sheet 'Depository Corporation Survey'.
 
-사전 조사 노트는 SSL/연결 오류로 접속 실패한다고 기록했으나 재시도 결과 사이트 자체는 살아있고
-(curl은 기본 검증으로도 통과), Python 기본 verify=True 경로에서만 인증서 체인 결함으로
-SSLCertVerificationError가 난다(아래 참고, verify=False로 우회). 페이지 자체는 다수의 xlsx
-직링크를 나열하고 있을 뿐 JS 렌더링이 필요 없어 requires_js=false로 정정.
+Earlier investigation notes recorded that the site failed to connect due to an SSL/connection
+error, but a retry showed the site itself is up (curl passes with default verification), and the
+SSLCertVerificationError only occurs on Python's default verify=True path due to a certificate
+chain defect (see below; worked around with verify=False). The page itself simply lists numerous
+direct xlsx links and requires no JS rendering, so requires_js=false is the correct setting.
 
-'Deposit Distribution.xlsx'(사전 조사가 주목했던 파일)는 실제로는 부문별(Private/Public)
-분해만 제공하고 통화별(자국통화 vs 외화) 분해가 없어 FCD 산출에 쓸 수 없다 -> 기각.
-대신 'Monetary Survey.xlsx'의 'Depository Corporation Survey' 시트가 정확히 필요한 4개 행을
-담고 있다:
-    row 'Transferable Deposits'      (자국통화, M1 구성)
-    row 'Fixed Term Deposits'        (자국통화, Quasi Money 구성)
-    row 'Savings Deposits'           (자국통화, Quasi Money 구성)
-    row 'Foreign Currency Deposits'  (외화예금, M3 구성) -> FCD
+'Deposit Distribution.xlsx' (the file the earlier investigation had focused on) actually only
+provides a sectoral breakdown (Private/Public) with no currency breakdown (domestic vs. foreign
+currency), so it can't be used to derive FCD -> rejected. Instead, the 'Depository Corporation
+Survey' sheet in 'Monetary Survey.xlsx' contains exactly the 4 rows needed:
+    row 'Transferable Deposits'      (domestic currency, part of M1)
+    row 'Fixed Term Deposits'        (domestic currency, part of Quasi Money)
+    row 'Savings Deposits'           (domestic currency, part of Quasi Money)
+    row 'Foreign Currency Deposits'  (foreign-currency deposits, part of M3) -> FCD
 
-TD(총예금) = Transferable + Fixed Term + Savings + Foreign Currency
-(연구 단계에서 검증한 값과 실측 일치: 2025-01 Transferable=8112.81, Fixed Term=1837.92,
-Savings=5239.72, FCD=10268.96 -> TD=25459.4≈25460, FCD/TD≈40.33%).
+TD (total deposits) = Transferable + Fixed Term + Savings + Foreign Currency
+(matches values verified during the research phase, confirmed empirically: 2025-01
+Transferable=8112.81, Fixed Term=1837.92, Savings=5239.72, FCD=10268.96 -> TD=25459.4~25460,
+FCD/TD~40.33%).
 
-이 시트에는 더 넓은 개념의 'Broad Money(M3)' 관련 부채 항목들도 있지만 예금이 아닌 항목
-(Pipeline deposits, Other Items Net 등)이 섞여 있어 TD 분모로 쓰지 않는다 - 위 4개 예금성
-행만 합산.
+This sheet also contains broader 'Broad Money(M3)'-related liability items, but they include
+non-deposit items (Pipeline deposits, Other Items Net, etc.), so they are not used as the TD
+denominator - only the 4 deposit-type rows above are summed.
 
-행 라벨과 열(날짜) 모두 헤더 텍스트로 동적 탐색한다(고정 인덱스 미사용, 시트 레이아웃이
-바뀌어도 견고하도록).
+Both row labels and columns (dates) are located dynamically via header text (no fixed indices
+used, so it stays robust if the sheet layout changes).
 
-cbs.sc는 인증서 체인에 결함이 있어 Python 기본 verify=True 경로에서 SSLCertVerificationError가
-발생한다(curl은 관대하게 통과, kor.py/jpn.py/twn.py와 동일한 우회 패턴). `src.collectors.base.
-download()`는 verify 옵션이 없으므로 단일 파일임에도 `__RENDER__` + 자체 requests 세션으로
-처리한다.
+cbs.sc has a certificate chain defect that causes an SSLCertVerificationError on Python's
+default verify=True path (curl is lenient and passes; same workaround pattern as
+kor.py/jpn.py/twn.py). Since `src.collectors.base.download()` has no verify option, this is
+handled via `__RENDER__` + a dedicated requests session, even though it's a single file.
 """
 
 from datetime import datetime, timezone
@@ -71,7 +73,7 @@ def parse(content: bytes, country_code: str) -> pd.DataFrame:
     wb = openpyxl.load_workbook(BytesIO(content), data_only=True)
     ws = wb[_SHEET_NAME]
 
-    # 1) 라벨 텍스트로 필요한 4개 행 번호를 동적으로 찾는다.
+    # 1) Dynamically find the 4 required row numbers by label text.
     row_nums: dict[str, int] = {}
     for r in range(1, ws.max_row + 1):
         label = ws.cell(row=r, column=1).value

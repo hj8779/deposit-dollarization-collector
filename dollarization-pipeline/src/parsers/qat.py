@@ -3,15 +3,19 @@
 menu item; the URL param doesn't change the page, the link must be clicked so
 Playwright is needed to enumerate the actual per-month file list).
 
-각 월 .htm/.html 파일에 은행 통합 대차대조표 표(Liabilities)가 있고, 그중 두 번째 표
-(index 1)의 'Customer Deposits' 행에 'Grand Total' 아래 LC(자국통화)/FC(외화)/Total
-열이 있다. 2012-12 이전(2007-01~2011-12)은 표 형식이 완전히 달라(코드번호+병합셀) 이
-파서가 지원하지 않음 - 자동으로 건너뜀.
+Each month's .htm/.html file contains a consolidated bank balance-sheet table
+(Liabilities), and the second table on the page (index 1) has a 'Customer Deposits'
+row with LC (local currency)/FC (foreign currency)/Total columns under 'Grand
+Total'. Before 2012-12 (2007-01 to 2011-12) the table format is completely
+different (code numbers + merged cells), which this parser doesn't support — those
+files are skipped automatically.
 
-TD = Grand Total Total. FCD = Grand Total FC (2019년 이전 일부 파일엔 FC 열이 중복으로
-나와 첫 번째 FC 열을 쓴다). 기간은 파일 내용의 표 제목("Liabilities As At YYYY/M ...")에서
-추출 - 파일명 패턴이 시기별로 제각각이라(6%20-%202026.html, MBS_March-2024.html,
-202212.htm 등) 파일명 대신 문서 내용에서 직접 연월을 읽는다. 단위 천 카타르 리얄."""
+TD = Grand Total Total. FCD = Grand Total FC (some files before 2019 have a
+duplicated FC column, in which case the first FC column is used). The period is
+extracted from the table title inside the file content ("Liabilities As At YYYY/M
+..."), not the filename — filename patterns vary wildly by era (e.g.
+6%20-%202026.html, MBS_March-2024.html, 202212.htm), so the year/month is read
+directly from the document content instead. Unit: thousand Qatari riyal."""
 
 from __future__ import annotations
 
@@ -39,7 +43,7 @@ _TITLE_DATE_RE = re.compile(r"As At (\d{4})/(\d{1,2})")
 
 
 def parse(content: bytes, country_code: str) -> pd.DataFrame:
-    raise NotImplementedError("QAT는 render()로 BMS 목록을 순회한다")
+    raise NotImplementedError("QAT walks the BMS listing via render()")
 
 
 def _empty() -> pd.DataFrame:
@@ -113,10 +117,10 @@ def render(target: dict) -> pd.DataFrame:
     try:
         urls = _list_bms_urls()
     except Exception:
-        logger.exception("[%s] BMS 목록 조회 실패", country_code)
+        logger.exception("[%s] failed to fetch BMS listing", country_code)
         return _empty()
 
-    logger.info("[%s] BMS 파일 %d건 발견", country_code, len(urls))
+    logger.info("[%s] found %d BMS files", country_code, len(urls))
 
     frames = []
     for url in urls:
@@ -127,7 +131,7 @@ def render(target: dict) -> pd.DataFrame:
             if not df.empty:
                 frames.append(df)
         except Exception:
-            logger.warning("[%s] %s 처리 실패", country_code, url, exc_info=True)
+            logger.warning("[%s] failed to process %s", country_code, url, exc_info=True)
 
     if not frames:
         return _empty()

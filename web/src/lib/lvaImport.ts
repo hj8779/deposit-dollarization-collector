@@ -1,4 +1,5 @@
 import * as XLSX from "xlsx";
+import i18n from "../i18n";
 import type { DepositRow } from "./types";
 
 /**
@@ -145,12 +146,12 @@ export async function parseLvaWorkbook(
   const grid: unknown[][] = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: true });
 
   if (grid.length < 10) {
-    throw new Error("빈 시트이거나 행이 너무 적습니다");
+    throw new Error(i18n.t("lvaImport.emptySheet"));
   }
 
   const { headerRow, periodCols } = findPeriodColumns(grid);
   if (headerRow < 0 || periodCols.length === 0) {
-    throw new Error("기간 헤더 행('MM / YYYY' 여러 개)을 찾지 못했습니다");
+    throw new Error(i18n.t("lvaImport.periodHeaderNotFound"));
   }
 
   const now = new Date().toISOString();
@@ -178,7 +179,7 @@ export async function parseLvaWorkbook(
   } else {
     const { depositsRow, fcLeafRows } = findFormatBRows(grid, headerRow);
     if (depositsRow < 0) {
-      throw new Error("'DEPOSITS (total)' 행을 찾지 못했습니다 (지원하지 않는 표 형식일 수 있습니다)");
+      throw new Error(i18n.t("lvaImport.depositsRowNotFound"));
     }
     for (const { col, period } of periodCols) {
       const td = Number(grid[depositsRow]?.[col]);
@@ -206,7 +207,7 @@ export async function parseLvaWorkbook(
   }
 
   if (periodCount === 0) {
-    throw new Error("숫자로 읽을 수 있는 기간이 없습니다");
+    throw new Error(i18n.t("lvaImport.noPeriodsParsed"));
   }
 
   return { rows, periodCount };

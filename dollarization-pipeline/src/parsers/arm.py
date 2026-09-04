@@ -1,13 +1,14 @@
-"""Armenia: Central Bank of Armenia 'Monetary Aggregates' 페이지의 'Export all' 버튼이
-실제로는 XLSX 파일을 내려준다(사용자가 예상한 JSON이 아니라 application/...spreadsheetml
-Content-Type). 단일 GET으로 바로 받아지는 정적 파일이라 Playwright 불필요.
+"""Armenia: the 'Export all' button on the Central Bank of Armenia 'Monetary Aggregates'
+page actually returns an XLSX file (not the JSON one might expect — the response has an
+application/...spreadsheetml Content-Type). It's a static file served directly on a single
+GET, so no Playwright is needed.
 
-시트 'value, month', 헤더는 2행(1행은 시트 제목), 데이터는 3행부터.
-    col1 Activity value                              -> 기간(YYYY-MM-DD, 월말)
+Sheet 'value, month', header is row 2 (row 1 is the sheet title), data starts at row 3.
+    col1 Activity value                              -> period (YYYY-MM-DD, end of month)
     col3 Demand deposits in drams mln, AMD
     col5 Time deposits in drams mln, AMD
     col7 Deposits in foreign currency mln, AMD        -> FCD
-TD = col3 + col5 + col7 (드람 요구불예금 + 드람 정기예금 + 외화예금)
+TD = col3 + col5 + col7 (dram demand deposits + dram time deposits + foreign currency deposits)
 """
 
 from datetime import datetime, timezone

@@ -1,17 +1,18 @@
 """Mongolia: Bank of Mongolia Monetary Review PDFs.
 
-예:
+Example:
   https://www.mongolbank.mn/documents/statistic/monetaryreview/2022/03e.pdf
 
-문장 패턴:
+Sentence pattern:
   'foreign currency deposits accounted for X% of total deposits'
 
-FCD/TD ratio만 직접 제공되는 경우가 많아, 절대액이 없으면
-비율을 FCD_TD_RATIO 로 수록하고 FCD/TD 는 ratio 및 100 합성하지 않음
-(절대액 미확보 시 해당 월 스킵).
+Often only the FCD/TD ratio is directly given; when absolute amounts are
+unavailable, the ratio is recorded as FCD_TD_RATIO without synthesizing
+FCD/TD from ratio and an assumed 100 (the month is skipped if absolute
+amounts cannot be obtained).
 
-절대액 문장(total deposits ... billion MNT 등)이 있으면 함께 파싱.
-여러 연·월 PDF 를 순회한다.
+If a sentence with absolute amounts (total deposits ... billion MNT, etc.)
+is present, it is parsed as well. Iterates over multiple year/month PDFs.
 """
 
 from __future__ import annotations
@@ -43,7 +44,7 @@ _HEADERS = {
 
 
 def parse(content: bytes, country_code: str) -> pd.DataFrame:
-    raise NotImplementedError("MNG는 render()로 PDF를 수집한다")
+    raise NotImplementedError("MNG collects PDFs via render()")
 
 
 def _empty() -> pd.DataFrame:

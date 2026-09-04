@@ -1,20 +1,27 @@
-"""Albania: Bank of Albania 'Sectoral balance sheet of Deposit money banks' 대화형 통계 페이지.
+"""Albania: Bank of Albania 'Sectoral balance sheet of Deposit money banks' interactive statistics page.
 
-체크박스 트리에서 항목을 고르고 'Show values'를 누르면(2단계):
-  1) 먼저 기간(From/To) 선택 UI가 나타남 -> From을 최초 가용월(Dec 2006)로 설정 후
-  2) 'Show values'를 다시 누르면 결과가 **새 탭**(?mode=alone)으로 열리고, 그 안에
-     실제 값이 담긴 HTML 표가 있음(코드/라벨 뒤에 월별 컬럼이 탭으로 구분됨).
+Pick items in the checkbox tree and click 'Show values' — this is a two-step process:
+  1) First, the period (From/To) selection UI appears -> set From to the earliest available
+     month (Dec 2006), then
+  2) Clicking 'Show values' again opens the result in a **new tab** (?mode=alone), which
+     contains the HTML table with the actual values (monthly columns tab-separated after the
+     code/label).
 
-지표 선택: LIABILITIES(부채) 쪽 'Deposits included in broad money'의 통화별 외화 항목 2개
+Indicator selection: the 2 foreign-currency items under 'Deposits included in broad money' on
+the LIABILITIES side, broken out by currency:
   - 2.1.1.2 Transferable deposits, In foreign currency  (checkbox id=85581)
   - 2.1.2.2 Other deposits, In foreign currency          (checkbox id=85601)
-FCD = 2.1.1.2 + 2.1.2.2 (광의통화에 포함되는 은행 외화예금 총액, 백만 Lek)
+FCD = 2.1.1.2 + 2.1.2.2 (total bank foreign currency deposits included in broad money, in
+millions of Lek)
 
-TD(총예금) = 2.1 Deposits included in broad money (checkbox id=85573), 상위 합계 항목을 그대로 선택.
-2.1 = 2.1.1(Transferable deposits) + 2.1.2(Other deposits) 각각의 국내통화+외화 합계이므로
-FCD의 상위 총합에 해당함을 결과표에서 실측 확인(2.1 = 2.1.1 + 2.1.2, 2.1.1 = 2.1.1.1 + 2.1.1.2 등).
+TD (total deposits) = 2.1 Deposits included in broad money (checkbox id=85573), selecting the
+parent total item directly. Verified empirically in the results table that 2.1 = 2.1.1
+(Transferable deposits) + 2.1.2 (Other deposits), each being the sum of national currency +
+foreign currency, so it is the parent total that FCD rolls up into (2.1 = 2.1.1 + 2.1.2,
+2.1.1 = 2.1.1.1 + 2.1.1.2, etc.).
 
-체크박스 id가 숫자로 시작해 CSS ID 셀렉터(#85581)를 못 쓰므로 속성 셀렉터([id="85581"])를 쓴다.
+Checkbox ids start with a digit, so a CSS ID selector (#85581) can't be used — an attribute
+selector ([id="85581"]) is used instead.
 """
 
 import re
@@ -41,7 +48,7 @@ _PERIOD_RE = re.compile(r"^([A-Za-z]{3})\s*(\d{4})$")
 
 
 def parse(content: bytes, country_code: str) -> pd.DataFrame:
-    raise NotImplementedError("ALB는 render()를 통해 처리한다 (Playwright 폼 + 새 탭 방식)")
+    raise NotImplementedError("ALB is handled via render() (Playwright form + new-tab flow)")
 
 
 def render(target: dict) -> pd.DataFrame:
@@ -68,13 +75,13 @@ def render(target: dict) -> pd.DataFrame:
                 page.locator(f'[id="{cb_id}"]').click(force=True)
             page.wait_for_timeout(300)
 
-            # 1차 클릭: 기간 선택 UI 노출
+            # 1st click: reveals the period selection UI
             page.get_by_text("Show values", exact=True).click(force=True)
             page.wait_for_timeout(2000)
-            page.locator("select[name=periudha_nga]").select_option(index=0, force=True)  # 최초 가용월
+            page.locator("select[name=periudha_nga]").select_option(index=0, force=True)  # earliest available month
             page.wait_for_timeout(500)
 
-            # 2차 클릭: 결과가 새 탭으로 열림
+            # 2nd click: results open in a new tab
             with context.expect_page(timeout=15000) as new_page_info:
                 page.get_by_text("Show values", exact=True).first.click(force=True)
             result_page = new_page_info.value
@@ -87,7 +94,7 @@ def render(target: dict) -> pd.DataFrame:
             browser.close()
 
     if not lines:
-        logger.warning("[%s] 결과 표를 찾지 못함", country_code)
+        logger.warning("[%s] Could not find results table", country_code)
         return pd.DataFrame(columns=["country_code", "year", "period", "indicator", "value", "updated_at"])
 
     header = [c.strip() for c in lines[0].split("\t")]

@@ -1,22 +1,27 @@
-"""Malawi: sheet 'Depository Corporations Survey', row3=날짜 헤더(col B~),
+"""Malawi: sheet 'Depository Corporations Survey', row3=date header (col B onward),
 row29='Foreign currency denominated deposits'.
 
-TD(총예금) = row26(Demand Deposits) + row28(Time and savings deposits) + row29(FCD).
-실측 검증: M1(row24)=Currency(row25)+Demand(row26), QM(row27)=Time(row28)+FCD(row29),
-Broad Money(row17)=Currency(row18)+Transferable(row19)+Other(row20)+Securities(row21)+
-Liabilities to other sectors(row22) 항등식이 모두 성립함을 확인했다.
+TD (total deposits) = row26(Demand Deposits) + row28(Time and savings deposits) + row29(FCD).
+Verified against the source: the identities M1(row24)=Currency(row25)+Demand(row26),
+QM(row27)=Time(row28)+FCD(row29), and Broad Money(row17)=Currency(row18)+
+Transferable(row19)+Other(row20)+Securities(row21)+Liabilities to other sectors(row22)
+all hold.
 
-과거 확장(연간, 2026-08-19 사용자 제보): DCS 기반 위 시리즈는 2018-04부터만 있다.
-RBM Annual Reports(https://www.rbm.mw/Publications/AnnualReports/, 하단 페이지네이션이
-JS라 Playwright로 클릭 필요) 부록의 'Table N: Commercial Banks: Assets and Liabilities
-(K'mn)' 표에 연도별 7개년 롤링 컬럼이 있고 '1.4 Private sector deposits'(TD)/
-'1.4.3 Foreign Currency deposits'(FCD) 행이 그대로 있어, 2018년판(2012-2018 커버)과
-2025년판(2019-2025 커버) 딱 2개 보고서만으로 2012-2025 전체를 커버한다(사용자가 알려준
-2016~2025년판 10개 중 실제로 필요한 건 양끝 2개뿐). 'Commercial Banks'(이 표) vs
-'Depository Corporations'(DCS, RBM 포함 전체 예금취급기관) 범위가 살짝 달라 2018년 값이
-정확히 일치하진 않음(연차보고서 TD=978,375/FCD=187,762→ratio 19.19% vs DCS
-TD=1,008,469/FCD=199,884→ratio 19.82%, 근접하나 동일하진 않음) — 그래서 DCS가 커버하는
-2018-04 이후는 DCS를 우선하고, 그 이전(2012~2017)에만 연차보고서 값을 쓴다."""
+Historical extension (annual, per user tip 2026-08-19): the DCS-based series above
+only goes back to 2018-04. The appendix of RBM Annual Reports
+(https://www.rbm.mw/Publications/AnnualReports/, pagination at the bottom is
+JS-driven and needs Playwright clicks) has a 'Table N: Commercial Banks: Assets and
+Liabilities (K'mn)' table with a rolling 7-year column window per edition, and it
+carries the '1.4 Private sector deposits' (TD) / '1.4.3 Foreign Currency deposits'
+(FCD) rows verbatim, so only two reports — the 2018 edition (covering 2012-2018) and
+the 2025 edition (covering 2019-2025) — are needed to cover the full 2012-2025 span
+(of the 10 editions from 2016-2025 the user pointed to, only the two endpoints are
+actually needed). 'Commercial Banks' (this table) and 'Depository Corporations'
+(DCS, all deposit-taking institutions including RBM) differ slightly in scope, so the
+2018 values don't match exactly (annual report TD=978,375/FCD=187,762→ratio 19.19%
+vs DCS TD=1,008,469/FCD=199,884→ratio 19.82% — close but not identical) — so for the
+period DCS covers (2018-04 onward) DCS takes priority, and the annual report values
+are used only for the earlier period (2012-2017)."""
 
 from datetime import datetime, timezone
 from io import BytesIO
@@ -161,7 +166,7 @@ def render(target: dict) -> pd.DataFrame:
                 logger.info("[%s] annual %s -> %s", country_code, url.split("ContentID=")[-1], sorted(ar["period"].unique()))
                 frames.append(ar)
         except Exception as e:
-            logger.warning("[%s] annual report 실패: %s", country_code, e)
+            logger.warning("[%s] annual report failed: %s", country_code, e)
 
     src = target.get("source_url")
     if src:
@@ -173,13 +178,13 @@ def render(target: dict) -> pd.DataFrame:
                 logger.info("[%s] DCS %d rows (%s~%s)", country_code, len(dcs), dcs["period"].min(), dcs["period"].max())
                 frames.append(dcs)
         except Exception as e:
-            logger.warning("[%s] DCS xlsx 실패: %s", country_code, e)
+            logger.warning("[%s] DCS xlsx failed: %s", country_code, e)
 
     if not frames:
         return pd.DataFrame(columns=["country_code", "year", "period", "indicator", "value", "updated_at"])
 
-    # 연차보고서 먼저, DCS 나중 concat → drop_duplicates(keep='last')로
-    # 겹치는 달(2018-04~)은 더 정밀한 DCS 값이 우선하도록.
+    # Annual report frames first, DCS last, then drop_duplicates(keep='last') so
+    # that the more precise DCS values take priority for overlapping months (2018-04~).
     out = (
         pd.concat(frames, ignore_index=True)
         .drop_duplicates(subset=["period", "indicator"], keep="last")

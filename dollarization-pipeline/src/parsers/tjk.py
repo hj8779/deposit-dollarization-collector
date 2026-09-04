@@ -1,41 +1,48 @@
-"""Tajikistan: National Bank of Tajikistan(NBT) "Banking Statistics Bulletin" PDF들.
+"""Tajikistan: National Bank of Tajikistan(NBT) "Banking Statistics Bulletin" PDFs.
 
-이전 조사에서는 Monetary Survey / Financial Corporations Survey 파일만 확인했는데
-거기엔 예금이 "DEPOSITS" 한 줄 집계로만 잡혀 통화별 분해가 없었다(막다른 길). 이번에
-nbt.tj/en/statistics/statistical_bulletin.php ("Banking statistics bulletin")를 추가로
-찾았고, 여기서 매달(주로 12월호에 그 해 1~12월 누적) 발행하는 PDF 안에
-"Structure of outstanding savings (deposits) in credit financial institutions" 표
-(러시아어 제목 "Структура остатков сбережений (депозитов) в кредитных...организациях")
-에 다음 행이 있다:
+An earlier investigation only found the Monetary Survey / Financial Corporations Survey files,
+where deposits appear only as a single "DEPOSITS" aggregate line with no currency breakdown
+(a dead end). This time, an additional source was found at
+nbt.tj/en/statistics/statistical_bulletin.php ("Banking statistics bulletin"), published
+roughly monthly (usually the December issue cumulates that year's January-December), and the
+PDF inside it contains a "Structure of outstanding savings (deposits) in credit financial
+institutions" table (Russian title "Структура остатков сбережений (депозитов) в
+кредитных...организациях") with the following rows:
 
     1.   Всего депозитов / Total deposits              -> TD
     1.1. в национальной валюте / In domestic currency
     1.2. в иностранной валюте / In foreign currency     -> FCD
 
-2025-12-31 값(TD=33,895,226.6천 소모니, FCD=12,730,085.1천 소모니, FCD/TD=37.6%)이
-보도자료(nbt.tj/en/news/618354/, TD≈33.9bn TJS, FX share 37.5%)와 사실상 일치해
-이 표가 실제 신뢰 가능한 시계열임을 확인했다.
+The 2025-12-31 values (TD=33,895,226.6 thousand somoni, FCD=12,730,085.1 thousand somoni,
+FCD/TD=37.6%) essentially match the press release (nbt.tj/en/news/618354/, TD~33.9bn TJS, FX
+share 37.5%), confirming that this table is in fact a reliable time series.
 
-수집 절차:
-1. statistical_bulletin.php 목록 페이지에서 *.pdf 링크와 그 옆 텍스트("Last issue of
-   2024", "Issue of 2026, May №5 (370)" 등)를 모두 모아 연도를 추출한다(연도 없는
-   항목은 skip). 링크 목록은 발행할 때마다 최신호로 갱신되므로 URL을 하드코딩하지 않고
-   매번 동적으로 읽는다.
-2. 각 PDF를 pdftotext -layout 으로 텍스트화한다(pdfplumber.extract_text()는 이 PDF들의
-   특정 폰트에서 문자가 뒤집혀 나오는 경우가 있어 pdftotext가 더 안정적 — 표준 OCR
-   폴백 대상은 아니고, 단순 레이아웃 재구성 이슈라 pdftotext -layout으로 충분함).
-3. "остатков сбережений (депозитов) в кредитн" 표 제목이 나오는 지점을 모두 찾고(목차에도
-   같은 문구가 나오므로 중복), 그 아래에서 "1. Всего депозитов"(총계),
-   "1.1. в национальной валюте"(자국통화), "1.2. в иностранной валюте"(외화) 세 행을
-   파싱해 domestic+foreign≈total 검증을 통과하는 표만 채택한다.
-4. 표 헤더 행(컬럼)은 연도(예: '2019')뿐인 경우(월별 12칸)도 있고, 과거 연혁 + 당해년도가
-   섞인 경우(예: '2012' '2013' ... '2017' 'I' 'II' ... 'XII')도 있다 — 오래된 회보일수록
-   "누적연혁 N개 + 당해년도 월별 12개"식으로 컬럼이 늘어난다. 로마숫자(I~XII) 컬럼은 그
-   회보의 해당 연도 월별 값으로, 4자리 연도 컬럼은 그 해 12월(연말 잔액) 값으로 처리한다.
-5. 일부 회보(2020년 12월호, 2011~2015년 일부)는 폰트 인코딩이 깨져 pdftotext로도 정상
-   텍스트가 나오지 않는다 — 이런 실패 건은 조용히 skip한다(회보별로 최대 하나씩만
-   있으므로 몇 개 연도가 통째로 빠질 수 있음. 그래도 최근 회보에 누적된 과거 연혁 컬럼
-   덕에 2012년부터 연말 스냅샷은 대부분 복구 가능).
+Collection procedure:
+1. From the statistical_bulletin.php listing page, collect all *.pdf links along with their
+   adjacent text ("Last issue of 2024", "Issue of 2026, May No.5 (370)", etc.) and extract the
+   year (items without a year are skipped). Since the link list is updated to the latest issue
+   every time a new one is published, the URLs are never hardcoded and are always read
+   dynamically.
+2. Each PDF is converted to text with pdftotext -layout (pdfplumber.extract_text() sometimes
+   produces reversed characters with certain fonts used in these PDFs, so pdftotext is more
+   reliable here — this is not a case requiring a full OCR fallback, just a simple layout
+   reconstruction issue, so pdftotext -layout is sufficient).
+3. All occurrences of the "остатков сбережений (депозитов) в кредитн" table heading are located
+   (it also appears in the table of contents, hence duplicates), and beneath each occurrence the
+   three rows "1. Всего депозитов" (total), "1.1. в национальной валюте" (domestic currency),
+   and "1.2. в иностранной валюте" (foreign currency) are parsed; only the table that passes the
+   domestic+foreign~total check is accepted.
+4. The table's header row (columns) is sometimes just years (e.g. '2019', 12 monthly cells), and
+   sometimes a mix of historical years plus the current year (e.g. '2012' '2013' ... '2017' 'I'
+   'II' ... 'XII') — older bulletins tend to have more columns, following a pattern of "N
+   cumulative historical years + 12 monthly columns for the current year". Roman-numeral (I-XII)
+   columns are treated as that bulletin's monthly values for its reporting year, and 4-digit
+   year columns are treated as that year's December (year-end balance) value.
+5. Some bulletins (the December 2020 issue, and a few from 2011-2015) have broken font encoding
+   that produces no usable text even via pdftotext — these failures are silently skipped (since
+   there is at most one bulletin per issue, a handful of years can end up missing entirely.
+   Still, thanks to the historical columns accumulated in more recent bulletins, most year-end
+   snapshots from 2012 onward can be recovered).
 """
 
 from __future__ import annotations
@@ -71,7 +78,7 @@ _YEAR_IN_TEXT_RE = re.compile(r"(?:Last issue of|Issue of)\s*(\d{4})", re.IGNORE
 
 
 def parse(content: bytes, country_code: str) -> pd.DataFrame:
-    raise NotImplementedError("TJK는 render()로 여러 회보 PDF를 순회한다")
+    raise NotImplementedError("TJK is handled via render() by iterating over multiple bulletin PDFs")
 
 
 def _empty() -> pd.DataFrame:
@@ -79,7 +86,7 @@ def _empty() -> pd.DataFrame:
 
 
 def _discover_bulletin_urls() -> list[tuple[int, str]]:
-    """목록 페이지에서 (연도, PDF절대URL) 쌍을 모두 찾는다."""
+    """Finds all (year, absolute PDF URL) pairs on the listing page."""
     html = download(BULLETIN_LIST_URL).decode("utf-8", errors="ignore")
     soup = BeautifulSoup(html, "html.parser")
     out = []
@@ -123,11 +130,12 @@ def _to_float(tok: str) -> float:
     return float(tok.replace(" ", "").replace(",", "."))
 
 
-# 정상적인 값은 최대 수천만~수억(천 소모니 단위, 2026년 5월 기준 총예금 ~3,520만천 소모니)
-# 수준이다. 일부 오래된(2016년 이전) 회보는 컬럼 사이 공백이 2칸 미만이라 정규식이 여러
-# 숫자를 하나의 토큰으로 붙여 읽는 경우가 있는데, 그 결과는 자릿수가 비정상적으로 커지므로
-# (예: 1.68e+41) 자릿수 상한으로 걸러낸다.
-_MAX_DIGITS = 9  # 999,999,999천 소모니(=TJS ~1조)까지 허용, 실제 최대치보다 넉넉히 크게 잡음
+# Plausible values top out in the tens-of-millions to hundreds-of-millions range (thousand
+# somoni units; total deposits were ~35.2 million thousand somoni as of May 2026). In some older
+# bulletins (before 2016), the gap between columns is less than 2 spaces, causing the regex to
+# glue several numbers into a single token, which produces an implausibly large digit count
+# (e.g. 1.68e+41), so this is filtered out by capping the digit count.
+_MAX_DIGITS = 9  # Allows up to 999,999,999 thousand somoni (=TJS ~1 trillion), set generously above the actual maximum
 
 
 def _plausible_token(tok: str) -> bool:
@@ -161,9 +169,9 @@ def _find_value_row(window: str, prefix: str, keyword: str) -> list[str] | None:
 
 
 def _extract_table(text: str) -> tuple[list[str], list[str], list[str], list[str]] | None:
-    """(header_cols, total, domestic, foreign) 를 반환. 실패 시 None."""
+    """Returns (header_cols, total, domestic, foreign). Returns None on failure."""
     matches = list(_HEADING_RE.finditer(text))
-    for m in reversed(matches):  # 목차보다 실제 표(대개 뒤쪽)를 우선 시도
+    for m in reversed(matches):  # Prefer the actual table (usually later in the document) over the table of contents
         window = text[m.end(): m.end() + 4000]
         header = _find_header_cols(window)
         total = _find_value_row(window, "1.", "Всего депозитов")
@@ -177,8 +185,9 @@ def _extract_table(text: str) -> tuple[list[str], list[str], list[str], list[str
             continue
         header = header[: len(total)]
         if not all(_plausible_token(tok) for tok in (*total, *domestic, *foreign)):
-            # 컬럼 사이 공백이 2칸 미만이라 숫자 여러 개가 한 토큰으로 붙어버린 경우
-            # (자릿수가 비정상적으로 큼) -- 이 표는 신뢰할 수 없으므로 다음 후보를 시도한다.
+            # Case where the gap between columns is less than 2 spaces, causing several numbers
+            # to be glued into one token (an implausibly large digit count) -- this table can't
+            # be trusted, so try the next candidate.
             continue
         try:
             ok = all(

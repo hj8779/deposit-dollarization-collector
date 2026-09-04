@@ -1,18 +1,20 @@
-"""Denmark: Danmarks Nationalbank의 Statbank(구형 PC-Axis/StatBank5a ASP 플랫폼, PxWeb API
-없음) 테이블 'DNPINDK: Domestic deposits in banks by instrument, data type, domestic sector,
-currency and maturity'. 변수 선택 화면이 iframe 안에 있고, 제출 결과도 iframe 안에 인라인
-렌더링되며(URL만 saveselections.asp로 보임), CSV 등 내보내기는 <select> 안의 <option>이라
-클릭이 아니라 select_option으로 선택해야 다운로드 이벤트가 발생한다 - 그래서 매번
-Playwright로 이 상호작용 흐름을 그대로 재현한다.
+"""Denmark: Danmarks Nationalbank's Statbank (the legacy PC-Axis/StatBank5a ASP platform, no
+PxWeb API) table 'DNPINDK: Domestic deposits in banks by instrument, data type, domestic
+sector, currency and maturity'. The variable-selection screen sits inside an iframe, and the
+submission result is also rendered inline inside an iframe (only the URL points to
+saveselections.asp); the CSV export etc. is an <option> inside a <select>, so the download
+event only fires when selected via select_option rather than a click - so this interaction
+flow is reproduced with Playwright every time.
 
-선택값: Instrument=Deposits in total, Data type=Outstanding amounts (DKK million),
-Domestic sector=1000: All domestic sectors(전체 거주자 부문 합계), Currency=Foreign currency
-in total(DKK 제외 전체 외화 합계), Maturity=All maturities, Time=전체 월(2003-01~현재).
-이렇게 필터링하면 결과 표에 시계열이 'Deposits in total' 행 하나만 남아 FCD 그 자체다.
+Selections: Instrument=Deposits in total, Data type=Outstanding amounts (DKK million),
+Domestic sector=1000: All domestic sectors (sum across all resident sectors),
+Currency=Foreign currency in total (sum of all foreign currencies excluding DKK),
+Maturity=All maturities, Time=all months (2003-01-present). With this filtering, the result
+table's time series collapses to a single 'Deposits in total' row, which is FCD itself.
 
-TD(총예금) = Currency 필터만 'All currencies'(DKK 포함 전체 통화 합계)로 바꿔 동일하게
-조회한 값. 같은 select(index 7)에 'All currencies' 옵션이 그대로 존재해 FCD와 완전히
-동일한 조회 흐름을 재사용할 수 있다.
+TD (total deposits) = the same query with only the Currency filter switched to 'All
+currencies' (sum across all currencies including DKK). The same select (index 7) has an 'All
+currencies' option available, so the exact same query flow used for FCD can be reused.
 """
 
 import re
@@ -35,7 +37,7 @@ _MONTH_COL_RE = re.compile(r'"?(\d{4})M(\d{2})"?')
 
 
 def parse(content: bytes, country_code: str) -> pd.DataFrame:
-    raise NotImplementedError("DNK는 render()를 통해 처리한다 (Statbank ASP 폼 자동화 필요)")
+    raise NotImplementedError("DNK is handled via render() (requires automating the Statbank ASP form)")
 
 
 def _download_csv(currency_label: str, out_path: str) -> bytes:
@@ -84,7 +86,7 @@ def _parse_csv(content: bytes, country_code: str, indicator: str, now: str) -> p
     header_line = next((ln for ln in lines if "M01" in ln or "M02" in ln), None)
     data_line = next((ln for ln in lines if "Deposits in total" in ln), None)
     if header_line is None or data_line is None:
-        logger.warning("[%s] 헤더 또는 'Deposits in total' 데이터 행을 찾지 못함", country_code)
+        logger.warning("[%s] Could not find header or 'Deposits in total' data row", country_code)
         return pd.DataFrame(columns=["country_code", "year", "period", "indicator", "value", "updated_at"])
 
     periods = [f"{y}-{m}" for y, m in _MONTH_COL_RE.findall(header_line)]
@@ -92,7 +94,7 @@ def _parse_csv(content: bytes, country_code: str, indicator: str, now: str) -> p
     import csv as csvlib
 
     data_cells = next(csvlib.reader(StringIO(data_line)))
-    # 'Deposits in total' 라벨 뒤로 오는 숫자 셀들만 값으로 취급.
+    # Only the numeric cells following the 'Deposits in total' label are treated as values.
     label_idx = next(i for i, c in enumerate(data_cells) if c.strip() == "Deposits in total")
     values = data_cells[label_idx + 1:]
 
@@ -123,8 +125,9 @@ def render(target: dict) -> pd.DataFrame:
     country_code = target["country_code"]
     now = datetime.now(timezone.utc).isoformat()
 
-    # FCD/TD 두 조회는 서로 독립적인 Playwright 세션이라 병렬로 돌려 벽시계 시간을 절반으로 줄인다
-    # (각 조회 자체는 폼 상호작용 대기(wait_for_timeout)가 지배적이라 순차 실행 시 2배로 늘어난다).
+    # The FCD and TD lookups are independent Playwright sessions, so they're run in parallel to
+    # roughly halve the wall-clock time (each lookup is dominated by form-interaction waits
+    # (wait_for_timeout), so sequential execution would double the total time).
     with ThreadPoolExecutor(max_workers=2) as executor:
         fcd_future = executor.submit(_download_csv, "Foreign currency in total", "/tmp/dnk_dnpindk_fcd.csv")
         td_future = executor.submit(_download_csv, "All currencies", "/tmp/dnk_dnpindk_td.csv")

@@ -42,6 +42,12 @@ logs
 *.sln
 *.sw?
 
-# Claude local settings
-.claude/settings.local.json
-.claude/scheduled_tasks.lock
+# Claude Code config (local to this workspace)
+.claude/
+
+# Planning / working docs (not used at runtime)
+/plans/
+
+# Pipeline run logs and test code (not used at runtime)
+dollarization-pipeline/runs/
+dollarization-pipeline/tests/

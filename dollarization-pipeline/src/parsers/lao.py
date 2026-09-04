@@ -1,14 +1,14 @@
 """Lao PDR: BOL Other Depository Corporations Survey.
 
-페이지:
+Page:
   https://www.bol.gov.la/en/Money_and_Banking
-파일:
+File:
   https://www.bol.gov.la/statistics/Other Depository corporations Survey_Lao PDR.xlsx
 
-시트 ODC (billions of KIP, monthly eop):
+Sheet ODC (billions of KIP, monthly eop):
   LAO_FOST_XDC     Deposits                     → TD
   LAO_FOST_FX_XDC  Deposits in foreign currency → FCD
-  period 헤더: 2009-12, 2010-01, ...
+  period header: 2009-12, 2010-01, ...
 """
 
 from __future__ import annotations
@@ -48,7 +48,7 @@ _HEADERS = {
 
 
 def parse(content: bytes, country_code: str) -> pd.DataFrame:
-    raise NotImplementedError("LAO는 render()로 xlsx를 받는다")
+    raise NotImplementedError("LAO fetches the xlsx via render()")
 
 
 def _empty() -> pd.DataFrame:

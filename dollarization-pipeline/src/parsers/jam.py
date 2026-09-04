@@ -1,18 +1,19 @@
 """Jamaica: Bank of Jamaica FS.CB.17 — Commercial Banks' Deposit Balances by Currency.
 
-페이지:
+Page:
   https://boj.org.jm/statistics/financial-sector/commercial-banks/
-파일:
+File:
   https://boj.org.jm/wp-content/uploads/2020/09/FS.CB.17.xls
 
-시트 FS.CB.17 (단위 J$ Millions, 월말):
+Sheet FS.CB.17 (unit J$ Millions, end of month):
   Date | Local Currency | Foreign Currency | Total | Deposit Dollarisation
 
 FCD = Foreign Currency
 TD  = Total  (= Local + Foreign)
-FCD_TD_RATIO = FCD/TD*100  (파일의 Deposit Dollarisation 열과 동일 정의)
+FCD_TD_RATIO = FCD/TD*100  (same definition as the file's Deposit Dollarisation column)
 
-시계열: Data Range 메타 기준 Jan 2000 ~ 파일 최신월 (실측 2026-06).
+Time coverage: per the Data Range metadata, Jan 2000 through the latest month
+in the file (observed 2026-06).
 """
 
 from __future__ import annotations
@@ -181,7 +182,7 @@ def parse(content: bytes, country_code: str) -> pd.DataFrame:
 
 
 def render(target: dict) -> pd.DataFrame:
-    """페이지에서 FS.CB.17 링크를 찾거나 고정 URL로 폴백."""
+    """Find the FS.CB.17 link on the page, falling back to the fixed URL."""
     country_code = target["country_code"]
     url = _XLS_URL
     try:

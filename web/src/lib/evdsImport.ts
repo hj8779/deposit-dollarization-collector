@@ -1,4 +1,5 @@
 import * as XLSX from "xlsx";
+import i18n from "../i18n";
 import type { DepositRow } from "./types";
 
 /**
@@ -122,7 +123,7 @@ export async function parseEvdsWorkbook(
   const grid: unknown[][] = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: true });
 
   if (grid.length < 2) {
-    throw new Error("빈 시트이거나 헤더/데이터 행이 없습니다");
+    throw new Error(i18n.t("evdsImport.emptySheet"));
   }
 
   // Header is the first row that contains a plausible date in some other
@@ -184,12 +185,10 @@ export async function parseEvdsWorkbook(
   }
 
   if (fcdCol === null) {
-    throw new Error(
-      "'FOREIGN EXCHANGE DEPOSIT ACCOUNTS' 열을 찾지 못했습니다. 헤더 이름을 확인해주세요.",
-    );
+    throw new Error(i18n.t("evdsImport.fcdColumnNotFound"));
   }
   if (tdCol === null) {
-    throw new Error("'TOTAL' 열을 찾지 못했습니다. 헤더 이름을 확인해주세요.");
+    throw new Error(i18n.t("evdsImport.tdColumnNotFound"));
   }
 
   const now = new Date().toISOString();
@@ -220,7 +219,7 @@ export async function parseEvdsWorkbook(
   }
 
   if (rows.length === 0) {
-    throw new Error("파싱 가능한 날짜/값 행을 찾지 못했습니다");
+    throw new Error(i18n.t("evdsImport.noRowsParsed"));
   }
 
   return {

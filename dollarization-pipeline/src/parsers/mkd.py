@@ -1,14 +1,14 @@
 """North Macedonia: NBRNM PXWeb — Deposits with other depository corporations.
 
-표:
+Table:
   https://nbstat.nbrm.mk/pxweb/en/MS%20i%20KS/MS%20i%20KS__MS__Monetarni%20i%20kreditni%20agregati/1_DepozitiOstanatiInstiMesecniEN.px/
 
-선택:
+Selections:
   I. TOTAL DEPOSITS (M4)  value=0  → TD
-  B. in foreign currency  value=8  → FCD (순수 외화; FX-clause 제외)
+  B. in foreign currency  value=8  → FCD (pure foreign currency; FX-clause deposits excluded)
 
-Playwright로 다중 선택 후 tableViewLayout2 HTML 표를 파싱한다.
-(API v1 는 서버 500 / Cloudflare 로 사용 불가)
+Uses Playwright to make the multi-select choices, then parses the tableViewLayout2 HTML table.
+(API v1 is unusable — server returns 500 / blocked by Cloudflare.)
 """
 
 from __future__ import annotations
@@ -46,7 +46,7 @@ _HEADERS = {
 
 
 def parse(content: bytes, country_code: str) -> pd.DataFrame:
-    raise NotImplementedError("MKD는 render()로 PXWeb을 조작한다")
+    raise NotImplementedError("MKD manipulates PXWeb via render()")
 
 
 def _empty() -> pd.DataFrame:

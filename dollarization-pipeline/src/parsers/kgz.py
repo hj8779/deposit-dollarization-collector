@@ -1,14 +1,14 @@
 """Kyrgyzstan: NBKR Deposits in commercial banks by the end of the period.
 
-페이지: https://www.nbkr.kg/index1.jsp?item=124&lang=ENG
-엑셀:   DOC/.../*.xls (페이지 링크에서 해석; 파일명 해시 월별 갱신)
+Page: https://www.nbkr.kg/index1.jsp?item=124&lang=ENG
+Excel:  DOC/.../*.xls (resolved from the page link; filename hash updates monthly)
 
-시트 '1.total deposits' (ths of soms / end of period):
+Sheet '1.total deposits' (ths of soms / end of period):
   Period | Total volume | ... | in national currency volume | ... | in foreign currency volume
   FCD = foreign currency volume (col 5)
   TD  = Total volume (col 1)
 
-유의사항: 'Newly accepted deposits' 는 flow 이므로 사용하지 않음.
+Note: 'Newly accepted deposits' is a flow figure, so it is not used.
 """
 
 from __future__ import annotations
@@ -49,7 +49,7 @@ _MONTHS = {
 
 
 def parse(content: bytes, country_code: str) -> pd.DataFrame:
-    raise NotImplementedError("KGZ는 render()로 페이지에서 xls를 찾는다")
+    raise NotImplementedError("KGZ locates the xls from the page via render()")
 
 
 def _empty() -> pd.DataFrame:

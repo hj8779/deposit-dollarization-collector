@@ -1,27 +1,33 @@
 """Gambia: CBG Macroeconomic Data Warehouse (DataWarehousePro).
 
-포털: https://app.datawarehousepro.com/go/cbg
+Portal: https://app.datawarehousepro.com/go/cbg
 (Central Bank of The Gambia Macroeconomic Data Warehouse)
 
-Monetary Survey(MON)의 Quasi money·예금 항목은 민간/공공 구분만 있고 통화(외화) 분해가
-없다. Balance of Payments의 Currency and deposits 는 대외부문 항목이라 거주자 FCD와
-다르다. 거주자 외화 관련으로 가장 직접적인 공개 시계열은 Financial Sector(FIN) >
-Commercial Banks > Financial soundness indicators 의 다음 지표다.
+The Monetary Survey (MON)'s Quasi money / deposit items only distinguish
+private/public and have no currency (foreign-currency) breakdown. Balance of
+Payments' Currency and deposits is an external-sector item and differs from
+resident FCD. The most directly relevant public time series for resident
+foreign-currency exposure is the following indicator under Financial Sector
+(FIN) > Commercial Banks > Financial soundness indicators.
 
     mnemonic  fcdlttlcb
-    이름      19. Foreign-currency-denominated liabilities to total liabilities
+    name      19. Foreign-currency-denominated liabilities to total liabilities
     API       GET /guest/getMnemonicData/cbg/FIN/fcdlttlcb
-    주기      분기(Q), 실측 관측 2007Q3~2023Q3 (메타 first_observation=2000Q1이나
-              실제 data 배열은 2007Q3부터)
-    단위 메타 mill. Of GMD 로 표기되어 있으나 값은 비율(%) — 제목이
-              liabilities to total liabilities 이고 표본(2022Q4=34.62 등)과 일치
+    frequency Quarterly (Q); observed data 2007Q3~2023Q3 (metadata says
+              first_observation=2000Q1, but the actual data array starts at
+              2007Q3)
+    unit meta labeled as "mill. Of GMD" but the values are actually a ratio
+              (%) — consistent with the title "liabilities to total
+              liabilities" and sample values (e.g. 2022Q4=34.62)
 
-동일 카테고리 18번(fcdlttlocb, 외화표시대출/총대출)은 대출 측면 보조 지표라 기본
-수집 대상에서 제외(필요 시 확장 가능).
+The related category 18 (fcdlttlocb, FC-denominated loans/total loans) is a
+loan-side supplementary indicator and is excluded from the default collection
+target (can be added later if needed).
 
-이 파이프라인에서는 절대 잔액 FCD·TD 를 복원할 분모·분자가 없어
-indicator=FCD_TD_RATIO 만 적재한다(부채 기준 달러화율 프록시). 순수 예금 달러화율과
-정의가 다를 수 있음을 adapter notes에 명시.
+This pipeline has no numerator/denominator available to reconstruct absolute
+FCD/TD balances, so only indicator=FCD_TD_RATIO is loaded (a liabilities-based
+dollarization-ratio proxy). Adapter notes state explicitly that this may
+differ in definition from a pure deposit-based dollarization ratio.
 """
 
 from __future__ import annotations
@@ -58,7 +64,7 @@ _HEADERS = {
 
 
 def parse(content: bytes, country_code: str) -> pd.DataFrame:
-    raise NotImplementedError("GMB는 render()로 Data Warehouse API를 호출한다")
+    raise NotImplementedError("GMB calls the Data Warehouse API via render()")
 
 
 def _empty() -> pd.DataFrame:
@@ -68,7 +74,7 @@ def _empty() -> pd.DataFrame:
 
 
 def _period_from_label(label: str) -> tuple[int, str] | None:
-    """'2007Q3' / '2007-Q3' / '2007 Q3' → (2007, '2007-Q3')."""
+    """'2007Q3' / '2007-Q3' / '2007 Q3' -> (2007, '2007-Q3')."""
     text = str(label).strip().upper().replace(" ", "")
     m = re.fullmatch(r"(\d{4})-?Q([1-4])", text)
     if not m:
@@ -86,11 +92,11 @@ def render(target: dict) -> pd.DataFrame:
         resp.raise_for_status()
         payload = resp.json()
     except Exception as e:
-        logger.exception("[%s] Data Warehouse API 실패: %s", country_code, e)
+        logger.exception("[%s] Data Warehouse API failed: %s", country_code, e)
         return _empty()
 
     if not isinstance(payload, dict) or "data" not in payload:
-        logger.error("[%s] 예상치 못한 응답: %s", country_code, str(payload)[:200])
+        logger.error("[%s] Unexpected response: %s", country_code, str(payload)[:200])
         return _empty()
 
     rows = []
@@ -116,7 +122,7 @@ def render(target: dict) -> pd.DataFrame:
         })
 
     if not rows:
-        logger.warning("[%s] 관측치 없음 (mnemonic=%s)", country_code, _MNEMONIC)
+        logger.warning("[%s] No observations (mnemonic=%s)", country_code, _MNEMONIC)
         return _empty()
 
     df = (
@@ -126,7 +132,7 @@ def render(target: dict) -> pd.DataFrame:
         .reset_index(drop=True)
     )
     logger.info(
-        "[%s] %s (%s): %d분기 %s~%s (unit meta=%s; 값은 비율%%)",
+        "[%s] %s (%s): %d quarters %s~%s (unit meta=%s; values are a ratio%%)",
         country_code,
         payload.get("name_of_series"),
         _MNEMONIC,

@@ -1,0 +1,96 @@
+{
+  "app": {
+    "title": "Dollarization Ratio — DB Dashboard",
+    "langToggleKo": "한국어",
+    "langToggleEn": "English"
+  },
+  "freqCoverage": {
+    "loading": "Aggregating countries by frequency…",
+    "tooltip": "Finer-frequency data is rolled up into a coarser bucket for counting (3 months of monthly data counts as 1 quarterly; a Q4 quarterly value or a December monthly value counts as 1 annual). Conversion never happens in the opposite direction (annual → quarterly/monthly).",
+    "annual": "Annual",
+    "quarterly": "Quarterly",
+    "monthly": "Monthly",
+    "sub": "countries · {{count}} observations"
+  },
+  "dbSummary": {
+    "loading": "Loading DB summary…",
+    "errorLoading": "Failed to load DB summary: {{message}}",
+    "title": "DB Summary",
+    "summary": "{{count}} countries · manual {{manual}} · half-manual {{half}}",
+    "filterPlaceholder": "Search country code/name…",
+    "clear": "Clear",
+    "warnColumnTitle": "Countries where automatic collection is incomplete because the source itself is blocked or missing. Click to sort these countries to the top.",
+    "countryColumn": "Country",
+    "indicatorsColumn": "Indicators",
+    "manualBadgeHalf": "◐ Half",
+    "manualBadgeFull": "⚠ Manual",
+    "dash": "—"
+  },
+  "chartForm": {
+    "title": "Chart",
+    "frequencyLabel": "Frequency: {{freq}}",
+    "countryLabel": "Country",
+    "countrySelectPlaceholder": "Select a country…",
+    "indicatorLabel": "Indicator",
+    "manualBadgeHalf": "◐ Half-manual",
+    "manualBadgeFull": "⚠ Manual",
+    "openSource": "Open source",
+    "selectCountryEmpty": "Select a country from the table on the left.",
+    "loading": "Loading…",
+    "errorLoading": "Failed to load data: {{message}}"
+  },
+  "depositChart": {
+    "empty": "No data to display for this country."
+  },
+  "sourceInfo": {
+    "title": "Source",
+    "type": "Type",
+    "url": "URL",
+    "status": "Status",
+    "notes": "Notes",
+    "adapterNotes": "Adapter notes"
+  },
+  "manualEntry": {
+    "title": "Manual entry — {{code}}",
+    "evdsHint": "Upload an EVDS export (.xlsx) — the \"6.FOREIGN EXCHANGE DEPOSIT ACCOUNTS\"/\"9.TOTAL\" columns are auto-detected",
+    "lvaHint": "Upload a statdb.bank.lv export (.xlsx) — both \"0104 breakdown by currency\" (2014-12~present) and \"04 Balance sheet of MFIs\" (2010-06~2014-11 archive) are auto-detected, and the full period range is applied",
+    "busy": "Processing…",
+    "importDone": "✓ {{summary}}",
+    "importSummaryEvds": "Applied {{count}} periods (FCD column: \"{{fcd}}\", TD column: \"{{td}}\")",
+    "importSummaryLva": "Applied {{count}} periods",
+    "noParserError": "No file-upload parser exists for {{code}}",
+    "periodHeader": "Period",
+    "indicatorHeader": "Indicator",
+    "valueHeader": "Value",
+    "periodInvalid": "Invalid period format (e.g. 2024-01, 2024-Q1, 2024-Annual)",
+    "notANumber": "Not a number",
+    "save": "Save",
+    "saving": "…",
+    "delete": "Delete",
+    "addRow": "+ Add row"
+  },
+  "evdsImport": {
+    "emptySheet": "The sheet is empty, or has no header/data rows",
+    "fcdColumnNotFound": "Could not find the 'FOREIGN EXCHANGE DEPOSIT ACCOUNTS' column. Please check the header names.",
+    "tdColumnNotFound": "Could not find the 'TOTAL' column. Please check the header names.",
+    "noRowsParsed": "No parsable date/value rows were found"
+  },
+  "lvaImport": {
+    "emptySheet": "The sheet is empty, or has too few rows",
+    "periodHeaderNotFound": "Could not find the period header row (multiple 'MM / YYYY' cells)",
+    "depositsRowNotFound": "Could not find the 'DEPOSITS (total)' row (this table format may not be supported)",
+    "noPeriodsParsed": "No periods with numeric values were found"
+  },
+  "manualReasons": {
+    "COD": "Auto-collected from 2010-12 to present via the built-in time series on the BCC's new statistics site (secteur-monetaire/depots). Earlier periods aren't in this widget, so they have to be looked up year by year from Tableau 4.2 of the annual report → enter that range manually in the table below.",
+    "LBN": "Blocked by a Cloudflare Turnstile bot challenge",
+    "MDG": "The BFM's official page has no machine-readable FCD/TD source",
+    "BTN": "Auto-collected from the RMA Financial Sector Performance Review quarterly reports (2012~2022-Q3). The series stopped after 2022-Q3 → enter the latest quarter manually.",
+    "MDA": "The BNM DPMC11 Monetary Survey requires configuring a JSF/PrimeFaces report and exporting to xlsx. Set the period → Export → place report.xlsx at MDA_REPORT_XLSX or ~/Downloads/report.xlsx before collecting, or enter it manually in the table below.",
+    "IRQ": "Auto-collected from the CBI Key Financial Indicators xlsx for 2003-12 (TD)/2004-12 (FCD) to present. 1991~2003 (June) only exists as a scanned 'Combined Historical Document' PDF that isn't machine-readable → enter only that range manually in the table below.",
+    "RWA": "Auto-collected from 2018-06 to present via the BNR mstat API plus a probe of the last 24 months of URLs. 18 more Annual Reports (Table 3, MONETARY AGGREGATES DEVELOPMENTS, from Jun-15) are known to exist at bnr.rw/anreports, but the listing page is an Angular SPA, and even after clicking through the tabs the actual PDF download links never appear in the DOM (likely fetched via a separate API call — automation attempts failed) → if needed, find them manually by year on that page and enter them in the table below.",
+    "TUR": "Partially auto-collected from the TCMB 'Weekly Money and Banking Statistics' PDF (including Wayback Machine snapshots). A more accurate source is the TCMB EVDS (evds2.tcmb.gov.tr) system, but it requires logging in and selecting series through the web UI to export, so it can't be automated → in EVDS, select series 1–9 (Level unit) under the 'Deposits' category, export to xlsx, then apply it with the upload button below (the 6.FOREIGN EXCHANGE DEPOSIT ACCOUNTS=FCD and 9.TOTAL=TD columns are auto-detected).",
+    "AGO": "Automatic collection from Banco Nacional de Angola (BNA) only covers 2012-01 to present. For earlier periods, look them up manually on the BNA site and enter them in the table below: 2010~2012 under Publicações e Média > Relatórios > Boletins > Boletins Estatísticos (https://www.bna.ao/#/pt/publicacoes-e-media/relatorios/boletins/boletins-estatisticos), and 2004~2009 under Relatório Anual - Contas (https://www.bna.ao/#/pt/publicacoes-e-media/relatorios/relatorio-anual-contas).",
+    "LVA": "Not collected (not automated). The '01 MFI balance sheet' table on statdb.bank.lv is a DevExpress ASP.NET PivotGrid (virtual scrolling, no API backend), which makes scraping effectively impossible → export one of the two pre-built tables to xlsx and apply it with the upload button below: '0104 Balance sheet in breakdown by currency' (2014-12~present; use the 'DEPOSITS (total)' row within the Euro/Foreign currency section), or the earlier archive '04 Balance sheet of MFIs (except the Bank of Latvia) (data until December 2014)' (2010-06~2014-11; its 'DEPOSITS (total)' row is a currency-blended total, so FCD is computed by summing the 'Foreign currency' leaf rows in the section below it) — both table formats are auto-detected on upload. Neither table has a residency breakdown, so FCD/TD cover all depositors, not residents only. Each re-export automatically fills in any newly available periods, so repeated uploads keep the data current."
+  }
+}

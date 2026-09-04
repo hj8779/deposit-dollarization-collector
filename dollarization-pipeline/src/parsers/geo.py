@@ -1,25 +1,28 @@
-"""Georgia: National Bank of Georgia(NBG) statistics portal M2.1.
+"""Georgia: National Bank of Georgia (NBG) statistics portal M2.1.
 
-페이지 https://nbg.gov.ge/en/statistics/statistics-data 는 Next.js SPA라 정적 HTML에
-엑셀 링크가 없고, 실제 데이터는 다음 REST 경로로 내려온다.
+The page https://nbg.gov.ge/en/statistics/statistics-data is a Next.js SPA, so
+there's no Excel link in the static HTML; the actual data is served via the
+following REST endpoints.
 
-1. 카테고리 목록: GET /gw/api/ct/statistics/data/categories
-   (헤더 `Accept-Language: en` 필수 — 없으면 빈 배열 반환)
-2. 카테고리별 표 목록: GET /gw/api/ct/statistics/categories/{id}/data
+1. Category list: GET /gw/api/ct/statistics/data/categories
+   (the `Accept-Language: en` header is required — without it, returns an empty array)
+2. Table list per category: GET /gw/api/ct/statistics/categories/{id}/data
    - id=15 = "Monetary and Financial Statistics"
    - code="M2.1", title="Money Aggregates and Monetary Ratios"
-3. 첨부 파일: https://nbg.gov.ge/fm/{URL-encoded path}
-   예: .../money-aggregates-and-monetary-ratioseng.xlsx
+3. Attached file: https://nbg.gov.ge/fm/{URL-encoded path}
+   e.g. .../money-aggregates-and-monetary-ratioseng.xlsx
 
-xlsx 시트 'Monetary Ratios-eng':
-    col0  Period (월말/월초 datetime)
+xlsx sheet 'Monetary Ratios-eng':
+    col0  Period (end/start-of-month datetime)
     col9  Deposits in Foreign Currency  (= FCD, Million GEL)
     col10 Deposits, Total               (= TD)
     col13 Dollarization Ratio of Deposits, Included in Broad Money, %
-          (= FCD/TD*100 과 소수점 오차 수준으로 일치, 실측 확인)
+          (empirically confirmed to match FCD/TD*100 within rounding error)
 
-거주자 외화예금 정의: 이 표의 "Deposits in Foreign Currency"는 broad money에 포함되는
-은행 외화예금 잔액이며, 동일 표의 달러화율(col13) 산출 분자가 된다.
+Definition of resident foreign currency deposits: this table's "Deposits in
+Foreign Currency" is the balance of bank foreign-currency deposits included in
+broad money, and is the numerator used to compute the dollarization ratio
+(col13) in the same table.
 """
 
 from datetime import datetime, timezone
@@ -37,7 +40,7 @@ FILE_URL = "__RENDER__"
 
 _API_BASE = "https://nbg.gov.ge/gw/api/ct"
 _FM_BASE = "https://nbg.gov.ge/fm/"
-# Monetary and Financial Statistics (M2.x 시리즈)
+# Monetary and Financial Statistics (M2.x series)
 _CATEGORY_ID = 15
 _CODE = "M2.1"
 _SHEET = "Monetary Ratios-eng"
@@ -48,7 +51,7 @@ _API_HEADERS = {
         "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36"
     ),
     "Accept": "application/json, text/plain, */*",
-    "Accept-Language": "en",  # 없으면 categories/data가 빈 배열
+    "Accept-Language": "en",  # without this, categories/data returns an empty array
     "Referer": "https://nbg.gov.ge/en/statistics/statistics-data",
 }
 
@@ -61,7 +64,7 @@ _DOWNLOAD_HEADERS = {
 
 
 def parse(content: bytes, country_code: str) -> pd.DataFrame:
-    """M2.1 xlsx 바이트에서 FCD/TD/FCD_TD_RATIO 롱폼을 만든다."""
+    """Builds a long-form FCD/TD/FCD_TD_RATIO DataFrame from the M2.1 xlsx bytes."""
     now = datetime.now(timezone.utc).isoformat()
     empty = pd.DataFrame(
         columns=["country_code", "year", "period", "indicator", "value", "updated_at"]
@@ -70,31 +73,31 @@ def parse(content: bytes, country_code: str) -> pd.DataFrame:
     try:
         xl = pd.ExcelFile(BytesIO(content))
     except Exception as e:
-        logger.error("[%s] xlsx 열기 실패: %s", country_code, e)
+        logger.error("[%s] Failed to open xlsx: %s", country_code, e)
         return empty
 
     sheet = _SHEET if _SHEET in xl.sheet_names else None
     if sheet is None:
-        # 영문 시트명 변형 대비
+        # fallback for variant English sheet names
         for name in xl.sheet_names:
             if "monetary" in name.lower() and "ratio" in name.lower():
                 sheet = name
                 break
     if sheet is None:
-        logger.error("[%s] Monetary Ratios 시트를 찾지 못함: %s", country_code, xl.sheet_names)
+        logger.error("[%s] Could not find Monetary Ratios sheet: %s", country_code, xl.sheet_names)
         return empty
 
     df = xl.parse(sheet, header=None)
     header_row = _find_header_row(df)
     if header_row is None:
-        logger.error("[%s] 헤더 행(Period / Deposits in Foreign Currency)을 찾지 못함", country_code)
+        logger.error("[%s] Could not find header row (Period / Deposits in Foreign Currency)", country_code)
         return empty
 
     fcd_col = _find_col(df, header_row, "Deposits in Foreign Currency")
     td_col = _find_col(df, header_row, "Deposits, Total")
     if fcd_col is None or td_col is None:
         logger.error(
-            "[%s] FCD/TD 열 미발견 (fcd_col=%s, td_col=%s)", country_code, fcd_col, td_col
+            "[%s] FCD/TD columns not found (fcd_col=%s, td_col=%s)", country_code, fcd_col, td_col
         )
         return empty
 
@@ -178,7 +181,7 @@ def _to_period(value) -> str | None:
 
 
 def _resolve_m21_file() -> str:
-    """API에서 M2.1 항목의 상대 파일 경로를 가져온다. 실패 시 알려진 기본 경로로 폴백."""
+    """Fetches the relative file path for the M2.1 item from the API. Falls back to a known default path on failure."""
     fallback = (
         "სტატისტიკა/monetary_statistics/eng/"
         "money-aggregates-and-monetary-ratioseng.xlsx"
@@ -192,7 +195,7 @@ def _resolve_m21_file() -> str:
         resp.raise_for_status()
         items = resp.json()
     except Exception as e:
-        logger.warning("[GEO] 카테고리 API 실패, 기본 파일 경로 사용: %s", e)
+        logger.warning("[GEO] Category API failed, using default file path: %s", e)
         return fallback
 
     for item in items or []:
@@ -200,12 +203,12 @@ def _resolve_m21_file() -> str:
             path = (item.get("file") or "").strip()
             if path:
                 logger.info(
-                    "[GEO] M2.1 파일 확인: %s (update=%s, next=%s)",
+                    "[GEO] M2.1 file confirmed: %s (update=%s, next=%s)",
                     path, item.get("updateDate"), item.get("nextUpdateDate"),
                 )
                 return path
 
-    logger.warning("[GEO] M2.1 항목을 API에서 못 찾아 기본 경로 사용")
+    logger.warning("[GEO] M2.1 item not found via API, using default path")
     return fallback
 
 
@@ -213,13 +216,13 @@ def render(target: dict) -> pd.DataFrame:
     country_code = target["country_code"]
     file_path = _resolve_m21_file()
     url = _FM_BASE + quote(file_path, safe="/")
-    logger.info("[%s] M2.1 다운로드: %s", country_code, url)
+    logger.info("[%s] Downloading M2.1: %s", country_code, url)
     resp = requests.get(url, headers=_DOWNLOAD_HEADERS, timeout=60)
     resp.raise_for_status()
     content = resp.content
     if not content.startswith(b"PK"):
         logger.error(
-            "[%s] xlsx가 아닌 응답(len=%d, head=%r)",
+            "[%s] Response is not xlsx (len=%d, head=%r)",
             country_code, len(content), content[:80],
         )
         return pd.DataFrame(

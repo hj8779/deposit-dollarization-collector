@@ -1,14 +1,14 @@
 """Kazakhstan: NBRK Depository Organizations Deposits (by currency).
 
-페이지:
+Page:
   https://nationalbank.kz/en/depositoryorganizationsdeposits/depozity-v-depozitnyh-organizaciyah-
-엑셀:
+Excel:
   https://nationalbank.kz/en/depositoryorganizationsdeposits/depozity-v-depozitnyh-organizaciyah-/excel
 
-시트: 가로 시계열 (mln of tenge / end of period)
+Sheet: horizontal time series (mln of tenge / end of period)
   row  'Deposits - total'  → TD
   row  'In FC:'            → FCD
-헤더  'MM.YY' (예: 06.26 → 2026-06)
+Header  'MM.YY' (e.g. 06.26 → 2026-06)
 
 FCD_TD_RATIO = FCD/TD*100
 """
@@ -47,7 +47,7 @@ _HEADERS = {
 
 
 def parse(content: bytes, country_code: str) -> pd.DataFrame:
-    raise NotImplementedError("KAZ는 render()로 excel 엔드포인트를 받는다")
+    raise NotImplementedError("KAZ fetches the excel endpoint via render()")
 
 
 def _empty() -> pd.DataFrame:

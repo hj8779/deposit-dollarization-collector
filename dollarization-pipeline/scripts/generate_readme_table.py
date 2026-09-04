@@ -1,9 +1,10 @@
-"""config/targets.json의 adapter 필드를 읽어 README.md의 어댑터 현황 테이블을 갱신한다.
+"""Read the adapter field from config/targets.json and refresh the adapter status table in README.md.
 
-README.md 안의 <!-- ADAPTER_STATUS_TABLE:START --> ~ <!-- ADAPTER_STATUS_TABLE:END --> 사이를
-매번 재생성된 테이블로 교체한다 (idempotent).
+Replaces everything between <!-- ADAPTER_STATUS_TABLE:START --> and
+<!-- ADAPTER_STATUS_TABLE:END --> in README.md with a freshly generated table
+each time (idempotent).
 
-사용법: python3 scripts/generate_readme_table.py
+Usage: python3 scripts/generate_readme_table.py
 """
 
 import json
@@ -17,17 +18,18 @@ START_MARKER = "<!-- ADAPTER_STATUS_TABLE:START -->"
 END_MARKER = "<!-- ADAPTER_STATUS_TABLE:END -->"
 
 STATUS_LABEL = {
-    "success": "구현됨",
-    "failed": "실패(지표 없음)",
-    "needs_research": "재조사 필요",
-    "todo": "미착수",
-    "not_applicable": "대상 아님",
+    "success": "Implemented",
+    "failed": "Failed (no indicator)",
+    "needs_research": "Needs re-research",
+    "todo": "Not started",
+    "not_applicable": "Not applicable",
 }
 
 
 def _escape_cell(text: str) -> str:
-    # '|'는 표 구분자와 충돌하고, '<'/'>'는 <table> 같은 텍스트가 실제 HTML 태그로
-    # 해석되어 이후 표 전체가 깨지는 원인이 되므로 이스케이프한다.
+    # '|' collides with the table delimiter, and '<'/'>' can be interpreted as
+    # real HTML tags (e.g. text like <table>), breaking the rest of the table —
+    # so escape them.
     return text.replace("|", "/").replace("<", "&lt;").replace(">", "&gt;")
 
 
@@ -39,7 +41,7 @@ def build_table(targets: list[dict]) -> str:
         status = adapter["status"]
         counts[status] += 1
         if status in ("todo", "not_applicable"):
-            continue  # 미착수/대상 아님 국가는 표에서 생략, 요약 카운트에만 반영
+            continue  # not-started/not-applicable countries are omitted from the table, only counted in the summary
         rows.append(
             "| {code} | {name} | {data_type} | {strategy} | {status} | {notes} |".format(
                 code=t["country_code"],
@@ -53,13 +55,13 @@ def build_table(targets: list[dict]) -> str:
 
     total = len(targets)
     summary = (
-        f"전체 {total}개국 중 구현됨 {counts['success']}개 / "
-        f"실패 {counts['failed']}개 / 재조사 필요 {counts['needs_research']}개 / "
-        f"미착수 {counts['todo']}개 / 대상 아님 {counts['not_applicable']}개 "
-        f"(미착수·대상 아님 국가는 표에서 생략)"
+        f"Of {total} countries: {counts['success']} implemented / "
+        f"{counts['failed']} failed / {counts['needs_research']} need re-research / "
+        f"{counts['todo']} not started / {counts['not_applicable']} not applicable "
+        f"(not-started/not-applicable countries are omitted from the table)"
     )
 
-    header = "| 국가코드 | 국가명 | data_type | strategy_class | adapter 상태 | 비고 |\n"
+    header = "| Country Code | Country | data_type | strategy_class | Adapter Status | Notes |\n"
     header += "| --- | --- | --- | --- | --- | --- |"
 
     return "\n".join([summary, "", header, *rows])
@@ -74,7 +76,7 @@ def main() -> None:
     end = readme.index(END_MARKER)
     new_readme = readme[:start] + "\n" + table + "\n" + readme[end:]
     README_PATH.write_text(new_readme, encoding="utf-8")
-    print(f"README 어댑터 현황 테이블 갱신 완료 ({len(targets)}개국)")
+    print(f"README adapter status table updated ({len(targets)} countries)")
 
 
 if __name__ == "__main__":

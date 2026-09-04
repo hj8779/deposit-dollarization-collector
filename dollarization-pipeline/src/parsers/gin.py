@@ -1,29 +1,32 @@
 """Guinea: Banque Centrale de la République de Guinée(BCRG) Situation Monétaire intégrée.
 
-Bulletin Statistiques는 중단되었고, 현재 구현은 Séries monétaires.xls 경로만 담당한다.
-최신 구간 보완용 PDF 2종(분기 Rapport sur la Politique Monétaire, 연간 Rapport Annuel)은
-config/targets.json 의 pending_parsers(status=todo)에 표시해 두었으며 추후 구현 예정.
+The Bulletin Statistiques was discontinued, so the current implementation only
+handles the Séries monétaires.xls path. Two PDFs for filling in the most
+recent period (quarterly Rapport sur la Politique Monétaire, annual Rapport
+Annuel) are flagged in config/targets.json's pending_parsers (status=todo) for
+future implementation.
 
-소스 페이지(오타 URL 그대로 사용):
+Source page (URL used as-is, including its typo):
     https://www.bcrg-guinee.org/satistiques/series-statistiques/
-    → "Situation Monétaire intégrée" 링크
-    → Séries monétaires.xls (legacy OLE .xls)
+    -> "Situation Monétaire intégrée" link
+    -> Séries monétaires.xls (legacy OLE .xls)
 
-파일 URL은 페이지에 하드코딩되어 있으며(uploads/2020/02/...), 동일 경로 파일이
-주기적으로 갱신된다. render()는 페이지에서 링크를 다시 찾고, 실패 시 알려진 경로로
-폴백한다.
+The file URL is hardcoded on the page (uploads/2020/02/...), and the file at
+that same path is periodically refreshed. render() re-discovers the link from
+the page and falls back to the known path on failure.
 
-시트 'SMI' (Situation Monétaire Intégrée), 단위: milliards de GNF
-    row3  월별 날짜 헤더 (2011-10-01 ~ …, 월초 표기)
+Sheet 'SMI' (Situation Monétaire Intégrée), unit: milliards de GNF
+    row3  monthly date header (2011-10-01 ~ ..., start-of-month notation)
     row22 Monnaie en circulation
     row23 Dépôts à vue gnf
     row24 Dépôts à terme gnf
-    row25 Dépôts en devises          ← FCD
-    row26 ( en millions de dollars )  # FCD의 USD 환산, 사용 안 함
+    row25 Dépôts en devises          <- FCD
+    row26 ( en millions de dollars )  # FCD converted to USD, not used
 
 FCD = Dépôts en devises
 TD  = Dépôts à vue gnf + Dépôts à terme gnf + Dépôts en devises
-      (통화유통 제외, 예금 잔액 기준 달러화율)
+      (excludes currency in circulation; dollarization ratio based on deposit
+      balances)
 FCD_TD_RATIO = FCD / TD * 100
 """
 
@@ -78,7 +81,7 @@ def _norm(text: str) -> str:
 
 
 def _find_label_row(df: pd.DataFrame, *needles: str) -> int | None:
-    """col0 라벨에서 needles 전부(정규화 부분일치)를 포함하는 첫 행."""
+    """First row in col0 whose label contains all of `needles` (normalized substring match)."""
     wanted = [_norm(n) for n in needles]
     for i in range(df.shape[0]):
         v = df.iat[i, 0]
@@ -113,7 +116,7 @@ def _to_period(value) -> str | None:
 
 
 def parse(content: bytes, country_code: str) -> pd.DataFrame:
-    """Situation Monétaire intégrée .xls 바이트 → FCD/TD/FCD_TD_RATIO 롱폼."""
+    """Situation Monétaire intégrée .xls bytes -> long-form FCD/TD/FCD_TD_RATIO DataFrame."""
     now = datetime.now(timezone.utc).isoformat()
     try:
         xl = pd.ExcelFile(BytesIO(content), engine="xlrd")
@@ -121,7 +124,7 @@ def parse(content: bytes, country_code: str) -> pd.DataFrame:
         try:
             xl = pd.ExcelFile(BytesIO(content))
         except Exception as e:
-            logger.error("[%s] xls 열기 실패: %s", country_code, e)
+            logger.error("[%s] Failed to open xls: %s", country_code, e)
             return _empty()
 
     sheet = "SMI" if "SMI" in xl.sheet_names else xl.sheet_names[0]
@@ -132,7 +135,7 @@ def parse(content: bytes, country_code: str) -> pd.DataFrame:
         fcd_row = _find_label_row(df, "depot", "devises")
     vue_row = _find_label_row(df, "depots a vue")
     terme_row = _find_label_row(df, "depots a terme")
-    # USD 환산 행(바로 아래)과 혼동 방지: 'millions de dollars' 제외
+    # avoid confusion with the USD-conversion row directly below: exclude 'millions de dollars'
     if fcd_row is not None:
         label = str(df.iat[fcd_row, 0])
         if "dollar" in _norm(label):
@@ -140,12 +143,12 @@ def parse(content: bytes, country_code: str) -> pd.DataFrame:
 
     if fcd_row is None or vue_row is None or terme_row is None:
         logger.error(
-            "[%s] 라벨 행 미발견 fcd=%s vue=%s terme=%s",
+            "[%s] Label rows not found fcd=%s vue=%s terme=%s",
             country_code, fcd_row, vue_row, terme_row,
         )
         return _empty()
 
-    # 날짜 헤더 행: 첫 datetime 이 있는 행
+    # date header row: the first row containing a datetime
     date_row = None
     for i in range(min(8, len(df))):
         for j in range(1, min(5, df.shape[1])):
@@ -155,7 +158,7 @@ def parse(content: bytes, country_code: str) -> pd.DataFrame:
         if date_row is not None:
             break
     if date_row is None:
-        logger.error("[%s] 날짜 헤더 행을 찾지 못함", country_code)
+        logger.error("[%s] Could not find date header row", country_code)
         return _empty()
 
     rows = []
@@ -198,16 +201,16 @@ def parse(content: bytes, country_code: str) -> pd.DataFrame:
 
 
 def _resolve_xls_url(session: requests.Session) -> str:
-    """목록 페이지에서 Situation Monétaire / Séries monétaires 링크를 찾는다."""
+    """Finds the Situation Monétaire / Séries monétaires link on the listing page."""
     try:
         resp = session.get(_PAGE_URL, timeout=45)
         resp.raise_for_status()
         html = resp.text
     except Exception as e:
-        logger.warning("[GIN] 목록 페이지 실패, 폴백 URL 사용: %s", e)
+        logger.warning("[GIN] Listing page failed, using fallback URL: %s", e)
         return _FALLBACK_XLS
 
-    # href + anchor text 쌍
+    # href + anchor text pairs
     candidates: list[str] = []
     for m in re.finditer(
         r'href=["\']([^"\']+)["\'][^>]*>(.*?)</a>',
@@ -232,10 +235,10 @@ def _resolve_xls_url(session: requests.Session) -> str:
 
     if candidates:
         url = urljoin(_PAGE_URL, candidates[0])
-        logger.info("[GIN] 페이지에서 xls 링크 발견: %s", url)
+        logger.info("[GIN] Found xls link on page: %s", url)
         return url
 
-    logger.warning("[GIN] 페이지에서 xls 링크 미발견, 폴백 URL 사용")
+    logger.warning("[GIN] No xls link found on page, using fallback URL")
     return _FALLBACK_XLS
 
 
@@ -245,14 +248,14 @@ def render(target: dict) -> pd.DataFrame:
     session.headers.update(_HEADERS)
 
     xls_url = _resolve_xls_url(session)
-    logger.info("[%s] Situation Monétaire 다운로드: %s", country_code, xls_url)
+    logger.info("[%s] Downloading Situation Monétaire: %s", country_code, xls_url)
     resp = session.get(xls_url, timeout=60)
     resp.raise_for_status()
     content = resp.content
     # OLE Compound File magic
     if not (content[:4] == b"\xd0\xcf\x11\xe0" or content[:2] == b"PK"):
         logger.error(
-            "[%s] 엑셀이 아닌 응답(len=%d, head=%r)",
+            "[%s] Response is not Excel (len=%d, head=%r)",
             country_code, len(content), content[:40],
         )
         return _empty()
@@ -260,7 +263,7 @@ def render(target: dict) -> pd.DataFrame:
     df = parse(content, country_code)
     if not df.empty:
         logger.info(
-            "[%s] %d행 (%s~%s)",
+            "[%s] %d rows (%s~%s)",
             country_code, len(df), df["period"].min(), df["period"].max(),
         )
     return df

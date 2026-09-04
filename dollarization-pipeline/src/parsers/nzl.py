@@ -3,15 +3,18 @@
 https://www.rbnz.govt.nz/statistics/series/registered-banks/banks-balance-sheet
 https://www.rbnz.govt.nz/-/media/project/sites/rbnz/files/statistics/series/l-s/s10/hs10m.xlsx
 
-rbnz.govt.nz는 Cloudflare JS 챌린지("Just a moment...")로 보호돼 있어 requests로 직접
-받으면 403(챌린지 HTML)만 온다. Playwright로 해당 URL에 그냥 goto()하면 브라우저가
-챌린지를 통과한 뒤 곧바로 파일 다운로드가 시작되면서 goto() 자체가
-"Download is starting" 예외를 던지는데, 이를 page.expect_download()로 감싸서 받는다
-(별도 페이지 방문/쿠키 이식 없이 이 한 번의 goto만으로 충분히 통과됨을 확인함).
+rbnz.govt.nz is protected by a Cloudflare JS challenge ("Just a moment...") — a
+direct requests fetch only gets a 403 (challenge HTML). Doing a plain goto() to the
+URL with Playwright lets the browser pass the challenge, but a file download then
+starts immediately, so goto() itself throws a "Download is starting" exception;
+this is caught by wrapping the call in page.expect_download()
+(confirmed that this single goto is sufficient to pass — no separate page visit or
+cookie transplant needed).
 
-'Data' 시트, 1~5행 헤더(2행=시리즈 설명), 6행부터 월별 데이터, A열=날짜.
-F열 'C1. Deposits (NZD)' = 자국통화 예금, G열 'C2. Deposits (FX)' = 외화예금 = FCD.
-TD = C1 + C2. 월간, 2016-12부터. 단위 NZD million."""
+'Data' sheet, header rows 1-5 (row 2 = series description), monthly data from row 6,
+column A = date. Column F 'C1. Deposits (NZD)' = local-currency deposits, column G
+'C2. Deposits (FX)' = foreign-currency deposits = FCD.
+TD = C1 + C2. Monthly, from 2016-12. Unit: NZD million."""
 
 from __future__ import annotations
 
@@ -40,7 +43,7 @@ _FX_COL = 7   # G: C2. Deposits (FX)
 
 
 def parse(content: bytes, country_code: str) -> pd.DataFrame:
-    raise NotImplementedError("NZL는 render()로 Cloudflare를 우회해 xlsx를 받는다")
+    raise NotImplementedError("NZL bypasses Cloudflare via render() to fetch the xlsx")
 
 
 def _empty() -> pd.DataFrame:
@@ -60,7 +63,7 @@ def _download_via_browser() -> bytes | None:
                     try:
                         page.goto(_XLSX_URL, timeout=30000)
                     except Exception:
-                        pass  # goto가 "Download is starting"로 예외를 던지는 게 정상 경로
+                        pass  # goto throwing "Download is starting" is the expected path
                 download = dl_info.value
                 path = download.path()
                 if not path:
@@ -68,7 +71,7 @@ def _download_via_browser() -> bytes | None:
                 with open(path, "rb") as f:
                     return f.read()
             except Exception:
-                logger.warning("[NZL] Playwright 다운로드 실패", exc_info=True)
+                logger.warning("[NZL] Playwright download failed", exc_info=True)
                 return None
         finally:
             browser.close()

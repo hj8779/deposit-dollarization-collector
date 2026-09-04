@@ -1,22 +1,26 @@
-"""Barbados: 두 소스를 이어붙인다.
+"""Barbados: stitches together two sources.
 
-1) 1989-01~2011-12: 'commercial-banks-deposit-liabilities-2' 페이지의
-   'HISTORY 4 Commercial Banks DEPOSITS M 1989-2011.xlsx' 중 시트 'HISTORY 14'
-   ('TOTAL DEPOSITS BY DEPOSITORS'), J열 'Deposits in Foreign Currency'가 FCD,
-   K열 'Total Deposits'가 TD(K열=J열+I열 'Total Domestic Deposits'). 처음엔 이 파일의
-   앞쪽 컬럼(예금주체별: Government/Statutory Bodies/... Demand·Time·Savings 구분)만 보고
-   통화별 구분이 없다고 오판했으나, J/K열에 정확히 통화별 합계가 이미 계산되어 있었다
-   (사용자가 짚어줌).
+1) 1989-01~2011-12: from the 'commercial-banks-deposit-liabilities-2' page's
+   'HISTORY 4 Commercial Banks DEPOSITS M 1989-2011.xlsx', sheet 'HISTORY 14'
+   ('TOTAL DEPOSITS BY DEPOSITORS'); column J 'Deposits in Foreign Currency' is FCD, column K
+   'Total Deposits' is TD (column K = column J + column I 'Total Domestic Deposits'). At first
+   this file's leading columns (broken down by depositor: Government/Statutory Bodies/... and
+   Demand·Time·Savings) were the only thing examined, leading to the mistaken conclusion that
+   there was no breakdown by currency — but columns J/K already had the exact currency-level
+   totals computed (pointed out by the user).
 
-2) 2012-01~현재: 'news/statistics-1' 게시글 목록에서 매달 올라오는 'Commercial Banks
-   Assets and Liabilities {Month} {Year}' 글 안의 xlsx(cdn.centralbank.org.bb,
-   'BANKSASSETSLIABS' 포함) 2번째 탭 'BANKS - Liabilities'. 매 파일이 2012-01부터 해당
-   월까지 전체 누적 시계열을 담고 있어 최신 글 하나만 받으면 된다(목록 최신순 정렬,
-   DOM에서 첫 매칭 링크 사용). FCD = TRANSFERABLE DEPOSITS + OTHER DEPOSITS 카테고리의
-   'Foreign Currency' 열 전체 합(Included/Excluded from Broad Money 구분 없이),
-   5행(대분류)/7행(통화) 헤더 텍스트로 컬럼을 동적 탐색(고정 인덱스 금지 원칙).
+2) 2012-01~present: from the 'news/statistics-1' post listing, each month's 'Commercial Banks
+   Assets and Liabilities {Month} {Year}' post contains an xlsx (cdn.centralbank.org.bb,
+   filename containing 'BANKSASSETSLIABS'), 2nd tab 'BANKS - Liabilities'. Every file contains
+   the entire cumulative time series from 2012-01 through that month, so only the latest post
+   needs to be fetched (listing is sorted newest-first; the first matching link in the DOM is
+   used). FCD = the sum of the 'Foreign Currency' column across the TRANSFERABLE DEPOSITS +
+   OTHER DEPOSITS categories (regardless of whether Included/Excluded from Broad Money), with
+   columns located dynamically via the row-5 (major category) / row-7 (currency) header text
+   (per the no-fixed-index rule).
 
-두 소스의 경계(2011-12 -> 2012-01)는 정확히 이어지고 겹치는 달이 없어 그대로 concat한다.
+The boundary between the two sources (2011-12 -> 2012-01) lines up exactly with no overlapping
+month, so they are simply concatenated.
 """
 
 import re
@@ -53,7 +57,7 @@ _DATE_COL = 1
 
 
 def parse(content: bytes, country_code: str) -> pd.DataFrame:
-    raise NotImplementedError("BRB는 render()를 통해 처리한다 (두 소스를 받아 이어붙여야 함)")
+    raise NotImplementedError("BRB is handled via render() (needs to fetch and stitch together two sources)")
 
 
 def _find_latest_post_url() -> str | None:
@@ -116,7 +120,7 @@ def _parse_history(content: bytes, country_code: str) -> pd.DataFrame:
             td_col = c
 
     if fc_col is None:
-        logger.warning("[%s] 히스토리 파일에서 'Deposits in Foreign Currency' 컬럼을 찾지 못함", country_code)
+        logger.warning("[%s] Could not find the 'Deposits in Foreign Currency' column in the history file", country_code)
         return pd.DataFrame(columns=["country_code", "year", "period", "indicator", "value", "updated_at"])
 
     rows = []
@@ -145,7 +149,7 @@ def _parse_history(content: bytes, country_code: str) -> pd.DataFrame:
 
 
 def _fc_deposit_columns(ws) -> list[int]:
-    # 5행에서 대분류가 시작되는 열들을 찾고, 그 구간 안에서 7행이 'Foreign Currency'인 열만 모은다.
+    # Find the columns where a major category starts in row 5, then within each such span collect only the columns where row 7 is 'Foreign Currency'.
     group_starts = [
         c for c in range(2, ws.max_column + 1)
         if isinstance(ws.cell(row=_GROUP_ROW, column=c).value, str) and ws.cell(row=_GROUP_ROW, column=c).value.strip()
@@ -189,7 +193,7 @@ def _parse_recent(content: bytes, country_code: str) -> pd.DataFrame:
     fc_cols = _fc_deposit_columns(ws)
     all_cols = _deposit_columns(ws)
     if not fc_cols:
-        logger.warning("[%s] 'Foreign Currency' 예금 컬럼을 찾지 못함", country_code)
+        logger.warning("[%s] Could not find the 'Foreign Currency' deposit column", country_code)
         return pd.DataFrame(columns=["country_code", "year", "period", "indicator", "value", "updated_at"])
 
     rows = []
@@ -226,11 +230,11 @@ def render(target: dict) -> pd.DataFrame:
         response = requests.get(history_url, headers=_HEADERS, timeout=60)
         response.raise_for_status()
         hist_df = _parse_history(response.content, country_code)
-        logger.info("[%s] 히스토리(1989-2011) %d행", country_code, len(hist_df))
+        logger.info("[%s] History (1989-2011): %d rows", country_code, len(hist_df))
         if not hist_df.empty:
             frames.append(hist_df)
     else:
-        logger.warning("[%s] 히스토리 xlsx 링크를 찾지 못함", country_code)
+        logger.warning("[%s] Could not find the history xlsx link", country_code)
 
     post_url = _find_latest_post_url()
     if post_url:
@@ -240,13 +244,13 @@ def render(target: dict) -> pd.DataFrame:
             response = requests.get(xlsx_url, headers=_HEADERS, timeout=60)
             response.raise_for_status()
             recent_df = _parse_recent(response.content, country_code)
-            logger.info("[%s] 최근(2012~) %d행", country_code, len(recent_df))
+            logger.info("[%s] Recent (2012~): %d rows", country_code, len(recent_df))
             if not recent_df.empty:
                 frames.append(recent_df)
         else:
-            logger.warning("[%s] 게시글 안에서 xlsx 링크를 찾지 못함: %s", country_code, post_url)
+            logger.warning("[%s] Could not find an xlsx link inside the post: %s", country_code, post_url)
     else:
-        logger.warning("[%s] 최신 'Commercial Banks Assets and Liabilities' 게시글을 찾지 못함", country_code)
+        logger.warning("[%s] Could not find the latest 'Commercial Banks Assets and Liabilities' post", country_code)
 
     if not frames:
         return pd.DataFrame(columns=["country_code", "year", "period", "indicator", "value", "updated_at"])

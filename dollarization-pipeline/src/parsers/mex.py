@@ -1,9 +1,9 @@
 """Mexico: Banxico SIE CF664 — commercial bank deposit instruments by currency.
 
-페이지:
+Page:
   https://www.banxico.org.mx/SieInternet/consultarDirectorioInternetAction.do?sector=19&idCuadro=CF664&accion=consultarCuadro&locale=es
 
-Cuentas activas:
+Active accounts:
   Demand total  SF129082  Depósitos de exigibilidad inmediata
   Demand FC     SF129118  Moneda extranjera
   Time total    SF129224  Depósitos a plazo
@@ -11,10 +11,11 @@ Cuentas activas:
 
 FCD = demand_fc + time_fc
 TD  = demand_total + time_total
-단위: miles de pesos (표에 표시된 숫자 그대로)
+Unit: miles de pesos (thousands of pesos, as shown in the table)
 
-HTML 페이지는 최근 3개월 관측치를 포함한다.
-BANXICO_TOKEN / SIE_TOKEN 이 있으면 SIE-API로 2011-04 이후 전체 시계열을 받는다.
+The HTML page only contains the last 3 months of observations.
+If BANXICO_TOKEN / SIE_TOKEN is set, the full series from 2011-04 onward is
+fetched via the SIE API instead.
 """
 
 from __future__ import annotations
@@ -62,7 +63,7 @@ _HEADERS = {
 
 
 def parse(content: bytes, country_code: str) -> pd.DataFrame:
-    raise NotImplementedError("MEX는 render()로 SIE 페이지/API를 호출한다")
+    raise NotImplementedError("MEX calls the SIE page/API via render()")
 
 
 def _empty() -> pd.DataFrame:

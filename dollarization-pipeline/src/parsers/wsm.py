@@ -1,20 +1,23 @@
 """Samoa: Central Bank of Samoa "Money and Banking" statistics, Table A-4
-"Structure of Money Supply" (cbs.gov.ws/money-and-banking → 정적 xlsx 다운로드,
-차단 없음).
+"Structure of Money Supply" (cbs.gov.ws/money-and-banking → static xlsx download,
+no blocking).
 
-이 표는 '광의통화(Broad Money) 대비 구성비(%)' 표라 FCD/TD를 직접 주지 않지만, 17행에
-그 분기의 광의통화 절대값(단위: Tala million)이 별도로 있어 비율×절대값으로 역산 가능:
-  FCD_tala = FCD%(11행) × BroadMoney_tala(17행) / 100
-  TD_tala  = BroadMoney_tala × (1 − Currency%(8행)/100)   (통화발행고만 제외한 전체 예금)
+This table reports composition as a share of Broad Money (%), so it doesn't give FCD/TD
+directly, but row 17 separately has the quarter's absolute Broad Money value (unit: Tala
+million), so the absolute values can be recovered by multiplying share × total:
+  FCD_tala = FCD%(row 11) × BroadMoney_tala(row 17) / 100
+  TD_tala  = BroadMoney_tala × (1 − Currency%(row 8)/100)   (all deposits, i.e. everything
+                                                              except currency in circulation)
 
-분기 데이터, 사모아 회계연도(7월~6월) 기준 컬럼 헤더가 두 가지로 섞여 있다: 초기엔 로마
-숫자(I~IV, I=9월말/II=12월말/III=익년3월말/IV=익년6월말), 이후엔 월 이름(Mar/June/
-Sep/Dec)으로 바뀐다 - 둘 다 같은 의미라 통합 매핑.
+Quarterly data, based on Samoa's fiscal year (July-June); the column headers mix two
+formats: early on, Roman numerals (I-IV, where I=end of September/II=end of December/
+III=end of March next year/IV=end of June next year), later switching to month names
+(Mar/June/Sep/Dec) - both mean the same thing, so they're mapped to a unified scheme.
 
-가장 최근 분기(2026-03) 데이터는 원본 스프레드시트 자체에 오류가 있음(11행 FCD%가
-7행 M1% 전체와 동일한 값으로 찍혀 있어, FCD가 M1의 부분집합이라는 정의에 모순) - 이런
-명백히 불가능한 값(FCD% > M1%가 되는 경우, 즉 FCD가 그 상위 집합인 M1보다 커지는 경우)은
-소스 자체의 오류로 보고 건너뛴다."""
+The most recent quarter (2026-03) has an error in the source spreadsheet itself (row 11's
+FCD% is identical to row 7's M1% total, which contradicts the definition that FCD is a
+subset of M1) - such an evidently impossible value (FCD% > M1%, i.e. FCD exceeding its own
+superset M1) is treated as a source-data error and skipped."""
 
 from __future__ import annotations
 
@@ -35,10 +38,10 @@ _HEADERS = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit
 
 
 def parse(content: bytes, country_code: str) -> pd.DataFrame:
-    raise NotImplementedError("WSM은 render()로 xlsx를 받는다")
+    raise NotImplementedError("WSM fetches the xlsx via render()")
 
 _QUARTER_END_MONTH = {"I": 9, "II": 12, "III": 3, "IV": 6, "Sep": 9, "Dec": 12, "Mar": 3, "June": 6}
-_ROLLOVER_MONTHS = {3, 6}  # III/Mar, IV/June는 회계연도 표기연도의 다음 해
+_ROLLOVER_MONTHS = {3, 6}  # III/Mar, IV/June fall in the year after the fiscal-year label
 
 _M1_ROW = 7
 _CURRENCY_ROW = 8
@@ -75,7 +78,7 @@ def render(target: dict) -> pd.DataFrame:
         if not all(isinstance(v, (int, float)) for v in (currency_pct, fcd_pct, m1_pct, broad_money)):
             continue
         if fcd_pct > m1_pct:
-            continue  # 소스 데이터 오류로 보이는 불가능한 값(FCD는 M1의 부분집합인데 M1 전체보다 큼)
+            continue  # impossible value that looks like a source-data error (FCD is a subset of M1 but exceeds the whole of M1)
 
         fcd = fcd_pct * broad_money / 100
         td = broad_money * (1 - currency_pct / 100)

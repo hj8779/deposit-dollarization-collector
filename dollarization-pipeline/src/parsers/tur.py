@@ -1,46 +1,52 @@
 """Turkey: Central Bank of the Republic of Turkey (TCMB/CBRT) "Weekly Money and Banking
 Statistics" bulletin (Money_Bank.pdf).
 
-TCMB의 EVDS(evds2.tcmb.gov.tr) REST API는 무료지만 반드시 가입 후 발급받는 API 키가
-필요해(사람 인증 없는 셀프 발급 경로가 없음) 이 환경에서는 사용할 수 없다. 대신 TCMB가
-매주 발행하는 'Weekly Money and Banking Statistics' PDF(Money_Bank.pdf)를 사용한다.
-이 PDF는 Table 2 (신 포맷) / Table 7 (구 포맷)에 "거주자(Residents)" 예금을 TRY/FX로
-나눠 표시하므로 FCD(거주자 외화예금), TD(거주자 총예금)를 직접 얻을 수 있다.
+TCMB's EVDS (evds2.tcmb.gov.tr) REST API is free but requires an API key that must be obtained
+after registering (there is no self-service issuance path without human verification), so it
+can't be used in this environment. Instead we use the 'Weekly Money and Banking Statistics' PDF
+(Money_Bank.pdf) that TCMB publishes every week. This PDF shows "Residents" deposits split into
+TRY/FX in Table 2 (new format) / Table 7 (old format), so FCD (resident foreign-currency
+deposits) and TD (resident total deposits) can be obtained directly.
 
-    FCD = 거주자 예금 중 FX(외화) 부분
-    TD  = 거주자 예금 합계(TRY + FX)
+    FCD = the FX (foreign-currency) portion of resident deposits
+    TD  = total resident deposits (TRY + FX)
 
-실측(2026-07-24, 신 포맷 Table 2): FX(거주자)=10,499,925,050천 TRY,
-거주자 총예금=28,416,399,833천 TRY -> ratio=36.95%. 사전 조사 수치(FX 10.500조,
-총예금 28.416조, ratio≈36.95%)와 정확히 일치.
+Empirically confirmed (2026-07-24, new format Table 2): FX (residents)=10,499,925,050 thousand
+TRY, resident total deposits=28,416,399,833 thousand TRY -> ratio=36.95%. This matches exactly
+the figures from the earlier investigation (FX 10.500 trillion, total deposits 28.416 trillion,
+ratio~36.95%).
 
-포맷은 시기에 따라 두 가지다(같은 asset URL이 매주 덮어써지므로 과거본은
-web.archive.org의 CDX 스냅샷을 통해서만 구할 수 있다):
+The format falls into two types depending on the period (since the same asset URL is
+overwritten weekly, older versions can only be obtained via web.archive.org's CDX snapshots):
 
-1. 신 포맷 (대략 2025-02~현재, 9페이지): "Table 2. Banking Sector Selected Balance
-   Sheet Items"에 "A. DEPOSITS -> 1. Residents -> a. TRY / b. FX"가 5개 주간 컬럼으로
-   나온다. 페이지 안에 "1. Residents"~"2. Resident Banks" 사이 구간에서 값을 뽑는다
-   (그 밖에도 "2. Resident Banks", "3. Non-Residents" 등에도 동일한 "a. TRY"/"b. FX"
-   레이블이 반복되므로 반드시 이 구간으로 한정해야 한다).
+1. New format (roughly 2025-02 to present, 9 pages): "Table 2. Banking Sector Selected Balance
+   Sheet Items" shows "A. DEPOSITS -> 1. Residents -> a. TRY / b. FX" across 5 weekly columns.
+   Values are extracted from the region of the page between "1. Residents" and "2. Resident
+   Banks" (the same "a. TRY"/"b. FX" labels also repeat elsewhere, e.g. under "2. Resident
+   Banks", "3. Non-Residents", so this scoping is required).
 
-2. 구 포맷 (~2024-09까지, 11페이지): "Table 7. Deposits With Banks"에 TRY/FX가 완전히
-   분리된 두 섹션(I.TRY DEPOSITS, II.FX DEPOSITS)으로 나뉘고 각각 "I.I.DEPOSIT MONEY
-   BANKS"/"I.II.PARTICIPATION BANKS" 하위에 "A.Residents"가 반복된다(총 4회 등장:
-   TRY-예금은행, TRY-참여은행, FX-예금은행, FX-참여은행). 4개 참조 시점(당주/전주/전년말/
-   전년동주) 컬럼이 있다. TD = 앞의 두 A.Residents 합, FCD = 뒤의 두 A.Residents 합.
+2. Old format (up to ~2024-09, 11 pages): "Table 7. Deposits With Banks" splits TRY/FX into two
+   fully separate sections (I.TRY DEPOSITS, II.FX DEPOSITS), each with an "A.Residents" row
+   repeated under "I.I.DEPOSIT MONEY BANKS"/"I.II.PARTICIPATION BANKS" (appearing 4 times total:
+   TRY-deposit banks, TRY-participation banks, FX-deposit banks, FX-participation banks). There
+   are 4 reference-point columns (current week/prior week/prior year-end/same week prior year).
+   TD = sum of the first two A.Residents occurrences, FCD = sum of the latter two.
 
-숫자 포맷(천단위 구분자)도 스냅샷마다 영어식(1,234,567) 또는 튀르키예식(1.234.567)이
-뒤섞여 있다(같은 문서 자산이 CMS에서 재게시될 때마다 로케일이 바뀐 것으로 보임). 이
-표의 금액 컬럼은 항상 정수(천 TRY 단위)라 소수점이 없으므로, 토큰에서 '.'와 ',' 를
-전부 제거하고 정수로 파싱하면 로케일에 관계없이 안전하다(퍼센트 성장률 컬럼은 컬럼 개수를
-정확히 세어서 그 뒤는 아예 읽지 않으므로 문제되지 않는다).
+The number format (thousands separator) is also mixed across snapshots, sometimes
+English-style (1,234,567) and sometimes Turkish-style (1.234.567) (apparently the locale
+changes each time the same document asset is republished in the CMS). Since this table's amount
+columns are always integers (thousand TRY units) with no decimal point, stripping all '.' and
+',' from the token and parsing as an integer is safe regardless of locale (the percentage growth
+rate columns are not an issue since the column count is counted precisely and anything past
+that is never read).
 
-과거 이력 확보: 이 PDF는 매주 같은 URL(wps/wcm/connect/122c325c-.../Money_Bank.pdf)에
-덮어써지므로 사이트 자체에는 아카이브가 없다. 대신 Wayback Machine이 이 고정 URL을
-2018년부터 반복적으로 스냅샷했고(CDX API로 조회), 각 PDF 한 장이 4~5개 주간 컬럼을
-담고 있어(구 포맷은 참조 시점 4개, 신 포맷은 최근 5주) 스냅샷을 전부 모으면 2018~현재
-구간을 (완전하진 않지만) 상당히 조밀하게 재구성할 수 있다. 스냅샷 간 공백이 큰 구간
-(예: 2019-07~2020-08, 2023-04~2024-02)은 자연히 비어 있다.
+Obtaining historical data: since this PDF is overwritten weekly at the same URL
+(wps/wcm/connect/122c325c-.../Money_Bank.pdf), the site itself has no archive. Instead, the
+Wayback Machine has repeatedly snapshotted this fixed URL since 2018 (queried via the CDX API),
+and since each PDF holds 4-5 weekly columns (4 reference points for the old format, the most
+recent 5 weeks for the new format), collecting all the snapshots lets us reconstruct the
+2018-present period fairly densely (though not completely). Periods with large gaps between
+snapshots (e.g. 2019-07 to 2020-08, 2023-04 to 2024-02) are naturally left empty.
 """
 
 import re
@@ -59,13 +65,13 @@ FILE_URL = "__RENDER__"
 
 _HEADERS = {"User-Agent": "Mozilla/5.0"}
 
-# 매주 같은 자산 ID에 덮어써지는 "현재" 발행본 (라이브 최신 데이터).
+# The "current" issue, overwritten weekly at the same asset ID (live latest data).
 _CURRENT_URL = (
     "https://www.tcmb.gov.tr/wps/wcm/connect/"
     "122c325c-6afd-4718-8573-49f75964ff34/Money_Bank.pdf?MOD=AJPERES"
 )
 
-# 위 고정 URL에 대한 Wayback Machine 스냅샷 전체 목록(콘텐츠 다이제스트 기준 중복 제거).
+# Full list of Wayback Machine snapshots for the fixed URL above (deduplicated by content digest).
 _CDX_URL = (
     "http://web.archive.org/cdx/search/cdx"
     "?url=tcmb.gov.tr/wps/wcm/connect/122c325c-6afd-4718-8573-49f75964ff34/Money_Bank.pdf"
@@ -77,8 +83,8 @@ _NUM = r"-?[\d.,]+"
 
 
 def _num(token: str) -> int:
-    """'1,234,567' / '1.234.567' / '1234567' 모두 정수로 안전하게 파싱(천단위 구분자만
-    쓰이고 소수점은 없는 컬럼이라 '.'와 ','를 그냥 다 지워도 된다)."""
+    """Safely parses '1,234,567' / '1.234.567' / '1234567' as an integer (this column only ever
+    uses thousands separators with no decimal point, so it's fine to just strip all '.' and ',')."""
     return int(token.replace(",", "").replace(".", ""))
 
 
@@ -109,7 +115,7 @@ def _header_dates(text: str, ncols: int) -> list[str] | None:
 
 
 def _parse_new_format(pdf: pdfplumber.PDF) -> dict[str, tuple[int, int]]:
-    """신 포맷(Table 2, 'A. DEPOSITS' -> '1. Residents' -> a.TRY/b.FX). 반환: {period: (fcd, td)}."""
+    """New format (Table 2, 'A. DEPOSITS' -> '1. Residents' -> a.TRY/b.FX). Returns: {period: (fcd, td)}."""
     for page in pdf.pages:
         text = page.extract_text() or ""
         lines = text.splitlines()
@@ -118,8 +124,8 @@ def _parse_new_format(pdf: pdfplumber.PDF) -> dict[str, tuple[int, int]]:
         if "1. Residents" not in text or "A. DEPOSITS" not in text:
             continue
 
-        # "2. Resident Banks" 이전까지로 한정해 'a. TRY'/'b. FX' 레이블 중복(Resident Banks,
-        # Non-Residents 구간에도 같은 레이블이 있음)을 피한다.
+        # Scoped to everything before "2. Resident Banks" to avoid duplicate 'a. TRY'/'b. FX'
+        # labels (the same labels also appear in the Resident Banks and Non-Residents sections).
         scoped = text.split("\n2. Resident Banks")[0]
 
         ncols = len(_DATE_RE.findall(text.splitlines()[1])) if len(text.splitlines()) > 1 else 0
@@ -138,8 +144,8 @@ def _parse_new_format(pdf: pdfplumber.PDF) -> dict[str, tuple[int, int]]:
 
 
 def _parse_old_format(pdf: pdfplumber.PDF) -> dict[str, tuple[int, int]]:
-    """구 포맷(Table 7. Deposits With Banks). 'A.Residents'가 순서대로
-    TRY-예금은행, TRY-참여은행, FX-예금은행, FX-참여은행 4번 등장."""
+    """Old format (Table 7. Deposits With Banks). 'A.Residents' appears 4 times in order:
+    TRY-deposit banks, TRY-participation banks, FX-deposit banks, FX-participation banks."""
     for page in pdf.pages:
         text = page.extract_text() or ""
         first_line = text.splitlines()[0] if text.splitlines() else ""
@@ -191,7 +197,7 @@ def parse(content: bytes, country_code: str) -> pd.DataFrame:
             if not by_period:
                 by_period = _parse_old_format(pdf)
     except Exception as exc:
-        logger.info("[%s] PDF 파싱 실패(손상된 아카이브본 추정), 스킵: %s", country_code, exc)
+        logger.info("[%s] PDF parsing failed (assumed corrupted archived copy), skipping: %s", country_code, exc)
         return pd.DataFrame(columns=columns)
 
     if not by_period:
@@ -221,7 +227,7 @@ def _wayback_urls() -> list[str]:
         response.raise_for_status()
         rows = response.json()
     except Exception as exc:
-        logger.warning("TUR: Wayback CDX 조회 실패, 현재 발행본만 사용: %s", exc)
+        logger.warning("TUR: Wayback CDX lookup failed, using only the current issue: %s", exc)
         return []
 
     if not rows or len(rows) < 2:
@@ -239,7 +245,7 @@ def render(target: dict) -> pd.DataFrame:
     frames = []
 
     urls = [_CURRENT_URL] + _wayback_urls()
-    logger.info("[%s] Weekly Money and Banking Statistics PDF %d개(현재+아카이브) 순회", country_code, len(urls))
+    logger.info("[%s] iterating over %d Weekly Money and Banking Statistics PDFs (current+archived)", country_code, len(urls))
 
     for url in urls:
         try:
@@ -247,7 +253,7 @@ def render(target: dict) -> pd.DataFrame:
             response.raise_for_status()
             content = response.content
         except Exception as exc:
-            logger.info("[%s] 다운로드 실패, 스킵: %s (%s)", country_code, url, exc)
+            logger.info("[%s] download failed, skipping: %s (%s)", country_code, url, exc)
             continue
 
         df = parse(content, country_code)

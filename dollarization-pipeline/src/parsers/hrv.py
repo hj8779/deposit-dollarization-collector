@@ -1,41 +1,43 @@
 """Croatia: HNB OMFI deposit tables (archive pre-euro + current post-euro).
 
-배경
-----
-크로아티아는 2023-01-01 유로 도입. 그 이전 “외화예금” 개념을 추적하려면 구 통계
-D8을 써야 한다. 현행 D6의 역사자료(2010~)는 유로·유로연동 쿠나 예금을 국내통화로
-재분류해, 도입 전 FCD를 과소 계상한다.
+Background
+----------
+Croatia adopted the euro on 2023-01-01. To track "foreign-currency deposits"
+before that date, we need to use the legacy D8 statistics. The historical data
+in the current D6 series (2010~) reclassifies euro and euro-pegged kuna deposits
+as domestic currency, which understates pre-adoption FCD.
 
-소스
-----
-1) 아카이브 ESA 2010 until 31/12/2022
+Sources
+-------
+1) Archive ESA 2010 until 31/12/2022
    https://www.hnb.hr/en/statistics/statistical-data/archive/esa-2010-until-31-12-2022
    - D8 Foreign currency deposits with OMFIs  (FCD)
-   - D7 Kuna deposits with OMFIs              (국내통화 저축·정기)
-   - D6 Demand deposits with OMFIs            (요구불)
-   파일 UUID (HNB documents/20182/...):
+   - D7 Kuna deposits with OMFIs              (domestic-currency savings and time deposits)
+   - D6 Demand deposits with OMFIs            (demand deposits)
+   File UUIDs (HNB documents/20182/...):
      D8: a8cc09f5-ef59-4f6f-90a3-be6e26b2b05d  (e-d8.xlsx)
      D7: 10346d21-39f2-4b11-9867-68d607984dc9  (e-d7.xlsx)
      D6: 997bb6f9-4585-4888-a68e-02deb0d0e72f  (e-d6.xlsx)
 
-2) 현행 Aggregated balance sheet of OMFIs
+2) Current Aggregated balance sheet of OMFIs
    https://www.hnb.hr/en/statistics/statistical-data/financial-sector/other-monetary-financial-institutions/aggregated-balance-sheet-of-omfis
    - D6 Total deposits by sectors and currency (e-d6.xlsx)
      UUID: 3ab0d8ca-377d-b0e5-a185-78e424fedb2e
 
-정의 (시트 EUR, million EUR, end-of-period)
-------------------------------------------
-아카이브 기간 (~2022-12):
-  FCD = D8 'Total (1+2)'   # 외화 저축+정기 (전체 거주 부문)
+Definitions (EUR sheet, million EUR, end-of-period)
+----------------------------------------------------
+Archive period (~2022-12):
+  FCD = D8 'Total (1+2)'   # foreign-currency savings + time deposits (all resident sectors)
   TD  = D6 Total + D7 Total + D8 Total
-        # 요구불 + 쿠나 저축·정기 + 외화 저축·정기
+        # demand deposits + kuna savings/time deposits + foreign-currency savings/time deposits
 
-현행 기간 (2023-01~, 유로 도입 후):
-  FCD = D6 'B Total'   # IN FOREIGN CURRENCY (유로 제외 외화)
+Current period (2023-01~, post-euro-adoption):
+  FCD = D6 'B Total'   # IN FOREIGN CURRENCY (foreign currency excluding euro)
   TD  = D6 'TOTAL (A+B)'
 
-병합: period <= 2022-12 는 아카이브, 이후는 현행 D6.
-고정환율 1 EUR = 7.53450 HRK 는 HNB EUR 시트에 이미 반영되어 있어 별도 환산 없음.
+Merging: periods <= 2022-12 use the archive; periods after that use current D6.
+The fixed exchange rate 1 EUR = 7.53450 HRK is already applied in the HNB EUR
+sheet, so no separate conversion is needed.
 """
 
 from __future__ import annotations
@@ -74,7 +76,7 @@ _EURO_CUTOFF = "2022-12"  # inclusive archive
 
 
 def parse(content: bytes, country_code: str) -> pd.DataFrame:
-    raise NotImplementedError("HRV는 render()로 여러 HNB 표를 병합한다")
+    raise NotImplementedError("HRV merges several HNB tables via render()")
 
 
 def _empty() -> pd.DataFrame:
@@ -133,7 +135,7 @@ def _find_date_row(df: pd.DataFrame) -> int | None:
 
 
 def _find_total_row(df: pd.DataFrame, *needles: str) -> int | None:
-    """라벨 열(col1)에서 needles 를 모두 포함하거나 Total 행을 찾는다."""
+    """Find a row in the label column (col1) containing all needles, or a Total row."""
     wanted = [n.lower() for n in needles]
     # prefer explicit total markers
     for i in range(len(df)):
@@ -155,7 +157,7 @@ def _find_total_row(df: pd.DataFrame, *needles: str) -> int | None:
 
 
 def _series_from_total_row(content: bytes, sheet_prefer: str = "EUR") -> dict[str, float]:
-    """엑셀에서 Total 행 시계열을 period->value 로 추출 (EUR 시트 우선)."""
+    """Extract the Total row time series from the Excel file as period->value (EUR sheet preferred)."""
     xl = pd.ExcelFile(BytesIO(content))
     sheet = sheet_prefer if sheet_prefer in xl.sheet_names else xl.sheet_names[0]
     df = xl.parse(sheet, header=None)
@@ -163,7 +165,7 @@ def _series_from_total_row(content: bytes, sheet_prefer: str = "EUR") -> dict[st
     if date_row is None:
         raise ValueError("date row not found")
 
-    # Total 행: 'Total (1+2)' 또는 'Total (1+2+...)' 또는 'B Total' 등
+    # Total row: 'Total (1+2)' or 'Total (1+2+...)' or 'B Total', etc.
     total_row = None
     for i in range(len(df)):
         v = df.iat[i, 1] if df.shape[1] > 1 else None
@@ -191,7 +193,7 @@ def _series_from_total_row(content: bytes, sheet_prefer: str = "EUR") -> dict[st
 
 
 def _series_by_label(content: bytes, label_pred, sheet_prefer: str = "EUR") -> dict[str, float]:
-    """label_pred(str)->bool 인 첫 행의 시계열."""
+    """Time series of the first row for which label_pred(str)->bool is True."""
     xl = pd.ExcelFile(BytesIO(content))
     sheet = sheet_prefer if sheet_prefer in xl.sheet_names else xl.sheet_names[0]
     df = xl.parse(sheet, header=None)

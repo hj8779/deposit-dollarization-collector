@@ -1,17 +1,18 @@
 """Trinidad and Tobago: Central Bank of T&T "Economic DataPack" xlsm.
 
-목록 페이지(economic-datapack-report/)에서 가장 최근 게시물의 링크를 찾고, 그 게시물
-페이지 하단의 "... Data Downloadable Version" .xlsm 다운로드 링크를 스크레이핑한다
-(파일명이 매달 바뀜, 예: edp-download-june-2026.xlsm).
+From the listing page (economic-datapack-report/), we find the link to the most recent post,
+then scrape the "... Data Downloadable Version" .xlsm download link at the bottom of that post's
+page (the filename changes every month, e.g. edp-download-june-2026.xlsm).
 
-'PAGE 14_MonAggs_Monthly' 시트, 헤더는 10~11행(2행에 걸쳐 있고 F/G열만 하위 라벨
-'Commercial Banks'/'NFIs'로 나뉨), 데이터는 12행부터. 열 구성:
+Sheet 'PAGE 14_MonAggs_Monthly', header spans rows 10-11 (two rows, with only columns F/G split
+into the sub-labels 'Commercial Banks'/'NFIs'), data starts at row 12. Column layout:
 B=Currency in Active Circulation, C=Demand Deposits, D=Savings Deposits,
-E=Time Deposits, F=Foreign Currency Deposits(Commercial Banks), G=Foreign Currency
-Deposits(NFIs).
+E=Time Deposits, F=Foreign Currency Deposits (Commercial Banks), G=Foreign Currency
+Deposits (NFIs).
 
-FCD = F + G. TD(총예금, 통화 유통고 제외) = C + D + E + F + G.
-1991-01부터 최신월까지 매달 갱신되는 단일 시트라 결측 없이 전체 시리즈를 매번 새로 받는다."""
+FCD = F + G. TD (total deposits, excluding currency in circulation) = C + D + E + F + G.
+This is a single sheet updated every month from 1991-01 through the latest month, so the entire
+series is re-fetched fresh each time with no gaps."""
 
 import re
 from datetime import datetime, timezone

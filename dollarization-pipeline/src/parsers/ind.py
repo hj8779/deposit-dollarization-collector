@@ -3,20 +3,23 @@
 Handbook of Statistics on the Indian Economy
   https://rbi.org.in/Scripts/AnnualPublications.aspx?head=Handbook%20of%20Statistics%20on%20Indian%20Economy
 
-사용 표 (연간, 3월말 잔액, ₹ Crore):
+Tables used (annual, end-of-March balances, ₹ Crore):
   Table 140 – Non-Resident Deposits Outstanding - Rupees
-      FCD = FCNR(B)  (외화 비거주 예금; 실질 FCD에 가장 가까운 항목)
-      NRE/NRO는 루피 계좌이므로 FCD에 포함하지 않음
+      FCD = FCNR(B)  (foreign-currency nonresident deposits; the closest proxy to true FCD)
+      NRE/NRO are Rupee accounts, so they are not included in FCD
   Table 41  – Scheduled Commercial Banks - Select Aggregates
       TD  = Aggregate Deposits (Demand + Time)
 
-비고:
-- 인도 공식 통계에서 FCNR(B)는 종종 USD로, 총예금은 INR로 발표된다.
-  동일 통화 비율을 위해 루피 표(Table 140)와 Aggregate Deposits(Table 41)를 짝짓는다.
-- 회계연도 라벨 `YYYY-(YY+1)` (Table 41) → 기말 연도 `YYYY+1`의 3월 (`{end}-03`).
-- Table 140 연도 `YYYY` = end-March YYYY → `{YYYY}-03`.
-- Handbook PDF 해시/파일명은 발행마다 바뀌므로 목록 페이지에서 Table 번호로 URL을 해석한다.
-- dataful.in 등은 유료/로그인 제약이 있어 공식 RBI Handbook PDF를 1차 소스로 사용.
+Notes:
+- India's official statistics often publish FCNR(B) in USD and total deposits in INR.
+  To keep the ratio in a consistent currency, we pair the Rupee-denominated table
+  (Table 140) with Aggregate Deposits (Table 41).
+- Fiscal year label `YYYY-(YY+1)` (Table 41) -> end-year `YYYY+1`, March (`{end}-03`).
+- Table 140 year `YYYY` = end-March YYYY -> `{YYYY}-03`.
+- Since the Handbook PDF hash/filename changes with each release, the URL is
+  resolved by Table number from the listing page.
+- Services like dataful.in require payment/login, so the official RBI Handbook
+  PDF is used as the primary source.
 """
 
 from __future__ import annotations
@@ -60,7 +63,7 @@ _TABLES = {
 
 
 def parse(content: bytes, country_code: str) -> pd.DataFrame:
-    raise NotImplementedError("IND는 render()로 Handbook Table 41/140 PDF를 합산한다")
+    raise NotImplementedError("IND aggregates Handbook Table 41/140 PDFs via render()")
 
 
 def _empty() -> pd.DataFrame:
@@ -78,12 +81,12 @@ def _download(url: str) -> bytes:
 
 
 def _discover_table_pdfs() -> dict[int, str]:
-    """Handbook 목록 HTML에서 Table N PDF 직링크를 찾는다."""
+    """Find the direct PDF link for Table N within the Handbook listing HTML."""
     resp = requests.get(_HANDBOOK_PAGE, headers=_HEADERS, timeout=90, verify=False)
     resp.raise_for_status()
     html = resp.text
 
-    # RBI HTML은 단일 따옴표 href 사용
+    # RBI HTML uses single-quoted href attributes
     pattern = re.compile(
         r"Table\s+(\d+)\s*:\s*([^<]+)</td>.*?"
         r"href=['\"](https://rbidocs\.rbi\.org\.in/rdocs/Publications/PDFs/[^'\"]+\.PDF)['\"]",
@@ -105,10 +108,10 @@ def _discover_table_pdfs() -> dict[int, str]:
                 pick = href
                 break
         if pick is None and cands:
-            # 번호만 일치하는 첫 후보 (제목 변형 대비)
+            # first candidate matching only by number (to handle title wording variations)
             pick = cands[0][1]
         if pick is None:
-            # fallback: 파일명 prefix {num}T_
+            # fallback: filename prefix {num}T_
             m2 = re.search(
                 rf"https://rbidocs\.rbi\.org\.in/rdocs/Publications/PDFs/{num}T_[A-Z0-9]+\.PDF",
                 html,
@@ -138,7 +141,7 @@ def _to_float(token: str) -> float | None:
     t = token.strip().replace(",", "").replace(" ", "")
     if t in {"", "-", "–", "—", "na", "n.a.", "N.A."}:
         return None
-    # 괄호 메모 행 제외: (20366984)
+    # exclude parenthesized memo-row values: (20366984)
     if t.startswith("(") and t.endswith(")"):
         return None
     try:
@@ -151,9 +154,9 @@ def _parse_fcnr_b_table140(content: bytes) -> dict[str, float]:
     """Table 140: year, FCNR(A), FCNR(B), ... → period end-March -> FCNR(B)."""
     text = _pdf_text(content)
     series: dict[str, float] = {}
-    # 행 예: 2026 - 33756 98564 - 33334 - - 165654  (USD 표)
-    # 행 예: 2026 - 319514 932947 - 315523 - - 1567984 (INR 표)
-    # FCNR(B)는 3번째 데이터 열(헤더 기준 col 3); 연도 다음 '-' (FCNR A) 다음 값
+    # row example: 2026 - 33756 98564 - 33334 - - 165654  (USD table)
+    # row example: 2026 - 319514 932947 - 315523 - - 1567984 (INR table)
+    # FCNR(B) is the 3rd data column (col 3 by header); the value after year, '-' (FCNR A)
     row_re = re.compile(
         r"^(?P<year>19\d{2}|20\d{2})\s+"
         r"(?P<a>-|[\d,]+)\s+"
@@ -167,27 +170,28 @@ def _parse_fcnr_b_table140(content: bytes) -> dict[str, float]:
         fcd = _to_float(m.group("b"))
         if fcd is None or fcd <= 0:
             continue
-        # 합리적 범위: crore 단위 FCNR(B) (수천~수십만). USD 표(만 단위) 오탐 방지 위해
-        # 동일 연도에 큰 값(루피) 우선 — 호출자가 Table 140만 넘김.
+        # plausible range: FCNR(B) in crore units (thousands to hundreds of thousands).
+        # To avoid false positives from the USD table (tens-of-thousands scale), prefer
+        # the larger (Rupee) value for a given year — the caller only passes Table 140.
         period = f"{year}-03"
         series[period] = fcd
     return series
 
 
 def _parse_aggregate_deposits_table41(content: bytes) -> dict[str, float]:
-    """Table 41 1페이지(예금 열): fiscal year, Demand, Time, Aggregate Deposits.
+    """Table 41 page 1 (deposit columns): fiscal year, Demand, Time, Aggregate Deposits.
 
-    2페이지는 Investments/Credit 열이므로 제외한다. 페이지1 말미
-    '(Continued)' 이후 잔여 메모 행도 스킵.
+    Page 2 covers Investments/Credit columns and is excluded. Any leftover
+    memo rows after '(Continued)' at the end of page 1 are also skipped.
     """
     text = _pdf_text(content, max_pages=1)
-    # Continued 표기 이후(다음 장 안내/각주) 절단
+    # truncate after the "Continued" marker (next-page notice/footnotes)
     cut = re.search(r"\(Continued", text, re.I)
     if cut:
         text = text[: cut.start()]
 
     series: dict[str, float] = {}
-    # 행 예: 2024-25 2698049 19882552 22580601 311466 ...
+    # row example: 2024-25 2698049 19882552 22580601 311466 ...
     row_re = re.compile(
         r"^(?P<y1>19\d{2}|20\d{2})-(?P<y2>\d{2})\s+"
         r"(?P<demand>[\d,]+)\s+"
@@ -198,7 +202,7 @@ def _parse_aggregate_deposits_table41(content: bytes) -> dict[str, float]:
     for m in row_re.finditer(text):
         y1 = int(m.group("y1"))
         y2 = int(m.group("y2"))
-        # 인도 회계연도 YYYY-(YY+1) 기말은 항상 y1+1년 3월
+        # India's fiscal year YYYY-(YY+1) always ends in March of year y1+1
         expected_yy = (y1 + 1) % 100
         if y2 != expected_yy:
             logger.warning(
@@ -212,7 +216,8 @@ def _parse_aggregate_deposits_table41(content: bytes) -> dict[str, float]:
         agg = _to_float(m.group("agg"))
         if agg is None or agg <= 0 or demand is None or time_dep is None:
             continue
-        # Demand+Time ≈ Aggregate (예금 섹션 sanity; 투자 페이지 오탐 방지)
+        # Demand+Time ≈ Aggregate (sanity check for the deposit section; guards against
+        # false matches from the investment page)
         if abs((demand + time_dep) - agg) > max(1.0, 0.02 * agg):
             continue
         if end_year < 1960 or end_year > 2100:

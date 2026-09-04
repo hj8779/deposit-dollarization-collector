@@ -1,11 +1,12 @@
 """Russia: CBR 'Depository corporations survey' (survey_dc_new_e.xlsx), sheet 'Short Form'.
 row12='Deposits of households in foreign currency', row13='...nonfinancial corporations...',
-row14='...other financial corporations...' 세 항목의 합이 총 외화예금.
-헤더(row1)는 'Mon, YYYY' 형식의 월별 라벨.
+row14='...other financial corporations...' — the sum of these three rows is total FCD.
+The header (row1) uses monthly labels in 'Mon, YYYY' format.
 
-TD(총예금) = Transferable deposits(row4+5+6, 국내통화) + Other deposits(row8+9+10, 국내통화)
-+ FCD(row12+13+14). M1(row7)=M0(row3)+Transferable, M2(row11)=M1+Other, M2X(row2)=M2+FCD+
-Certificates(row15) 항등식을 실측 검증했다(예: M1 869362=M0 418872+100410+337313+12767)."""
+TD (total deposits) = Transferable deposits (row4+5+6, local currency) + Other
+deposits (row8+9+10, local currency) + FCD (row12+13+14). Verified against actual
+figures that the identities M1(row7)=M0(row3)+Transferable, M2(row11)=M1+Other,
+M2X(row2)=M2+FCD+Certificates(row15) hold (e.g. M1 869362=M0 418872+100410+337313+12767)."""
 
 from datetime import datetime, timezone
 from io import BytesIO

@@ -1,30 +1,34 @@
-"""Dominican Republic: BCRD(Banco Central de la República Dominicana) 통화·금융통계.
+"""Dominican Republic: BCRD (Banco Central de la República Dominicana) monetary and financial
+statistics.
 
-BCRD 통계포털(bancentral.gov.do/a/CustomView/2536-sector-monetario-y-financiero)에서
-"Balance sectorial de las OSD: Instrumentos y sectores institucionales (Pasivos en ME)"
-파일을 다운로드하여 거주자 외화예금(Foreign Currency Deposits, FCD)을 추출한다.
+Downloads the "Balance sectorial de las OSD: Instrumentos y sectores institucionales (Pasivos
+en ME)" file from the BCRD statistics portal
+(bancentral.gov.do/a/CustomView/2536-sector-monetario-y-financiero) and extracts resident
+Foreign Currency Deposits (FCD).
 
-파일 구조:
-- 시트: II.3.b.OSD-Pasivos ME
-- 행 9-11: 헤더 (카테고리/부문/열번호)
-- 행 12~: 월별 데이터 (2001-12부터)
-- 열 0: 연도 (Año)
-- 열 1: 월 (Mes - Ene/Feb/.../Dic)
-- 열 2: 비거주자 예금 (No residentes) - FCD 계산에서 제외
-- 열 3-9: 거주자 외화예금 (부문별 합산 = FCD)
-  - 3: 기타 예금기관, 4: 기타 금융회사, 5: 중앙정부
-  - 6: 지방정부, 7: 공공 비금융회사, 8: 기타 비금융회사
-  - 9: 가계 및 ISFLSH
-- 열 17: 총 외화 부채 (Total pasivos)
+File structure:
+- Sheet: II.3.b.OSD-Pasivos ME
+- Rows 9-11: headers (category/sector/column number)
+- Rows 12+: monthly data (from 2001-12)
+- Column 0: year (Año)
+- Column 1: month (Mes - Ene/Feb/.../Dic)
+- Column 2: non-resident deposits (No residentes) - excluded from the FCD calculation
+- Columns 3-9: resident foreign-currency deposits (summed across sectors = FCD)
+  - 3: other deposit-taking institutions, 4: other financial corporations, 5: central government
+  - 6: local government, 7: public non-financial corporations, 8: other non-financial corporations
+  - 9: households and ISFLSH
+- Column 17: total foreign-currency liabilities (Total pasivos)
 
-단위: 백만 페소 (Pesos Dominicanos, DOP) - FCD도 이미 페소 환산액으로 게시되므로 통화
-환산 없이 그대로 국내통화 예금과 더할 수 있다.
+Units: million pesos (Pesos Dominicanos, DOP) - FCD is also already published as a peso amount,
+so it can be added directly to domestic-currency deposits without any currency conversion.
 
-TD(총예금) = 위 FCD(ME 파일 열3-9 합)와 짝을 이루는 'Pasivos en MN'(국내통화, balance_osd_
-pasivos_mn.xlsx, 시트 'II.3.a.OSD-Pasivos MN') 파일의 동일 열(열3-9, 부문 구성이 완전히
-동일: Otras sociedades de depósito/financieras, Gobierno central, Gobiernos estatales y
-locales, Sociedades públicas/otras no financieras, Hogares e ISFLSH)을 합한 값 + FCD.
-두 파일 모두 '백만 페소'로 단위가 이미 같아 환율 환산이 필요 없다.
+TD (total deposits) = the value obtained by summing the same columns (columns 3-9, with an
+identical sector composition: Otras sociedades de depósito/financieras, Gobierno central,
+Gobiernos estatales y locales, Sociedades públicas/otras no financieras, Hogares e ISFLSH) from
+the paired 'Pasivos en MN' (domestic currency, balance_osd_pasivos_mn.xlsx, sheet
+'II.3.a.OSD-Pasivos MN') file, plus FCD (columns 3-9 sum from the ME file above).
+Both files are already in the same units ('million pesos'), so no exchange-rate conversion is
+needed.
 """
 
 import re
@@ -47,12 +51,13 @@ _MONTHS_ES = {
     "jul": 7, "ago": 8, "sep": 9, "oct": 10, "nov": 11, "dic": 12,
 }
 
-# 거주자 외화예금 열 인덱스 (비거주자 열2 제외)
-_FCD_COLUMNS = [3, 4, 5, 6, 7, 8, 9]  # 열 3~9 합산
+# Resident foreign-currency deposit column indices (excludes non-resident column 2)
+_FCD_COLUMNS = [3, 4, 5, 6, 7, 8, 9]  # sum of columns 3-9
 
 
 def _sector_sum_by_period(df: pd.DataFrame, country_code: str, indicator: str, now: str) -> list[dict]:
-    """열3-9(거주자 부문별 예금) 합산 시계열을 (country_code, year, period, indicator, value) 행으로 만든다."""
+    """Builds the summed time series across columns 3-9 (deposits by resident sector) into
+    (country_code, year, period, indicator, value) rows."""
     data_start = None
     for i in range(df.shape[0]):
         cell = df.iloc[i, 0]
@@ -65,7 +70,7 @@ def _sector_sum_by_period(df: pd.DataFrame, country_code: str, indicator: str, n
             continue
 
     if data_start is None:
-        logger.error("[%s] 데이터 시작 행을 찾을 수 없음", country_code)
+        logger.error("[%s] Could not find data start row", country_code)
         return []
 
     rows = []
@@ -113,7 +118,7 @@ def _sector_sum_by_period(df: pd.DataFrame, country_code: str, indicator: str, n
 
 
 def parse(content: bytes, country_code: str) -> pd.DataFrame:
-    """Balance sectorial OSD Pasivos en ME/MN 엑셀 파일에서 FCD와 TD를 추출한다."""
+    """Extracts FCD and TD from the Balance sectorial OSD Pasivos en ME/MN Excel files."""
     from io import BytesIO
 
     now = datetime.now(timezone.utc).isoformat()
@@ -121,12 +126,12 @@ def parse(content: bytes, country_code: str) -> pd.DataFrame:
     try:
         me_df = pd.read_excel(BytesIO(content), sheet_name="II.3.b.OSD-Pasivos ME", header=None)
     except Exception as e:
-        logger.error("[%s] 엑셀 파일 읽기 실패: %s", country_code, e)
+        logger.error("[%s] Failed to read Excel file: %s", country_code, e)
         return pd.DataFrame(columns=["country_code", "year", "period", "indicator", "value", "updated_at"])
 
     fcd_rows = _sector_sum_by_period(me_df, country_code, INDICATOR, now)
     if not fcd_rows:
-        logger.warning("[%s] 외화예금 데이터를 찾을 수 없음", country_code)
+        logger.warning("[%s] Could not find foreign-currency deposit data", country_code)
         return pd.DataFrame(columns=["country_code", "year", "period", "indicator", "value", "updated_at"])
 
     fcd_by_period = {r["period"]: r["value"] for r in fcd_rows}
@@ -144,9 +149,9 @@ def parse(content: bytes, country_code: str) -> pd.DataFrame:
                 continue
             td_rows.append({**r, "value": round(r["value"] + fcd_value, 2)})
     except Exception as e:
-        logger.warning("[%s] MN(국내통화) 파일 처리 실패, TD 없이 진행: %s", country_code, e)
+        logger.warning("[%s] Failed to process MN (domestic currency) file, proceeding without TD: %s", country_code, e)
 
     result = pd.DataFrame(fcd_rows + td_rows).sort_values(["period", "indicator"]).reset_index(drop=True)
-    logger.info("[%s] 외화예금 데이터 %d개월 추출 (%s ~ %s)",
+    logger.info("[%s] Extracted %d months of foreign-currency deposit data (%s to %s)",
                 country_code, len(fcd_rows), min(fcd_by_period), max(fcd_by_period))
     return result

@@ -1,22 +1,28 @@
-"""Chile: Banco Central de Chile 'Statistics Database (BDE)' 조회 화면(si3.bcentral.cl/Siete).
-공식적으로는 API(GetSeries/SearchSeries)가 있지만 이메일로 신청해 자격증명(user/pass)을
-발급받아야 해서 외부에서 즉시 쓰기 어렵다. 대신 조회 화면 자체(si3.bcentral.cl/Siete/.../
-Cuadro/.../E32)가 로그인/JS 없이 일반 GET만으로도 전체 시계열이 담긴 HTML 표를 그대로
-서버에서 렌더링해 내려준다(Playwright로 확인해도 별도 XHR 없이 최초 페이지에 이미 표가
-있음) - 그래서 API 대신 이 조회 화면을 직접 GET해서 표를 파싱한다.
+"""Chile: Banco Central de Chile 'Statistics Database (BDE)' query view (si3.bcentral.cl/Siete).
+Officially there is an API (GetSeries/SearchSeries), but it requires applying by email to
+obtain credentials (user/pass), which makes it impractical to use immediately from outside.
+Instead, the query view itself (si3.bcentral.cl/Siete/.../Cuadro/.../E32) is server-rendered
+and returns an HTML table containing the entire time series via a plain GET, with no
+login/JS needed (confirmed with Playwright too — there is no separate XHR call, the table is
+already present on the initial page load). So instead of the API, this query view is fetched
+directly with GET and the table is parsed.
 
-표 제목 'Deposits in foreign currency, balances (millions of dollars)'의 'Serie' 열에
-'Total deposits' / 'Transferable deposits and sight deposits' / 'Time deposits, savings
-deposits and debt securities' 세 행이 있고, 나머지 열은 'Jan.2009'~현재까지 월별 값이다.
-FCD = 'Total deposits' 행(이 표 자체가 이미 외화예금 표이므로 하위 두 항목의 합과 같다).
+Under the table titled 'Deposits in foreign currency, balances (millions of dollars)', the
+'Serie' column has three rows: 'Total deposits' / 'Transferable deposits and sight deposits'
+/ 'Time deposits, savings deposits and debt securities', and the remaining columns hold
+monthly values from 'Jan.2009' to the present. FCD = the 'Total deposits' row (since this
+table is already a foreign-currency-deposit table, it equals the sum of the other two rows).
 
-TD(총예금) 계산: 자국통화(페소) 예금 표(E31, 'Local currency deposits, balances (billions of
-pesos)', 같은 사이트 CAP_DYB/MN_ESTAD_MON55/EM_DEP_MN/E31)의 'Total deposits' 행 + FCD.
-E31은 'billions of pesos', E32(FCD)는 'millions of dollars'로 단위가 달라 그대로 더할 수 없으므로,
-BCC 월별 명목환율표(TC_HIST, CAP_TIPO_CAMBIO/MN_TIPO_CAMBIO4/TC_HIST/TC_HIST, 'Exchange rate
-(pesos/dollar)', Jan.1960~현재)로 페소 표시분을 달러로 환산한다:
+TD (total deposits) calculation: the 'Total deposits' row of the local-currency (peso)
+deposit table (E31, 'Local currency deposits, balances (billions of pesos)', same site,
+CAP_DYB/MN_ESTAD_MON55/EM_DEP_MN/E31) + FCD. Since E31 is in 'billions of pesos' and E32
+(FCD) is in 'millions of dollars', the two cannot simply be added, so the BCC monthly nominal
+exchange-rate table (TC_HIST, CAP_TIPO_CAMBIO/MN_TIPO_CAMBIO4/TC_HIST/TC_HIST, 'Exchange rate
+(pesos/dollar)', Jan.1960-present) is used to convert the peso-denominated portion to
+dollars:
     TD_usd = (E31_billions_pesos * 1000 / fx_rate) + E32_usd
-(실측: Jan.2009 기준 E31=61,640억 페소, FX=623.01, E32=15,650.92 -> TD ≈ 114,590백만 달러)
+(Verified example: as of Jan.2009, E31=6,164.0 billion pesos, FX=623.01, E32=15,650.92 ->
+TD ~= 114,590 million dollars)
 """
 
 import re
@@ -90,7 +96,8 @@ def parse(content: bytes, country_code: str) -> pd.DataFrame:
         resp.raise_for_status()
         return pd.read_html(StringIO(resp.content.decode("utf-8")))[0]
 
-    # si3.bcentral.cl 응답이 각각 수 초씩 걸려(요청당 ~5-6s) 직렬로 하면 느리므로 병렬로 받는다.
+    # si3.bcentral.cl responses each take several seconds (~5-6s per request), so fetching
+    # sequentially would be slow — fetch in parallel instead.
     with ThreadPoolExecutor(max_workers=2) as executor:
         local_future = executor.submit(_fetch, _LOCAL_DEPOSITS_URL)
         fx_future = executor.submit(_fetch, _FX_RATE_URL)

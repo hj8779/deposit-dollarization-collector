@@ -5,7 +5,7 @@ from src.collectors.interactive_web import InteractiveWebStrategy
 from src.collectors.no_source import NoSourceStrategy
 from src.collectors.pdf_bulletin import PdfBulletinStrategy
 
-# data_type -> Strategy 매핑. 목록에 없는 data_type은 NoSourceStrategy로 폴백된다.
+# data_type -> Strategy mapping. Any data_type not in this list falls back to NoSourceStrategy.
 STRATEGIES: dict[str, ScrapingStrategy] = {
     "Direct Excel": DirectExcelStrategy(),
     "Direct Excel/CSV Download": DirectExcelStrategy(),

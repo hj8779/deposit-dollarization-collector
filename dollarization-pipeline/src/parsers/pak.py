@@ -1,23 +1,28 @@
 """Pakistan: SBP "Broad Money (M2)" archive xls.
 
-https://www.sbp.org.pk/economic-data 의
-https://www.sbp.org.pk/assets/document/BroadMoney_M2_Arch.xls — 시대별 시트
-(M2_FY70-FY90, ..., M2_(FY23 to onwards))에 1969-06부터 현재까지 전체 시계열이 있다.
-sbp.org.pk가 기본 requests 헤더를 403으로 막아 브라우저형 User-Agent/Referer가 필요.
+On https://www.sbp.org.pk/economic-data,
+https://www.sbp.org.pk/assets/document/BroadMoney_M2_Arch.xls contains one sheet per
+era (M2_FY70-FY90, ..., M2_(FY23 to onwards)) covering the full time series from
+1969-06 to the present. sbp.org.pk returns 403 for default requests headers, so a
+browser-style User-Agent/Referer is required.
 
-시트마다 헤더 행/라벨 열 위치가 조금씩 다르지만(구형 시트는 헤더가 2행·라벨이 A열,
-신형 시트는 헤더가 4행·라벨이 B/C열 등) 공통 앵커로 파싱한다: 'Currency in Circulation'
-행을 먼저 찾고, 그 위로 올라가며 처음 만나는 '숫자(엑셀 날짜 시리얼)가 많은 행'을 헤더로
-쓰고, 'Currency in Circulation' 아래 15행 내에서 'Demand Deposit'/'Time Deposit'/
-'Resident...Foreign Currency'(RFCDs) 라벨이 있는 행을 찾는다.
+The header row / label column position varies slightly by sheet (older sheets have
+the header on row 2 with labels in column A; newer sheets have the header on row 4
+with labels in column B/C, etc.), so parsing uses a common anchor: first locate the
+'Currency in Circulation' row, then scan upward for the first row with many numeric
+values (Excel date serials) and treat it as the header, then within 15 rows below
+'Currency in Circulation' look for rows labeled 'Demand Deposit'/'Time Deposit'/
+'Resident...Foreign Currency' (RFCDs).
 
-TD = Demand Deposits + Time Deposits + RFCDs (= 'Total Deposits with Banks'와 정확히
-일치함을 확인). FCD = RFCDs. 1998년 이전 시트는 RFCD 값이 아예 비어 있어(항목은 있으나
-공백) 그 구간은 자동 제외됨(FX 거주자예금 제도가 그때부터 생겼거나 그 이전엔 분리
-집계되지 않았던 것으로 보임).
+TD = Demand Deposits + Time Deposits + RFCDs (confirmed to match 'Total Deposits
+with Banks' exactly). FCD = RFCDs. Sheets before 1998 have RFCD values entirely
+blank (the line item exists but is empty), so that period is automatically excluded
+(it appears the FX resident-deposit scheme either started then, or wasn't tracked
+separately before that).
 
-최근 시트는 주간(금/토 마감) 빈도라 그대로 쓰면 과밀하므로, (연,월)별로 그 달의 마지막
-관측치만 남겨 월간으로 리샘플링한다. 단위 PKR million."""
+Recent sheets are weekly (Fri/Sat close) frequency, which is too dense to use as-is,
+so we resample to monthly by keeping only the last observation of each month for
+each (year, month). Unit: PKR million."""
 
 from __future__ import annotations
 
@@ -49,7 +54,7 @@ _RFCD_LABEL_RE = re.compile(r"resident.*foreign currency|rfcd", re.I)
 
 
 def parse(content: bytes, country_code: str) -> pd.DataFrame:
-    raise NotImplementedError("PAK은 render()로 xls를 받는다")
+    raise NotImplementedError("PAK fetches the xls via render()")
 
 
 def _empty() -> pd.DataFrame:
@@ -134,14 +139,14 @@ def render(target: dict) -> pd.DataFrame:
         try:
             found = _parse_sheet(sh, wb.datemode)
             observations.extend(found)
-            logger.info("[%s] %s -> %d개 관측치", country_code, sheet_name, len(found))
+            logger.info("[%s] %s -> %d observations", country_code, sheet_name, len(found))
         except Exception:
-            logger.warning("[%s] 시트 파싱 실패: %s", country_code, sheet_name, exc_info=True)
+            logger.warning("[%s] sheet parse failed: %s", country_code, sheet_name, exc_info=True)
 
     if not observations:
         return _empty()
 
-    # (year, month)별 그 달의 마지막 관측치만 남겨 월간으로 리샘플링
+    # Resample to monthly by keeping only the last observation of each (year, month)
     monthly: dict[tuple[int, int], tuple[date, float, float]] = {}
     for d, fcd, td in observations:
         key = (d.year, d.month)

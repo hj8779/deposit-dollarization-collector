@@ -1,25 +1,25 @@
 """Jordan: CBJ Statistical Database — Deposits by depositor and type.
 
-포털: https://statisticaldb.cbj.gov.jo/
-사용자 안내 노드(카테고리): Depository Corporations Statistics
+Portal: https://statisticaldb.cbj.gov.jo/
+User-facing category node: Depository Corporations Statistics
   ?node=Z3FiWjk0Yk9WbjlCUFFnUmJUSmdCQT09
 
-UI Excel 버튼은 JS 폼 POST이나, 동일 엔드포인트로 직접 받을 수 있다:
+The UI's Excel button is a JS form POST, but the same endpoint can be hit directly:
 
   POST https://statisticaldb.cbj.gov.jo/getExcelFile
   form: documentID=<sectorID>
-  (세션: 최초 /dismissTOU 권장)
+  (session: hitting /dismissTOU first is recommended)
 
-문서 (type_id=3, getNodeChildren 목록의 name 매칭):
+Documents (type_id=3, matched by name in the getNodeChildren listing):
   FCD  "Deposits in Foreign Currency According to Depositor and Type"
        sectorID V3N0T3A2ZVhkUGFhQ2xQaHEvbUNqUT09
   TD   "Deposits According to Depositor and Type"
        sectorID TzF0YnFWQXBlTzQwcUUyQmNONXNhdz09
-       (JD+FC 총예금 — 달러화율 분모)
+       (JD+FC total deposits — dollarization-ratio denominator)
 
-엑셀 시트 Monthly:
-  Year | Month | … | Total Deposits-(Million J.D.)
-  단위: Million J.D., 월말
+Excel sheet Monthly:
+  Year | Month | ... | Total Deposits-(Million J.D.)
+  Unit: Million J.D., end of month
 """
 
 from __future__ import annotations
@@ -43,7 +43,7 @@ FILE_URL = "__RENDER__"
 _BASE = "https://statisticaldb.cbj.gov.jo"
 _PAGE = f"{_BASE}/?node=Z3FiWjk0Yk9WbjlCUFFnUmJUSmdCQT09"
 
-# 이름 매칭 실패 시 폴백 sectorID (2026 기준)
+# fallback sectorID used if name matching fails (as of 2026)
 _FALLBACK = {
     "fcd": "V3N0T3A2ZVhkUGFhQ2xQaHEvbUNqUT09",
     "td": "TzF0YnFWQXBlTzQwcUUyQmNONXNhdz09",
@@ -70,7 +70,7 @@ _HEADERS = {
 
 
 def parse(content: bytes, country_code: str) -> pd.DataFrame:
-    raise NotImplementedError("JOR는 render()로 getExcelFile 두 건을 합산한다")
+    raise NotImplementedError("JOR aggregates two getExcelFile downloads via render()")
 
 
 def _empty() -> pd.DataFrame:
@@ -94,7 +94,7 @@ def _session() -> requests.Session:
 
 
 def _resolve_document_ids(session: requests.Session) -> dict[str, str]:
-    """getNodeChildren 목록에서 FCD/TD 문서 sectorID를 이름 매칭으로 찾는다."""
+    """Find the FCD/TD document sectorIDs by name matching in the getNodeChildren listing."""
     ids = dict(_FALLBACK)
     try:
         resp = session.post(
@@ -165,7 +165,7 @@ def _to_float(v) -> float | None:
 
 
 def _parse_total_deposits(content: bytes, label: str) -> dict[str, float]:
-    """Monthly 시트의 Total Deposits 열 → period -> value."""
+    """Total Deposits column of the Monthly sheet -> period -> value."""
     try:
         xl = pd.ExcelFile(BytesIO(content))
     except Exception:

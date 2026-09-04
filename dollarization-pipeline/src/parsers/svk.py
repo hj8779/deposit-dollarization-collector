@@ -1,47 +1,60 @@
 """Slovakia: Národná banka Slovenska(NBS) 'Deposits and loans received – sector break-down'
-(v5-12a 통계양식) 월별 xls/xlsx 시계열.
+(v5-12a statistical form), monthly xls/xlsx time series.
 https://nbs.sk/en/statistics/financial-institutions/banks/statistical-data-of-monetary-financial-institutions/deposits/
 
-페이지 자체가 순수 HTML로 서버 렌더링되어 있어(JS 렌더링 불필요, requests로 바로 파싱 가능;
-targets.json의 requires_js=true는 부정확했다) 페이지를 받아 "Deposits and loans received –
-sector break-down" 섹션의 표에서 연도(row) x 월(로마 숫자 I~XII, 각각 개별 파일 링크) 격자를
-파싱한다. 링크는 두 형태가 섞여 있다: 최근 파일은 `https://nbs.sk/dokument/{uuid}/stiahnut/?force=true`
-(UUID 기반 CMS 다운로드), 과거 파일(~2022년경까지)은 `https://nbs.sk/_img/Documents/STATIST/ZSU/
-v5-12/v5-12a@YYYYMM.xls(x)` 직접 경로다. 두 형태 모두 페이지 HTML에서 직접 추출되므로 URL 패턴을
-추측할 필요가 없다.
+The page itself is server-rendered plain HTML (no JS rendering needed, can be parsed directly
+with requests; the requires_js=true flag stored in targets.json turned out to be inaccurate), so
+we fetch the page and parse, from the table in the "Deposits and loans received – sector
+break-down" section, a grid of year(row) x month (roman numerals I~XII, each a separate file
+link). The links come in two mixed forms: recent files use
+`https://nbs.sk/dokument/{uuid}/stiahnut/?force=true` (UUID-based CMS download), while older
+files (up to roughly 2022) use the direct path `https://nbs.sk/_img/Documents/STATIST/ZSU/
+v5-12/v5-12a@YYYYMM.xls(x)`. Both forms are extracted directly from the page HTML, so there is
+no need to guess the URL pattern.
 
-파일 포맷은 시기에 따라 3세대로 나뉜다(실측 확인):
-    1) 2005~2008 연간 아카이브(`v5-12a@YYYY.xls`, 연 1개 파일에 월별 시트): 유로 도입 전
-       SKK/EUR/OFC 3통화 체계로 완전히 다른 레이아웃. 이 파서는 다루지 않는다(아래 '알려진 공백' 참고).
-    2) 2009-01~2011-12: "SECTORS"/"Currency" 헤더의 행 기반 레이아웃. 섹터가 행, 통화(EUR/CM)가
-       섹터마다 2행 1쌍으로 반복된다. "EURO area - Domestic" 행 그룹의 바로 다음 TOTAL(EUR)/
-       (CM) 행 쌍이 거주자 전체 섹터 합계다. DEPOSITS TOTAL 값은 열 C(0-idx 2)에 있다(헤더 텍스트로
-       'DEPOSITS'+'TOTAL' 확인). TD = EUR값+CM값, FCD = CM값(외화 전체를 하나로 묶은 값).
-    3) 2012-01~현재: "row no." 헤더가 있는 라벨 기반 레이아웃('Total deposits'/'Deposits in EUR'/
-       'Deposits in foreign currency' 등 행 라벨이 그대로 지표를 알려준다). 열 구성은 왼쪽부터
-       TOTAL(전세계 전체) -> [2016년경부터 삽입된 'Euro area'(유로존 전체)] -> Domestic(거주자
-       전체, 이후 열들은 이 거주자 합계를 섹터별로 쪼갠 하위 열) 순서다. 'Euro area' 열 유무로
-       "Domestic" 합계 열의 위치가 밀리므로(2012~2015경: TOTAL 바로 다음 열, 2016~: TOTAL, Euro
-       area 다음 열), 헤더 텍스트에서 'all sectors'/'euro area' 문자열을 검색해 매 파일마다
-       동적으로 위치를 찾는다. TD = 'Total deposits' 행의 Domestic 열, FCD = 'Deposits in foreign
-       currency' 행의 Domestic 열. 안전장치로 'Deposits in EUR' 행 값 + FCD가 TD와 (반올림 오차
-       이내로) 일치하는지 매 파일 검증하고, 불일치하면(Domestic 열을 잘못 짚었다는 뜻) 그 달은
-       조용히 스킵한다(틀린 값보다 결측이 안전하다는 이 프로젝트의 원칙).
+The file format falls into three generations depending on the period (confirmed empirically):
+    1) 2005-2008 annual archives (`v5-12a@YYYY.xls`, one file per year with monthly sheets):
+       pre-euro layout entirely, using a three-currency SKK/EUR/OFC scheme with a completely
+       different structure. This parser does not handle it (see "Known gaps" below).
+    2) 2009-01 to 2011-12: row-based layout with "SECTORS"/"Currency" headers. Sectors are rows,
+       and currency (EUR/CM) repeats as a pair of two rows per sector. The TOTAL(EUR)/(CM) row
+       pair immediately following the "EURO area - Domestic" row group is the aggregate across
+       all resident sectors. The DEPOSITS TOTAL value sits in column C (0-indexed 2), confirmed
+       via header text containing both 'DEPOSITS' and 'TOTAL'. TD = EUR value + CM value,
+       FCD = CM value (all foreign currencies combined into one figure).
+    3) 2012-01 to present: label-based layout with a "row no." header (row labels such as
+       'Total deposits'/'Deposits in EUR'/'Deposits in foreign currency' directly identify the
+       indicator). Column order from left to right is TOTAL (worldwide aggregate) ->
+       [an 'Euro area' column inserted from around 2016 onward] -> Domestic (aggregate across
+       residents, with subsequent columns breaking this resident total down by sector). Because
+       the presence of the 'Euro area' column shifts the position of the "Domestic" total column
+       (around 2012-2015: the column right after TOTAL; from 2016 on: the column after TOTAL,
+       Euro area), the position is located dynamically for every file by searching the header
+       text for the strings 'all sectors'/'euro area'. TD = the Domestic column of the
+       'Total deposits' row, FCD = the Domestic column of the 'Deposits in foreign currency' row.
+       As a safeguard, every file is validated by checking that the 'Deposits in EUR' row value
+       plus FCD matches TD (within rounding tolerance); on a mismatch (meaning the Domestic
+       column was misidentified) that month is silently skipped (this project's principle that
+       missing data is safer than wrong data).
 
-알려진 공백: 2005~2008(유로 도입 전, SKK 기준)은 통화 정의 자체가 다르고(SKK가 자국통화, EUR도
-'외화'로 잡힘) 레이아웃도 완전히 다른 3번째 포맷이라 이번 구현 범위에서 제외했다. 2009-01부터는
-이미 유로가 자국통화이므로 FCD/TD 정의가 현재와 일관된다(불연속 없음).
+Known gaps: 2005-2008 (pre-euro, SKK-denominated) is excluded from this implementation's scope
+because the currency definitions themselves differ (SKK is the domestic currency, and EUR also
+counts as "foreign currency") and the layout is an entirely different, third format. From
+2009-01 onward the euro is already the domestic currency, so the FCD/TD definitions are
+consistent with the current ones (no discontinuity).
 
-ECB SDMX BSI API 검토 결과: 슬로바키아(SK)의 거주자 총예금 성격 시리즈(BS_COUNT_SECTOR=2000,
-Non-MFIs, COUNT_AREA=U6 Domestic)는 CURRENCY_TRANS=Z01(All currencies combined) 한 종류만
-존재하고 EUR/외화 통화별 분해가 없다(실측: `M.SK.N.A.L20.A.1.U6.2000..` 조회 시 Z01만 반환).
-NFC(2240) 등 좁은 하위 섹터에서는 통화별 분해가 있지만 일반 거주자 전체 섹터 기준은 아니므로
-이번 구현에서는 NBS 원본 파일을 직접 사용한다.
+Review of the ECB SDMX BSI API: for Slovakia (SK), the resident total-deposits-type series
+(BS_COUNT_SECTOR=2000, Non-MFIs, COUNT_AREA=U6 Domestic) exists only with
+CURRENCY_TRANS=Z01 (All currencies combined) and has no EUR/foreign-currency breakdown
+(confirmed empirically: querying `M.SK.N.A.L20.A.1.U6.2000..` returns only Z01). Narrower
+subsectors such as NFC (2240) do have a currency breakdown, but that is not the general
+all-resident-sectors basis, so this implementation uses the original NBS files directly instead.
 
-xlrd 2.x는 이 사이트의 구형 .xls 일부에서 NAME 정의(매크로/워크북 이름 범위)에 포함된 특정
-토큰(0x2d AreaN)을 만나면 파싱을 포기하고 예외를 던진다(실제 셀 데이터와는 무관한 워크북
-메타데이터 파싱 실패). `xlrd.book.evaluate_name_formula`를 이 모듈 내에서만 일시적으로
-no-op으로 바꿔치기해 우회한다(호출 직후 원복).
+xlrd 2.x gives up parsing and raises an exception when it encounters a specific token (0x2d
+AreaN) inside a NAME definition (macro/workbook named range) in some of this site's older .xls
+files (a workbook-metadata parsing failure unrelated to the actual cell data). We work around
+this by temporarily monkey-patching `xlrd.book.evaluate_name_formula` to a no-op within this
+module only (restored immediately after the call).
 """
 
 import re
@@ -57,7 +70,7 @@ from src.utils.logger import get_logger
 
 logger = get_logger(__name__)
 
-FILE_URL = "__RENDER__"  # 페이지 내 여러 월별 파일을 순회해야 하므로 단일 파일 다운로드가 아니다.
+FILE_URL = "__RENDER__"  # Not a single file download, since we need to iterate over multiple monthly files on the page.
 
 DEPOSITS_PAGE_URL = (
     "https://nbs.sk/en/statistics/financial-institutions/banks/"
@@ -79,16 +92,17 @@ _ROW_RE = re.compile(r"<tr[^>]*>(.*?)</tr>", re.S)
 _YEAR_CELL_RE = re.compile(r"^\s*<t[hd][^>]*>\s*(\d{4})\s*</t[hd]>")
 _LINK_CELL_RE = re.compile(r'<a href="([^"]+)"[^>]*>\s*([IVX]+)\s*<')
 
-_REL_TOL = 0.02  # Domestic 열 판정 정합성 검증 허용 오차(반올림/천단위 차이 흡수)
+_REL_TOL = 0.02  # Tolerance for the Domestic-column consistency check (absorbs rounding/thousands-place differences)
 
-_OLE_SIG = b"\xd0\xcf\x11\xe0"  # 구형 .xls(OLE) 시그니처
-_ZIP_SIG = b"PK"  # 신형 .xlsx(ZIP) 시그니처
+_OLE_SIG = b"\xd0\xcf\x11\xe0"  # Legacy .xls (OLE) signature
+_ZIP_SIG = b"PK"  # Modern .xlsx (ZIP) signature
 
 
 def _download_file(url: str, retries: int = 4, backoff: float = 1.5) -> bytes | None:
-    """nbs.sk의 WAF가 간헐적으로 정상 요청도 403(HTML 에러 페이지)으로 막는 현상이 실측 확인됨
-    (동일 URL을 연속 재시도하면 성공하는 경우가 대부분 -> 일시적 레이트리밋으로 판단).
-    응답이 실제 xls/xlsx 시그니처로 시작하지 않으면(= WAF 차단 페이지 등) 재시도한다."""
+    """Confirmed empirically: nbs.sk's WAF intermittently blocks even legitimate requests with a
+    403 (HTML error page) (retrying the same URL repeatedly mostly succeeds -> assumed to be a
+    transient rate limit). Retries whenever the response doesn't actually start with an
+    xls/xlsx signature (i.e. a WAF block page or similar)."""
     for attempt in range(retries):
         try:
             resp = requests.get(url, headers=_HEADERS, timeout=30)
@@ -103,12 +117,13 @@ def _download_file(url: str, retries: int = 4, backoff: float = 1.5) -> bytes | 
 
 
 def parse(content: bytes, country_code: str) -> pd.DataFrame:
-    raise NotImplementedError("SVK는 render()를 통해 처리한다 (여러 월별 파일을 순회해야 함)")
+    raise NotImplementedError("SVK is handled via render() (must iterate over multiple monthly files)")
 
 
 def _extract_month_links(html: str) -> dict[tuple[int, int], str]:
-    """'sector break-down' 섹션의 (year, month) -> 파일 URL 매핑을 추출한다.
-    2005~2008 연간 아카이브(별도 표, 완전히 다른 레이아웃)는 의도적으로 제외한다."""
+    """Extracts the (year, month) -> file URL mapping from the 'sector break-down' section.
+    The 2005-2008 annual archives (a separate table with a completely different layout) are
+    deliberately excluded."""
     import html as htmlmod
 
     i0 = html.find(_SECTION_START)
@@ -135,7 +150,7 @@ def _extract_month_links(html: str) -> dict[tuple[int, int], str]:
 
 
 def _matrix_from_bytes(content: bytes) -> list[list]:
-    """xlsx/xls 바이트를 셀 값의 2차원 리스트로 변환한다."""
+    """Converts xlsx/xls bytes into a 2D list of cell values."""
     if content[:2] == b"PK":
         wb = openpyxl.load_workbook(BytesIO(content), data_only=True)
         ws = wb.worksheets[0]
@@ -159,7 +174,7 @@ def _norm(v) -> str:
 
 
 def _find_header_end(matrix: list[list]) -> int | None:
-    """'a', 'b', 1, 2, 3 ... 형태의 열 번호 행(신형 포맷 마커)의 인덱스를 찾는다."""
+    """Finds the index of the column-number row shaped like 'a', 'b', 1, 2, 3 ... (a marker of the new format)."""
     for r, row in enumerate(matrix):
         if len(row) >= 2 and _norm(row[0]) == "a" and _norm(row[1]) == "b":
             return r
@@ -167,8 +182,9 @@ def _find_header_end(matrix: list[list]) -> int | None:
 
 
 def _find_domestic_column(matrix: list[list], header_end: int) -> tuple[int | None, int | None]:
-    """헤더 텍스트에서 'all sectors'(TOTAL 열)과 'euro area'(있으면) 열을 찾아
-    거주자(Domestic) 합계 열 위치를 동적으로 계산한다. (domestic_col, total_col) 반환."""
+    """Locates the 'all sectors' (TOTAL column) and, if present, the 'euro area' column in the
+    header text, and dynamically computes the position of the resident (Domestic) total column.
+    Returns (domestic_col, total_col)."""
     ncols = max((len(r) for r in matrix[:header_end]), default=0)
     col_text = []
     for c in range(ncols):
@@ -193,7 +209,7 @@ def _parse_new_format(matrix: list[list], year: int, month: int, country_code: s
 
     domestic_col, _ = _find_domestic_column(matrix, header_end)
     if domestic_col is None:
-        logger.warning("[%s] %04d-%02d: Domestic 열을 찾지 못함, 스킵", country_code, year, month)
+        logger.warning("[%s] %04d-%02d: could not find Domestic column, skipping", country_code, year, month)
         return []
 
     td_val = fcd_val = eur_val = None
@@ -209,13 +225,13 @@ def _parse_new_format(matrix: list[list], year: int, month: int, country_code: s
             fcd_val = row[domestic_col]
 
     if not all(isinstance(v, (int, float)) for v in (td_val, fcd_val, eur_val)):
-        logger.warning("[%s] %04d-%02d: 필요한 행(Total/EUR/foreign currency)을 찾지 못함, 스킵",
+        logger.warning("[%s] %04d-%02d: could not find required rows (Total/EUR/foreign currency), skipping",
                         country_code, year, month)
         return []
 
-    # 정합성 검증: EUR + 외화 == 전체 (Domestic 열을 잘못 짚었으면 어긋난다)
+    # Consistency check: EUR + foreign currency == total (mismatch means the Domestic column was misidentified)
     if abs((eur_val + fcd_val) - td_val) > max(1.0, abs(td_val) * _REL_TOL):
-        logger.warning("[%s] %04d-%02d: EUR+FCD != TD (Domestic 열 오판 추정), 스킵",
+        logger.warning("[%s] %04d-%02d: EUR+FCD != TD (likely Domestic column misidentification), skipping",
                         country_code, year, month)
         return []
 
@@ -223,7 +239,7 @@ def _parse_new_format(matrix: list[list], year: int, month: int, country_code: s
 
 
 def _parse_old_format(matrix: list[list], year: int, month: int, country_code: str, now: str) -> list[dict]:
-    # "SECTORS" / "Currency" / "DEPOSITS" 헤더가 있는지 먼저 확인(형식 오탐 방지)
+    # First check whether the "SECTORS" / "Currency" / "DEPOSITS" headers are present (avoids false-positive format detection)
     has_marker = any(
         any(_norm(v) == "deposits" for v in row) and any(_norm(v) == "sectors" for v in row)
         for row in matrix[:15]
@@ -236,14 +252,14 @@ def _parse_old_format(matrix: list[list], year: int, month: int, country_code: s
         None,
     )
     if section_row is None or section_row + 2 >= len(matrix):
-        logger.warning("[%s] %04d-%02d: 'EURO area - Domestic' 섹션을 찾지 못함, 스킵",
+        logger.warning("[%s] %04d-%02d: could not find the 'EURO area - Domestic' section, skipping",
                         country_code, year, month)
         return []
 
     eur_row = matrix[section_row + 1]
     cm_row = matrix[section_row + 2]
     if _norm(eur_row[1]) != "eur" or _norm(cm_row[1]) != "cm":
-        logger.warning("[%s] %04d-%02d: Domestic TOTAL 행 쌍(EUR/CM)을 찾지 못함, 스킵",
+        logger.warning("[%s] %04d-%02d: could not find the Domestic TOTAL row pair (EUR/CM), skipping",
                         country_code, year, month)
         return []
 
@@ -276,7 +292,7 @@ def _parse_month(content: bytes, year: int, month: int, country_code: str, now: 
     try:
         matrix = _matrix_from_bytes(content)
     except Exception:
-        logger.exception("[%s] %04d-%02d 파일 파싱 실패(워크북 열기 오류), 스킵", country_code, year, month)
+        logger.exception("[%s] %04d-%02d file parsing failed (workbook open error), skipping", country_code, year, month)
         return []
 
     rows = _parse_new_format(matrix, year, month, country_code, now)
@@ -300,19 +316,19 @@ def render(target: dict) -> pd.DataFrame:
             pass
         time.sleep(1.5 * (attempt + 1))
     if page_html is None:
-        logger.warning("[%s] deposits 페이지 요청 실패(WAF 일시 차단 추정, 재시도 소진)", country_code)
+        logger.warning("[%s] deposits page request failed (assumed temporary WAF block, retries exhausted)", country_code)
         return pd.DataFrame(columns=["country_code", "year", "period", "indicator", "value", "updated_at"])
 
     links = _extract_month_links(page_html)
     if not links:
-        logger.warning("[%s] deposits 페이지에서 월별 파일 링크를 하나도 찾지 못함", country_code)
+        logger.warning("[%s] found no monthly file links on the deposits page", country_code)
         return pd.DataFrame(columns=["country_code", "year", "period", "indicator", "value", "updated_at"])
 
     all_rows: list[dict] = []
     for (year, month), url in sorted(links.items()):
         content = _download_file(url)
         if content is None:
-            logger.warning("[%s] %04d-%02d 파일 다운로드 실패(재시도 소진), 스킵", country_code, year, month)
+            logger.warning("[%s] %04d-%02d file download failed (retries exhausted), skipping", country_code, year, month)
             continue
         all_rows.extend(_parse_month(content, year, month, country_code, now))
 

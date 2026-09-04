@@ -1,58 +1,76 @@
-"""Sierra Leone: Bank of Sierra Leone(BSL) Monetary Policy Report(분기) PDF, 'Monetary Survey' 부록 표.
+"""Sierra Leone: Bank of Sierra Leone(BSL) Monetary Policy Report (quarterly) PDF, 'Monetary Survey' appendix table.
 
-bsl.gov.sl은 저장돼 있던 www.bsl.gov.sl(DNS 오류) 대신 www. 없는 https://bsl.gov.sl 로
-접속해야 한다(200 OK 확인됨). 요청 시 기본 requests User-Agent로는 커넥션이 리셋되지만
-(브라우저처럼 보이는 UA를 요구하는 방화벽/CDN 설정으로 추정) src.collectors.base.download()가
-쓰는 브라우저 UA 헤더면 정상 응답한다.
+bsl.gov.sl must be accessed via https://bsl.gov.sl without the www. prefix
+(the originally stored www.bsl.gov.sl gives a DNS error); the bare-domain
+version returns 200 OK. Requests using the default requests User-Agent get
+the connection reset (presumably a firewall/CDN setup that requires a
+browser-like UA), but the browser UA header used by
+src.collectors.base.download() gets a normal response.
 
-BSL은 'Statistics Data Warehouse'(app.datawarehousepro.com)와 Open Data for Africa
-포털(cb-sierraleone.opendataforafrica.org)을 통계 허브로 안내하지만, 후자는 Cloudflare
-봇 챌린지("Just a moment...")로 막혀 있어 requests는 물론 Playwright 헤드리스 브라우저로도
-통과하지 못했다(2026-08 확인) - 이 경로는 자동화 불가.
+BSL points users to the 'Statistics Data Warehouse' (app.datawarehousepro.com)
+and the Open Data for Africa portal
+(cb-sierraleone.opendataforafrica.org) as its statistics hub, but the latter
+is blocked by a Cloudflare bot challenge ("Just a moment...") that neither
+plain requests nor a Playwright headless browser could get past (checked
+2026-08) — this path cannot be automated.
 
-대신 BSL이 직접 호스팅하는 분기별 Monetary Policy Report(MPR) PDF의 부록에 있는
-'Table 4: Monetary Survey'(구 명칭 'Table 3/4: Money Supply and Components')에
-거주자 외화예금 항목이 명시적으로 존재한다:
+Instead, the appendix of BSL's own directly-hosted quarterly Monetary Policy
+Report (MPR) PDF has an explicit resident foreign-currency deposits line item
+in 'Table 4: Monetary Survey' (formerly named 'Table 3/4: Money Supply and
+Components'):
 
-    Demand deposit                          <- 요구불예금
-    Quasi money                             <- 준화폐성예금 합계
-      o.w. Foreign currency deposit         <- 그 중 외화예금 (FCD)
-      Time and saving deposit               <- 정기/저축성예금(자국통화)
+    Demand deposit                          <- demand deposits
+    Quasi money                             <- quasi-money deposits (subtotal)
+      o.w. Foreign currency deposit         <- of which, foreign-currency deposits (FCD)
+      Time and saving deposit               <- time/savings deposits (local currency)
 
-    FCD = "o.w. Foreign currency deposit" 행
-    TD  = "Demand deposit" + "Quasi money" 행 (= 은행에 대한 총 예금성 부채, 정부/은행간 제외)
+    FCD = the "o.w. Foreign currency deposit" row
+    TD  = the "Demand deposit" + "Quasi money" rows (= total deposit liabilities
+          to banks, excluding government/interbank)
 
-단위는 표마다 'Billions of Leones'(2022년 8월 리디노미네이션 이전, 구 SLL) 또는
-'Millions of Leones'(리디노미네이션 이후, 신 SLE)로 표기되지만 두 단위는 수치적으로
-동일하다(신 1 SLE = 구 1,000 SLL 이므로 구 SLL 십억 단위 = 신 SLE 백만 단위) - 실제로
-2022Q1 Broad Money(M2)=15,163.12가 리디노미네이션 전후 보고서 모두에서 동일하게 나타나는
-것으로 교차 확인했다. 따라서 별도 환산 없이 원자료 값을 그대로 사용한다.
+Units are labeled per-table as either 'Billions of Leones' (before the August
+2022 redenomination, old SLL) or 'Millions of Leones' (after redenomination,
+new SLE), but the two units are numerically equivalent (1 new SLE = 1,000 old
+SLL, so a billion in old SLL equals a million in new SLE) — confirmed by
+cross-checking that 2022Q1 Broad Money (M2)=15,163.12 appears identically in
+reports both before and after redenomination. So we use the raw values as-is,
+with no separate unit conversion.
 
-모든 MPR이 이 부록 표를 포함하지는 않는다(약 절반은 서술형 %변화만 있고 절대값 표가 없음).
-render()는 Publications.html에서 'Monetary Policy Report' 링크를 모두 찾아 각 PDF를
-내려받고, 표가 있는 PDF에서만 데이터를 뽑는다.
+Not every MPR includes this appendix table (roughly half only have a
+narrative % change with no absolute-value table). render() finds every
+'Monetary Policy Report' link on Publications.html, downloads each PDF, and
+extracts data only from the PDFs that contain the table.
 
-MPR은 2021년부터만 있어(확인 시점 최고 16분기), 2026-08-19 사용자 제보로 'Annual Report
-and Statement of Accounts'(2013~2024년치가 Publications.html에 정적 <a href> 링크로
-그대로 있음 - hover 메뉴처럼 보여도 실제로는 JS 없이도 바로 파싱 가능) PDF도 함께 수집하도록
-확장했다. 이 연차보고서들도 부록에 'Table N: Monetary Survey (Million/Billion Leones)'
-표를 싣는데, 헤더가 분기번호(2025Q1)가 아니라 월-연도('Dec-12 Mar-13 Jun-13 ...') 형식이고
-행 라벨도 'o.w. Foreign currency deposit'가 아니라 그냥 'Foreign Currency Deposits'다.
-Dec/Mar/Jun/Sep 월말 스냅샷은 각각 Q4/Q1/Q2/Q3에 대응하므로 동일한 'YYYY-QN' 포맷으로
-변환해 MPR 데이터와 병합한다. 모든 연차보고서가 이 표를 텍스트로 담고 있진 않다(예: 2017년판은
-스캔 이미지라 텍스트 추출 불가 - 자동 스킵).
-FCD = 'Foreign Currency Deposits' 행 (o.w. 접두어 없음). TD = 'Demand Deposits' + 'Quasi Money'
-(MPR 쪽과 동일 정의).
+MPRs only go back to 2021 (16 quarters max as of the check date), so on a
+2026-08-19 user report we extended the parser to also collect 'Annual Report
+and Statement of Accounts' PDFs (2013-2024 are present on Publications.html as
+plain static <a href> links — despite looking like a hover menu, they're
+directly parseable with no JS needed). These annual reports also carry a
+'Table N: Monetary Survey (Million/Billion Leones)' table in their appendix,
+but the header uses month-year format ('Dec-12 Mar-13 Jun-13 ...') instead of
+quarter numbers (2025Q1), and the row label is plain 'Foreign Currency
+Deposits' rather than 'o.w. Foreign currency deposit'. The Dec/Mar/Jun/Sep
+month-end snapshots correspond to Q4/Q1/Q2/Q3 respectively, so we convert them
+to the same 'YYYY-QN' format and merge with the MPR data. Not every annual
+report has this table as extractable text (e.g. the 2017 edition is a scanned
+image with no extractable text — automatically skipped).
+FCD = the 'Foreign Currency Deposits' row (no "o.w." prefix). TD = 'Demand
+Deposits' + 'Quasi Money' (same definition as the MPR side).
 
-표 헤더 행(예: 'Millions of Leones 2025Q1 2025Q4 2026Q1 2025Q4 2026Q1 2025Q4 2026Q1')은
-분기 라벨을 실제 레벨 컬럼 수만큼 나열한 뒤, 분기증감/전년동기증감 컬럼에서 재사용(뒤쪽
-컬럼일수록 라벨이 반복)한다. 레벨 컬럼 개수는 라벨이 처음 반복되기 시작하는 지점까지로
-판별한다(예: 3개 레벨 컬럼 뒤 2개 분기증감 + 2개 전년동기증감 = 총 7개 토큰).
+The table header row (e.g. 'Millions of Leones 2025Q1 2025Q4 2026Q1 2025Q4
+2026Q1 2025Q4 2026Q1') lists the quarter labels once for the actual level
+columns, then reuses them (repeating the label) for the quarter-over-quarter
+and year-over-year change columns further right. We determine the number of
+level columns by finding where a label first starts repeating (e.g. 3 level
+columns followed by 2 QoQ-change + 2 YoY-change columns = 7 tokens total).
 
-일부 최신 보고서(예: 2025년 12월호)는 pdfplumber 텍스트 추출 순서가 뒤바뀌어 레벨 값이
-담긴 숫자만 있는 줄이 라벨 줄보다 먼저 나온다('8,527.04 9,564.94 10,116.74' 다음 줄에
-'Reserve money (0.001) 5.77 19.87 18.64'). 이 경우 라벨 줄 자체의 숫자 개수가 레벨
-컬럼 수보다 적으면(증감 컬럼 수만 있으면) 바로 앞 줄에서 레벨 값을 가져온다.
+Some recent reports (e.g. the December 2025 issue) have pdfplumber's text
+extraction order reversed, so the line containing only the numeric level
+values comes before the label line ('8,527.04 9,564.94 10,116.74' followed on
+the next line by 'Reserve money (0.001) 5.77 19.87 18.64'). In that case, if
+the label line itself has fewer numbers than the level-column count (i.e. only
+the change-column numbers), we pull the level values from the line right
+before it.
 """
 
 import re
@@ -98,7 +116,7 @@ _TABLE_MARKER_RE = re.compile(r"foreign currency deposit", re.I)
 
 
 def parse(content: bytes, country_code: str) -> pd.DataFrame:
-    raise NotImplementedError("SLE는 render()를 통해 처리한다 (여러 MPR PDF를 순회해야 함)")
+    raise NotImplementedError("SLE is handled via render() (must iterate over multiple MPR PDFs)")
 
 
 def _clean_number(tok: str) -> float:
@@ -109,11 +127,13 @@ def _clean_number(tok: str) -> float:
 
 
 def _period_columns(header_line: str) -> list[str]:
-    """헤더 줄에서 분기 라벨 토큰들을 뽑아 '레벨 컬럼' 구간만 반환한다(첫 반복 직전까지).
+    """Extracts quarter label tokens from the header line and returns only the
+    'level column' span (up to just before the first repeat).
 
-    'YYYYQN' 형식(MPR)과 'Mon-YY' 월말 스냅샷 형식(Annual Report — Dec/Mar/Jun/Sep
-    분기말이 대부분) 둘 다 지원하며, 후자는 대응하는 분기로 변환해 동일한 'YYYYQN'
-    라벨 네임스페이스로 합친다."""
+    Supports both the 'YYYYQN' format (MPR) and the 'Mon-YY' month-end
+    snapshot format (Annual Report — mostly Dec/Mar/Jun/Sep quarter-ends);
+    the latter is converted to the corresponding quarter and merged into the
+    same 'YYYYQN' label namespace."""
     tokens = [f"{y}Q{q}" for y, q in _PERIOD_TOKEN_RE.findall(header_line)]
     if not tokens:
         for mon, yy in _MONTH_YEAR_TOKEN_RE.findall(header_line):
@@ -134,11 +154,14 @@ _PURE_NUMERIC_LINE_RE = re.compile(r"^[\d,.\s()-]+$")
 
 
 def _row_numbers(lines: list[str], idx: int, n: int) -> list[float] | None:
-    """lines[idx]가 목표 라벨을 담은 줄일 때, 레벨 값 n개를 찾는다.
+    """When lines[idx] is the line containing the target label, finds the n
+    level values.
 
-    일부 보고서는 pdfplumber가 레벨 값 줄과 라벨(+증감값) 줄의 순서를 뒤바꿔 추출한다
-    (레벨 값만 있는 숫자 전용 줄이 라벨 줄보다 먼저 나옴). 이 경우 라벨 줄 자체의 숫자는
-    증감값(레벨이 아님)이므로, 숫자만으로 구성된 바로 앞 줄을 우선 확인한다.
+    Some reports have pdfplumber extract the level-value line and the label
+    (+change-value) line in reversed order (a numbers-only line with just the
+    level values comes before the label line). In that case, the numbers on
+    the label line itself are change values (not levels), so we first check
+    the line right before it if it consists purely of numbers.
     """
     if idx > 0:
         prev = lines[idx - 1].strip()
@@ -155,7 +178,7 @@ def _row_numbers(lines: list[str], idx: int, n: int) -> list[float] | None:
 
 
 def _extract_table(text: str) -> dict[str, tuple[float, float]]:
-    """페이지 텍스트에서 period -> (FCD, TD) 매핑을 뽑는다."""
+    """Extracts a period -> (FCD, TD) mapping from the page text."""
     lines = text.splitlines()
 
     header_idx = None
@@ -205,7 +228,7 @@ def _parse_mpr_pdf(content: bytes) -> dict[str, tuple[float, float]]:
                     if data:
                         return data
     except Exception as e:
-        logger.warning("[SLE] PDF 파싱 실패: %s", e)
+        logger.warning("[SLE] failed to parse PDF: %s", e)
     return {}
 
 
@@ -213,7 +236,7 @@ def _collect_mpr_links() -> list[str]:
     try:
         html = download(PUBLICATIONS_URL).decode("utf-8", errors="ignore")
     except Exception as e:
-        logger.warning("[SLE] Publications.html 접근 실패: %s", e)
+        logger.warning("[SLE] failed to access Publications.html: %s", e)
         return []
 
     links = set()
@@ -231,7 +254,7 @@ def _collect_annual_links() -> list[str]:
     try:
         html = download(PUBLICATIONS_URL).decode("utf-8", errors="ignore")
     except Exception as e:
-        logger.warning("[SLE] Publications.html 접근 실패: %s", e)
+        logger.warning("[SLE] failed to access Publications.html: %s", e)
         return []
 
     from urllib.parse import quote
@@ -247,10 +270,10 @@ def render(target: dict) -> pd.DataFrame:
     now = datetime.now(timezone.utc).isoformat()
 
     links = _collect_mpr_links()
-    logger.info("[%s] Monetary Policy Report PDF %d개 발견", country_code, len(links))
+    logger.info("[%s] found %d Monetary Policy Report PDFs", country_code, len(links))
 
     annual_links = _collect_annual_links()
-    logger.info("[%s] Annual Report PDF %d개 발견", country_code, len(annual_links))
+    logger.info("[%s] found %d Annual Report PDFs", country_code, len(annual_links))
 
     all_data: dict[str, tuple[float, float]] = {}
     # Annual reports first (older, spans further back) so MPR's more precise
@@ -259,7 +282,7 @@ def render(target: dict) -> pd.DataFrame:
         try:
             content = download(url, referer=PUBLICATIONS_URL)
         except Exception as e:
-            logger.warning("[%s] Annual Report 다운로드 실패, 스킵: %s (%s)", country_code, url, e)
+            logger.warning("[%s] Annual Report download failed, skipping: %s (%s)", country_code, url, e)
             continue
         data = _parse_mpr_pdf(content)
         if data:
@@ -271,7 +294,7 @@ def render(target: dict) -> pd.DataFrame:
         try:
             content = download(url, referer=PUBLICATIONS_URL)
         except Exception as e:
-            logger.warning("[%s] PDF 다운로드 실패, 스킵: %s (%s)", country_code, url, e)
+            logger.warning("[%s] PDF download failed, skipping: %s (%s)", country_code, url, e)
             continue
 
         data = _parse_mpr_pdf(content)
@@ -279,7 +302,7 @@ def render(target: dict) -> pd.DataFrame:
             all_data[period] = values
 
     if not all_data:
-        logger.warning("[%s] Monetary Survey 표를 찾을 수 없음", country_code)
+        logger.warning("[%s] Monetary Survey table not found", country_code)
         return pd.DataFrame(columns=["country_code", "year", "period", "indicator", "value", "updated_at"])
 
     rows = []

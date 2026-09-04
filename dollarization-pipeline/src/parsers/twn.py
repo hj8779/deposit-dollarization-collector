@@ -1,37 +1,46 @@
-"""Taiwan: Central Bank of the Republic of China (Taiwan, CBC) 공식 오픈데이터 CSV
-'All Currency Institutions Deposit'(전 금융기관 예금) 월별 시계열.
+"""Taiwan: Central Bank of the Republic of China (Taiwan, CBC) official open-data CSV,
+'All Currency Institutions Deposit' monthly time series.
 
-data.gov.tw 데이터셋 6534("전체통화기관존款")가 실제로 배포하는 리소스는 data.gov.tw
-자체가 아니라 CBC(중앙은행) 사이트에 직접 호스팅된 CSV다:
+data.gov.tw dataset 6534 ("all-monetary-institutions deposits") is nominally listed on
+data.gov.tw, but the resource it actually points to is a CSV hosted directly on the CBC
+(central bank) site, not on data.gov.tw itself:
 
-    https://www.cbc.gov.tw/public/data/OpenData/經研處/EF03M01.csv  (월별, 1987M05~)
-    https://www.cbc.gov.tw/public/data/OpenData/經研處/EF03Y01.csv  (연도별)
+    https://www.cbc.gov.tw/public/data/OpenData/經研處/EF03M01.csv  (monthly, from 1987M05)
+    https://www.cbc.gov.tw/public/data/OpenData/經研處/EF03Y01.csv  (annual)
 
-월별 파일 하나로 1987년부터 현재까지 전 구간이 다 들어있어 아카이브 순회가 필요 없다
-(단일 파일 다운로드, `FILE_URL` 방식). 기존 targets.json 메모에 남아있던 "SSL/접속 실패"는
-`https://www.cbc.gov.tw/en/cp-902-123617-370e1-2.html`(PDF 게시물 목록 페이지) 기준이었고,
-CSV 다운로드 자체는 특별한 헤더/TLS 설정 없이 정상 접속된다(2026-08 기준 확인).
+A single monthly file covers the entire span from 1987 to the present, so no archive
+crawl is needed (single-file download, `FILE_URL` pattern). The "SSL/connection failure"
+note left over in the old targets.json memo referred to
+`https://www.cbc.gov.tw/en/cp-902-123617-370e1-2.html` (the PDF listing page); the CSV
+download itself works fine with no special headers or TLS settings (verified as of
+2026-08).
 
-컬럼 구성(BOM 붙은 UTF-8, 헤더 1행):
-    월                                              -> "YYYYMmm" (예: "2023M12")
-    貨幣機構存款-合計-期底餘額-億元                    -> 총예금(TD) 기말잔액, 億元(1億=1e8 NTD)
-    貨幣機構存款-企業及個人存款-外匯存款-期底餘額-億元   -> 기업+개인의 외화예금(FCD) 기말잔액
-    (나머지는 YoY 증가율 및 세부 항목 - 사용하지 않음)
+Column layout (UTF-8 with BOM, single header row):
+    月 (month)                                        -> "YYYYMmm" (e.g. "2023M12")
+    貨幣機構存款-合計-期底餘額-億元 (deposits-total-EOP balance-億元)
+                                                       -> total deposits (TD) end-of-period
+                                                          balance, in 億元 (1億 = 1e8 NTD)
+    貨幣機構存款-企業及個人存款-外匯存款-期底餘額-億元
+    (deposits-corporate & individual-FX deposits-EOP balance-億元)
+                                                       -> corporate + individual foreign
+                                                          currency deposits (FCD) EOP balance
+    (remaining columns are YoY growth rates and sub-items - not used)
 
-단위는 億元(1億元=1e8 NTD)를 그대로 유지한다(다른 국가 파서들처럼 자국 통화 원단위를 그대로
-싣는 관례). FCD_TD_RATIO도 함께 계산해 abw.py와 동일한 3-지표(FCD/TD/FCD_TD_RATIO) 컨벤션을
-따른다.
+The unit 億元 (1億元 = 1e8 NTD) is kept as-is, following the same convention as other
+country parsers of preserving the native-currency raw unit. FCD_TD_RATIO is also computed,
+matching the 3-indicator (FCD/TD/FCD_TD_RATIO) convention used in abw.py.
 
-검증: 2023M12 FCD=89,717억元(=8,971.7十億元), TD=594,271억元 -> FCD/TD=15.10%.
-사전 조사 메모("CBC 자체 공표 비율 2023≈15.17%")와 거의 일치(공표 반올림/개정판 차이로 추정).
-2024M12 FCD/TD=14.41%, 2025M12(최신) FCD/TD=13.73%로 조사 메모(14.52%/13.82%)와도 근접해
-데이터 신뢰도를 확인했다.
+Verification: 2023M12 FCD=89,717 億元 (=8,971.7 billion元), TD=594,271 億元 ->
+FCD/TD=15.10%. This is close to the figure from prior research notes ("CBC's own published
+2023 ratio ≈15.17%"), the small gap presumably due to published rounding/revision
+differences. 2024M12 FCD/TD=14.41% and 2025M12 (latest) FCD/TD=13.73% are also close to the
+research notes (14.52%/13.82%), confirming data reliability.
 
-CBC 사이트 인증서에 결함이 있어(Missing Subject Key Identifier) 기본 SSL 컨텍스트로는
-`certificate verify failed`가 발생한다(curl은 관대하게 통과하지만 Python의 기본
-verify=True 경로는 실패; kor.py/jpn.py가 쓰는 것과 동일한 verify=False 우회 패턴을 따른다).
-`src.collectors.base.download()`는 verify 옵션이 없으므로 단일 파일임에도 `__RENDER__` +
-자체 requests 세션으로 처리한다.
+The CBC site's certificate has a defect (missing Subject Key Identifier), so the default
+SSL context raises `certificate verify failed` (curl tolerates it, but Python's default
+verify=True path fails; this follows the same verify=False workaround pattern used by
+kor.py/jpn.py). `src.collectors.base.download()` has no verify option, so even though this
+is a single file, it is handled via `__RENDER__` plus a dedicated requests session.
 """
 
 from datetime import datetime, timezone
@@ -67,7 +76,7 @@ def parse(content: bytes, country_code: str) -> pd.DataFrame:
 
     missing = [c for c in (_PERIOD_COL, _TD_COL, _FCD_COL) if c not in df.columns]
     if missing:
-        logger.warning("[%s] 예상 컬럼 없음: %s", country_code, missing)
+        logger.warning("[%s] expected column(s) missing: %s", country_code, missing)
         return pd.DataFrame(columns=["country_code", "year", "period", "indicator", "value", "updated_at"])
 
     rows = []

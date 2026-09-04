@@ -1,25 +1,27 @@
 """Greece: Bank of Greece deposits-by-sector Excel (3 files, merged).
 
-페이지: https://www.bankofgreece.gr/en/statistics/monetary-and-banking-statistics/deposits
+Source page: https://www.bankofgreece.gr/en/statistics/monetary-and-banking-statistics/deposits
 
-Akamai가 단순 requests/Playwright 기본 헤더를 403으로 차단한다. 실측으로
-`Accept-Encoding: gzip, deflate, br` (br 포함) + 브라우저형 Sec-Fetch 헤더를
-넣으면 RelatedDocuments/*.xls 가 200으로 내려온다(br 없으면 403).
+Akamai blocks plain requests/Playwright default headers with a 403. Empirically,
+sending `Accept-Encoding: gzip, deflate, br` (br included) plus browser-style
+Sec-Fetch headers gets RelatedDocuments/*.xls to return 200 (without br it's 403).
 
-파일 구성 (모두 outstanding, end-of-period, EUR millions):
+File layout (all outstanding, end-of-period, EUR millions):
 1. Deposits_sector_98-00.xls  (1998-03~2000-12)
-   - 민간 거주자(1.2)를 드라크마 / 유로·유로지역통화 / 기타통화로 분해
-   - 그리스 유로 도입(2001) 이전이므로 자국통화=드라크마
+   - Breaks down private-sector resident deposits (1.2) into drachma / EUR &
+     euro-area currencies / other currencies
+   - Predates Greece's euro adoption (2001), so the domestic currency is drachma
    - FCD = In EUR and euro-area currencies + In other currencies
    - TD  = Corporations and Households (1.2)
 2. Deposits_sector.xls  (2001-01~2021-12)
-   - FCD = In other currencies (1.2.ν), 자국통화=euro
+   - FCD = In other currencies (1.2.ν), domestic currency = euro
    - TD  = Corporations and Households private sector (1.2)
-3. Deposits_sector_new.xls  (2019-01~최신)
-   - 동일 라벨/코드 체계, 최신 구간
+3. Deposits_sector_new.xls  (2019-01~latest)
+   - Same label/code scheme, most recent range
 
-겹치는 기간(2019~2021)은 신파일 값을 우선(소폭 개정 반영). 정부 부문은
-통화별 분해가 없어 민간(private sector) 거주자 예금만 집계한다.
+For the overlapping period (2019-2021), values from the newer file take
+precedence (reflects minor revisions). The government sector has no currency
+breakdown, so only private-sector resident deposits are aggregated.
 """
 
 from __future__ import annotations
@@ -39,14 +41,14 @@ FILE_URL = "__RENDER__"
 _PAGE = "https://www.bankofgreece.gr/en/statistics/monetary-and-banking-statistics/deposits"
 _BASE = "https://www.bankofgreece.gr/RelatedDocuments"
 
-# (url, era)  era: pre_euro | modern. 병합 시 리스트 뒤쪽이 앞쪽을 덮어쓴다.
+# (url, era)  era: pre_euro | modern. When merging, later list entries override earlier ones.
 _SOURCES: list[tuple[str, str]] = [
     (f"{_BASE}/Deposits_sector_98-00.xls", "pre_euro"),
     (f"{_BASE}/Deposits_sector.xls", "modern"),
     (f"{_BASE}/Deposits_sector_new.xls", "modern"),
 ]
 
-# Akamai: Accept-Encoding 에 br 이 없으면 403
+# Akamai: returns 403 if Accept-Encoding lacks br
 _HEADERS = {
     "User-Agent": (
         "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
@@ -66,7 +68,7 @@ _HEADERS = {
 
 
 def parse(content: bytes, country_code: str) -> pd.DataFrame:
-    raise NotImplementedError("GRC는 render()로 3개 파일을 병합한다")
+    raise NotImplementedError("GRC merges 3 files via render()")
 
 
 def _empty() -> pd.DataFrame:
@@ -81,7 +83,8 @@ def _download(url: str) -> bytes:
     content = resp.content
     if not content.startswith(b"\xd0\xcf\x11\xe0") and not content.startswith(b"PK"):
         raise RuntimeError(
-            f"엑셀이 아닌 응답(status 헤더 통과 가능, len={len(content)}, head={content[:60]!r})"
+            f"Response is not an Excel file (may have passed the status header check, "
+            f"len={len(content)}, head={content[:60]!r})"
         )
     return content
 
@@ -110,7 +113,7 @@ def _find_date_row(df: pd.DataFrame) -> int | None:
 
 
 def _find_row_by_code(df: pd.DataFrame, code: str) -> int | None:
-    """col0 코드 정확 매칭(공백 무시). 첫 Domestic 구간 매치만 반환."""
+    """Exact match on the col0 code (whitespace ignored). Returns only the first match in the Domestic section."""
     target = code.strip()
     for i in range(len(df)):
         v = df.iat[i, 0]
@@ -160,27 +163,27 @@ def _parse_file(content: bytes, era: str) -> dict[str, tuple[float, float]]:
     df = xl.parse(sheet, header=None)
     date_row = _find_date_row(df)
     if date_row is None:
-        raise ValueError("날짜 헤더 행 없음")
+        raise ValueError("No date header row found")
 
     # TD: private sector total (code 1.2)
     td_row = _find_row_by_code(df, "1.2")
     if td_row is None:
         td_row = _find_row_by_label(df, "corporations and households")
     if td_row is None:
-        raise ValueError("민간 예금 합계 행(1.2) 없음")
+        raise ValueError("Private-sector deposit total row (1.2) not found")
 
     if era == "modern":
-        # FCD: 1.2.ν In other currencies (유로 도입 후 외화)
+        # FCD: 1.2.ν In other currencies (foreign currency post-euro-adoption)
         fcd_row = _find_row_by_code(df, "1.2.ν") or _find_row_by_code(df, "1.2.v")
         if fcd_row is None:
             fcd_row = _find_row_by_label(df, "in other currencies", start=td_row)
         if fcd_row is None:
-            raise ValueError("외화예금 행(1.2.ν) 없음")
+            raise ValueError("Foreign-currency deposit row (1.2.ν) not found")
         fcd_s = _extract_series(df, fcd_row, date_row)
         td_s = _extract_series(df, td_row, date_row)
         return {p: (fcd_s[p], td_s[p]) for p in fcd_s if p in td_s and td_s[p]}
 
-    # pre_euro: FCD = 유로·유로지역 + 기타통화 (드라크마 제외)
+    # pre_euro: FCD = EUR/euro-area + other currencies (drachma excluded)
     eur_row = _find_row_by_code(df, "1.2.ε") or _find_row_by_code(df, "1.2.e")
     if eur_row is None:
         eur_row = _find_row_by_label(df, "in eur", start=td_row)
@@ -188,7 +191,7 @@ def _parse_file(content: bytes, era: str) -> dict[str, tuple[float, float]]:
     if other_row is None:
         other_row = _find_row_by_label(df, "in other currencies", start=td_row)
     if eur_row is None or other_row is None:
-        raise ValueError(f"pre-euro 통화 분해 행 없음 (eur={eur_row}, other={other_row})")
+        raise ValueError(f"Pre-euro currency breakdown rows not found (eur={eur_row}, other={other_row})")
 
     eur_s = _extract_series(df, eur_row, date_row)
     other_s = _extract_series(df, other_row, date_row)
@@ -242,25 +245,25 @@ def render(target: dict) -> pd.DataFrame:
             content = _download(url)
             part = _parse_file(content, era)
         except Exception as e:
-            logger.exception("[%s] 파일 실패 %s: %s", country_code, url, e)
+            logger.exception("[%s] File failed %s: %s", country_code, url, e)
             continue
         if not part:
-            logger.warning("[%s] 빈 시계열: %s", country_code, url)
+            logger.warning("[%s] Empty time series: %s", country_code, url)
             continue
         periods = sorted(part)
         logger.info(
-            "[%s] %s (%s): %d개월 %s~%s",
+            "[%s] %s (%s): %d months %s~%s",
             country_code, url.rsplit("/", 1)[-1], era,
             len(part), periods[0], periods[-1],
         )
-        merged.update(part)  # 뒤 소스가 겹치는 기간을 덮어씀
+        merged.update(part)  # Later sources override overlapping periods
 
     if not merged:
         return _empty()
 
     df = _build_frame(country_code, merged)
     logger.info(
-        "[%s] 병합 %d행 (%s~%s)",
+        "[%s] merged %d rows (%s~%s)",
         country_code, len(df),
         df["period"].min() if not df.empty else "-",
         df["period"].max() if not df.empty else "-",

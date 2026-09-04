@@ -1,14 +1,16 @@
 """Madagascar: BFM / IMF FSAP FCD/TD.
 
-공개 가능 자료:
-  - IMF FSSA 2016: Foreign currency deposits / total deposits (2008–2015, %)
-  - BFM Annual Report: Dépôts en devises des résidents (FCD stock) — TD 동시 표 불완전
+Publicly available material:
+  - IMF FSSA 2016: Foreign currency deposits / total deposits (2008-2015, %)
+  - BFM Annual Report: Dépôts en devises des résidents (FCD stock) — the paired TD
+    table is incomplete
 
-최신 월별 FCD+TD 동일 표가 BFM 사이트에서 확인되지 않아,
-IMF FSAP 연간 비율을 FCD_TD_RATIO 로만 수록할 수 있는 경우에도
-파이프라인 관례상 FCD/TD 절대액이 없으면 빈 프레임을 반환한다.
+No up-to-date monthly table pairing FCD and TD could be found on the BFM site.
+Even though the IMF FSAP annual ratios could be recorded as FCD_TD_RATIO alone,
+pipeline convention is to return an empty frame when absolute FCD/TD levels are
+not available.
 
-status=failed: 최신 결합 시계열 부재.
+status=failed: no up-to-date combined series available.
 """
 
 from __future__ import annotations
@@ -52,7 +54,7 @@ _HEADERS = {
 
 
 def parse(content: bytes, country_code: str) -> pd.DataFrame:
-    raise NotImplementedError("MDG는 render()로 처리한다")
+    raise NotImplementedError("MDG is handled via render()")
 
 
 def _empty() -> pd.DataFrame:

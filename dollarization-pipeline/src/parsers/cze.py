@@ -1,37 +1,42 @@
-"""Czechia: ČNB(Česká národní banka)의 ARAD 시계열 시스템(cnb.cz/arad, Angular SPA).
-'Monetary and financial statistics > Monetary statistics > A. Statistics of monetary
-developments in the CR > Deposits with MFIs' 트리 노드(treeId=8165396) 안에 예금을
-통화(Instrument currency: CZK/All foreign currencies)와 거래상대 부문(Counterpart sector
-residents)으로 나눈 지표들이 있다.
+"""Czechia: ČNB (Česká národní banka)'s ARAD time-series system (cnb.cz/arad, an Angular SPA).
+Under the tree node 'Monetary and financial statistics > Monetary statistics > A. Statistics of
+monetary developments in the CR > Deposits with MFIs' (treeId=8165396) there are indicators that
+split deposits by instrument currency (CZK/All foreign currencies) and by counterpart sector
+(residents).
 
-'All foreign currencies'(D21856) x 'Levels'(D21657, 잔액 기준)로 필터링하면 지표가 정확히
-4개뿐이다: Financial institutions except MFIs(S.124~129, 보험/연금 포함), Insurance
-corporations and pension funds(S.128+S.129), Households and NPISH(S.14+S.15), Non-financial
-corporations(S.11). 이 중 'Financial institutions except MFIs'가 이미 'Insurance and pension
-funds'를 포함하는 상위 집합이라(코드 자체가 S.124+S.125+S.126+S.127+S.128+S.129로 명시)
-겹치지 않게 세 개만 더한다:
+Filtering by 'All foreign currencies'(D21856) x 'Levels'(D21657, stock/balance basis) leaves
+exactly 4 indicators: Financial institutions except MFIs (S.124-129, includes
+insurance/pension), Insurance corporations and pension funds (S.128+S.129), Households and
+NPISH (S.14+S.15), Non-financial corporations (S.11). Since 'Financial institutions except
+MFIs' is already a superset that includes 'Insurance and pension funds' (the code itself is
+explicitly S.124+S.125+S.126+S.127+S.128+S.129), only the following three are summed to avoid
+double-counting:
     FCD = SMV10M108013(Financial institutions except MFIs) + SMV10M107013(Households+NPISH)
           + SMV10M106013(Non-financial corporations)
-정부 부문(General/Central government)은 이 통화(외화) 조합에서 지표 자체가 없다(count=0,
-정부의 외화예금이 사실상 없거나 별도 미공개로 추정) - 그래서 위 세 부문이 사실상 거주자
-외화예금 전체를 커버한다.
+The government sector (General/Central government) has no indicator at all in this currency
+(FX) combination (count=0, presumably because government FX deposits are effectively
+nonexistent or not separately disclosed) - so the three sectors above effectively cover all
+resident FX deposits.
 
-TD(총예금) = 같은 트리에서 통화 필터를 'All currencies'(D21666)로, 지표 특성을 'Types
-total'(D21676, 만기/유형 구분 없는 합계)로 바꿔 같은 3개 부문 코드의 '011' 접미사 버전을
-합산한다(FX 버전은 '013' 접미사, 이 트리에서 우연히 만기 구분이 없어 Types total 없이도
-자동으로 합계였음을 실측 확인. All currencies 버전은 만기별로 나뉜 지표가 별도로 존재해
-Types total 필터가 반드시 필요함):
+TD (total deposits) = in the same tree, switching the currency filter to 'All
+currencies'(D21666) and the indicator attribute to 'Types total'(D21676, sum with no
+maturity/type breakdown), then summing the '011'-suffix versions of the same 3 sector codes
+(the FX version uses the '013' suffix; it was empirically confirmed that in this tree there
+happens to be no maturity breakdown, so it was already a total even without 'Types total'. The
+'All currencies' version, however, has separate maturity-split indicators, so the 'Types total'
+filter is required):
     TD = SMV10M108011(Financial institutions except MFIs) + SMV10M107011(Households+NPISH)
          + SMV10M106011(Non-financial corporations)
-(all currencies, Types total, Levels 조합에서 8개 부문 지표만 남음을 실측 확인했고, 그 중
-FCD와 동일한 3개 부문만 사용한다.)
+(Empirically confirmed that only 8 sector indicators remain under the all-currencies, Types
+total, Levels combination, and only the same 3 sectors used for FCD are used here.)
 
-ARAD는 진짜 REST API(/aradb/api/v13/...)가 있지만, 지표 데이터 조회 엔드포인트
-(indicators-data-by-codes)는 URL 쿼리에 지표 코드를 직접 넣어 단독 호출하면 매번
-'Přístup byl zablokován'(접근 차단) 페이지를 돌려준다(WAF가 이 패턴을 세션 밖 직접 호출로
-보고 차단하는 것으로 추정). 반면 Playwright로 실제 UI 흐름(트리 탐색 -> 필터 선택 -> 지표
-3개 체크 -> '표로 보기' 아이콘 클릭)을 그대로 재현하면 정상 응답한다 - 그래서 매번 이
-과정을 자동화해서 응답 JSON을 가로챈다.
+ARAD does have a real REST API (/aradb/api/v13/...), but the indicator-data endpoint
+(indicators-data-by-codes) returns a 'Přístup byl zablokován' (access blocked) page every time
+it's called directly with indicator codes in the URL query (presumably the WAF flags this
+pattern as a direct call outside a normal session and blocks it). Reproducing the actual UI
+flow with Playwright (tree navigation -> filter selection -> checking the 3 indicators ->
+clicking the 'view as table' icon), however, gets a normal response - so this process is
+automated every time and the response JSON is intercepted.
 """
 
 from datetime import datetime, timezone
@@ -56,7 +61,7 @@ _MONTHS = {
 
 
 def parse(content: bytes, country_code: str) -> pd.DataFrame:
-    raise NotImplementedError("CZE는 render()를 통해 처리한다 (ARAD SPA UI 흐름 재현 필요)")
+    raise NotImplementedError("CZE is handled via render() (requires reproducing the ARAD SPA UI flow)")
 
 
 def _fetch_indicator_data(
@@ -110,7 +115,7 @@ def _fetch_indicator_data(
         browser.close()
 
     if "body" not in captured:
-        raise RuntimeError("ARAD indicators-data-by-codes 응답을 가로채지 못함")
+        raise RuntimeError("Failed to intercept the ARAD indicators-data-by-codes response")
     return jsonlib.loads(captured["body"])
 
 
@@ -134,9 +139,10 @@ def render(target: dict) -> pd.DataFrame:
     country_code = target["country_code"]
     now = datetime.now(timezone.utc).isoformat()
 
-    # FCD/TD 두 조회는 서로 독립적인 ARAD SPA 트리 탐색이라 병렬로 돌려 벽시계 시간을 절반으로
-    # 줄인다(각 조회 자체가 다단계 트리 클릭 + wait_for_timeout이 지배적이라 순차 실행 시
-    # 40초 이상 걸려 짧은 하드 타임아웃(예: --timeout-sec 10)에서 죽기 쉽다).
+    # The FCD and TD lookups are independent ARAD SPA tree navigations, so they're run in
+    # parallel to roughly halve the wall-clock time (each lookup is dominated by multi-step
+    # tree clicks + wait_for_timeout, so sequential execution takes 40+ seconds and is prone
+    # to dying under a short hard timeout, e.g. --timeout-sec 10).
     with ThreadPoolExecutor(max_workers=2) as executor:
         fcd_future = executor.submit(_fetch_indicator_data, "All foreign currencies", _FCD_CODES)
         td_future = executor.submit(
@@ -146,13 +152,13 @@ def render(target: dict) -> pd.DataFrame:
         try:
             td_payload = td_future.result()
         except Exception as e:
-            logger.warning("[%s] TD 조회 실패: %s", country_code, e)
+            logger.warning("[%s] TD lookup failed: %s", country_code, e)
             td_payload = None
 
     fcd_indicators = fcd_payload["data"][0]["indicators"]
     found_codes = {ind["code"] for ind in fcd_indicators}
     if found_codes != set(_FCD_CODES):
-        logger.warning("[%s] 예상한 지표 코드와 다름: %s", country_code, found_codes)
+        logger.warning("[%s] Indicator codes differ from expected: %s", country_code, found_codes)
 
     fcd_totals = _totals_from_indicators(fcd_indicators)
     rows = [
@@ -171,7 +177,7 @@ def render(target: dict) -> pd.DataFrame:
         td_indicators = td_payload["data"][0]["indicators"]
         found_td_codes = {ind["code"] for ind in td_indicators}
         if found_td_codes != set(_TD_CODES):
-            logger.warning("[%s] TD 예상 지표 코드와 다름: %s", country_code, found_td_codes)
+            logger.warning("[%s] TD indicator codes differ from expected: %s", country_code, found_td_codes)
         td_totals = _totals_from_indicators(td_indicators)
         rows.extend(
             {

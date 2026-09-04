@@ -1,27 +1,35 @@
-"""Botswana: Bank of Botswana 'Publications' 목록(/publications?page=0,1,2,...)에 매달
-'Botswana Economic and Financial Statistics - {Month} {Year}' xlsx가 게시된다. 목록은
-EFS 외에도 다른 온갖 간행물이 섞여 있고 페이지네이션 번호가 계속 늘어나므로, 페이지 0의
-pager에서 마지막 페이지 번호를 읽어 그 범위를 전부 순회하며 EFS 항목만 골라낸다.
+"""Botswana: Bank of Botswana 'Publications' listing (/publications?page=0,1,2,...) posts a
+'Botswana Economic and Financial Statistics - {Month} {Year}' xlsx every month. The listing
+mixes EFS in with all sorts of other publications and the pagination count keeps growing, so
+the last page number is read from page 0's pager and the whole range is walked, picking out
+only EFS entries.
 
-각 파일의 시트 '3.16'(COMMERCIAL BANKS: FOREIGN CURRENCY ACCOUNTS AND TOTAL DEPOSITS)에
-통화별(US$/GBP/ZAR/EUR/Other) 외화계좌를 풀라 환산액으로 합친 'Total Pula equivalent' 열이
-FCD, 'Deposits (Pula)' 열이 TD(전체 통화 합계)다. 컬럼은 6/7행 헤더 텍스트(2줄에 걸쳐
-쪼개져 있음, 예: 6행 'Total Pula' + 7행 'equivalent')로 매번 동적으로 찾는다.
+In each file, sheet '3.16' (COMMERCIAL BANKS: FOREIGN CURRENCY ACCOUNTS AND TOTAL DEPOSITS)
+has a 'Total Pula equivalent' column — the sum of foreign-currency accounts by currency
+(US$/GBP/ZAR/EUR/Other) converted to Pula — which is FCD, and a 'Deposits (Pula)' column,
+which is TD (total across all currencies). Columns are located dynamically each time from
+the row 6/7 header text (split across two lines, e.g. row 6 'Total Pula' + row 7
+'equivalent').
 
-이 표는 파일마다 최근 ~10~13년 롤링 윈도우만 담고 있다(예: 2024-01 발행분은 2013년부터,
-2026-06 발행분은 2016년부터). 그래서 발행월이 흩어진 여러 파일을 모아야 전체 기간을
-커버할 수 있다 - 'publications' 목록(JS 페이지네이션)에는 2024-01 이전 EFS 파일이
-보이지 않지만, 목록에 안 뜨는 구형 직접 링크 하나(BFS-JAN-2015.xls, 사용자 제공)가
-2004~2014년치를 담고 있어 이것도 함께 받는다. 이 파일은 옛 바이너리 .xls(OLE) 포맷이라
-openpyxl이 아닌 xlrd로 읽어야 하고, 헤더가 3줄(대분류/통화단위 두 줄이 최신 xlsx보다
-한 줄 더 나뉨)에 걸쳐 있어 별도 파싱 함수(_parse_legacy_xls)를 쓴다.
+Each file's table only covers a rolling window of the most recent ~10-13 years (e.g. the
+2024-01 issue starts from 2013, the 2026-06 issue starts from 2016). So multiple files with
+different publication months need to be combined to cover the full period. The
+'publications' listing (JS-paginated) doesn't show any EFS files before 2024-01, but there
+is one older direct link not shown in the listing (BFS-JAN-2015.xls, provided by the user)
+that covers 2004-2014, so it is fetched as well. That file is in the old binary .xls (OLE)
+format, so it must be read with xlrd instead of openpyxl, and its header spans 3 rows (the
+category/currency-unit split takes one more row than in the newer xlsx files), so a separate
+parsing function (_parse_legacy_xls) is used for it.
 
-연도별 행 구조: 앞부분(예: 2013~2021)은 한 해에 한 행(월 없이 연도만, End-of-year=12월
-값으로 취급), 이후로는 분기별(Mar/Jun/Sep/Dec), 최근에는 매월(Jan~Dec)로 세분화된다.
-행의 연도 칸(1열)이 비어 있으면 바로 위 값을 그대로 이어받는다(forward-fill).
+Row structure by year: earlier periods (e.g. 2013-2021) have one row per year (year only, no
+month, treated as the End-of-year=December value), later periods are quarterly
+(Mar/Jun/Sep/Dec), and the most recent periods are broken down monthly (Jan-Dec). When a
+row's year cell (column 1) is empty, the value from the row above is carried forward
+(forward-fill).
 
-여러 파일에 걸쳐 겹치는 기간은 그 파일 자체가 커버하는 마지막 기간(=발행월)이 더 최신인
-파일 쪽 값을 채택한다(central bank가 이후 개정치를 반영했을 수 있어 최신판 우선).
+Where periods overlap across multiple files, the value from the file whose own coverage ends
+more recently (i.e. the later publication month) is kept, since the central bank may have
+incorporated later revisions — the newer issue takes priority.
 """
 
 import re
@@ -58,7 +66,7 @@ _MONTHS = {
 
 
 def parse(content: bytes, country_code: str) -> pd.DataFrame:
-    raise NotImplementedError("BWA는 render()를 통해 처리한다 (게시글 목록을 순회해야 함)")
+    raise NotImplementedError("BWA is handled via render() (needs to walk the publications listing)")
 
 
 def _last_page_number() -> int:
@@ -80,7 +88,7 @@ def _collect_efs_links() -> dict[str, str]:
     from playwright.sync_api import sync_playwright
 
     last_page = _last_page_number()
-    logger.info("[BWA] publications 목록 마지막 페이지 번호: %d", last_page)
+    logger.info("[BWA] publications listing last page number: %d", last_page)
 
     links: dict[str, str] = {}
     with sync_playwright() as p:
@@ -127,7 +135,7 @@ def _parse_workbook(content: bytes, country_code: str) -> pd.DataFrame:
 
     fcd_col, td_col = _find_fcd_td_columns(ws)
     if fcd_col is None:
-        logger.warning("[%s] 'Total Pula equivalent' 컬럼을 찾지 못함", country_code)
+        logger.warning("[%s] could not find 'Total Pula equivalent' column", country_code)
         return pd.DataFrame(columns=["country_code", "year", "period", "indicator", "value", "updated_at"])
 
     rows = []
@@ -147,7 +155,7 @@ def _parse_workbook(content: bytes, country_code: str) -> pd.DataFrame:
         if isinstance(month_cell, str) and month_cell.strip().lower()[:3] in _MONTHS:
             month = _MONTHS[month_cell.strip().lower()[:3]]
         elif isinstance(year_cell, (int, float)):
-            month = 12  # 월 표기 없이 연도만 있는 행 = 그 해 12월(End of Period) 값
+            month = 12  # row with only a year and no month = December (End of Period) value for that year
         else:
             continue
 
@@ -180,8 +188,9 @@ def _parse_legacy_xls(content: bytes, country_code: str) -> pd.DataFrame:
         return pd.DataFrame(columns=["country_code", "year", "period", "indicator", "value", "updated_at"])
     ws = wb.sheet_by_name(_SHEET_NAME)
 
-    # 헤더가 3줄(대분류/통화단위가 최신 xlsx보다 한 줄 더 나뉨)에 걸쳐 있어, 각 열의
-    # 헤더 후보 3줄을 합쳐서 텍스트로 찾는다(고정 인덱스 대신 헤더 텍스트 탐색 원칙 유지).
+    # The header spans 3 rows (category/currency-unit split takes one more row than in the
+    # newer xlsx), so each column's 3 candidate header rows are concatenated and searched as
+    # text (keeping the same principle of locating headers by text instead of fixed indices).
     header_rows = range(4, 7)  # 0-indexed
     data_start_row = 7
 
@@ -194,7 +203,7 @@ def _parse_legacy_xls(content: bytes, country_code: str) -> pd.DataFrame:
             td_col = c
 
     if fcd_col is None:
-        logger.warning("[%s] 레거시 xls에서 'Total Pula equivalent' 컬럼을 찾지 못함", country_code)
+        logger.warning("[%s] could not find 'Total Pula equivalent' column in legacy xls", country_code)
         return pd.DataFrame(columns=["country_code", "year", "period", "indicator", "value", "updated_at"])
 
     rows = []
@@ -207,7 +216,7 @@ def _parse_legacy_xls(content: bytes, country_code: str) -> pd.DataFrame:
         if isinstance(year_cell, float):
             current_year = int(year_cell)
         elif m:
-            current_year = int(m.group(1))  # 각주 번호가 붙은 '20043' 같은 값 처리
+            current_year = int(m.group(1))  # handles values like '20043' with a trailing footnote digit
         if current_year is None:
             continue
 
@@ -243,7 +252,7 @@ def render(target: dict) -> pd.DataFrame:
     country_code = target["country_code"]
 
     links = _collect_efs_links()
-    logger.info("[%s] EFS xlsx %d개 발견", country_code, len(links))
+    logger.info("[%s] found %d EFS xlsx files", country_code, len(links))
 
     file_frames = []
 
@@ -251,18 +260,18 @@ def render(target: dict) -> pd.DataFrame:
         response = requests.get(LEGACY_XLS_URL, headers=_HEADERS, timeout=60)
         response.raise_for_status()
         legacy_df = _parse_legacy_xls(response.content, country_code)
-        logger.info("[%s] 레거시 xls(2004~2014) %d행", country_code, len(legacy_df))
+        logger.info("[%s] legacy xls (2004-2014) %d rows", country_code, len(legacy_df))
         if not legacy_df.empty:
             file_frames.append((legacy_df["period"].max(), legacy_df))
     except Exception:
-        logger.warning("[%s] 레거시 xls 다운로드/파싱 실패, 스킵: %s", country_code, LEGACY_XLS_URL)
+        logger.warning("[%s] failed to download/parse legacy xls, skipping: %s", country_code, LEGACY_XLS_URL)
 
     for url in links:
         try:
             response = requests.get(url, headers=_HEADERS, timeout=60)
             response.raise_for_status()
         except Exception:
-            logger.warning("[%s] 다운로드 실패, 스킵: %s", country_code, url)
+            logger.warning("[%s] download failed, skipping: %s", country_code, url)
             continue
 
         df = _parse_workbook(response.content, country_code)
@@ -273,8 +282,9 @@ def render(target: dict) -> pd.DataFrame:
     if not file_frames:
         return pd.DataFrame(columns=["country_code", "year", "period", "indicator", "value", "updated_at"])
 
-    # 각 파일이 커버하는 마지막 기간(발행월) 오름차순으로 합쳐, 겹치는 기간은
-    # 더 최근에 발행된 파일 쪽 값이 남도록 한다(keep='last').
+    # Merge in ascending order of each file's last covered period (publication month), so
+    # that for overlapping periods the value from the more recently published file wins
+    # (keep='last').
     file_frames.sort(key=lambda x: x[0])
     merged = pd.concat([df for _, df in file_frames], ignore_index=True)
     merged = merged.drop_duplicates(subset=["period", "indicator"], keep="last")

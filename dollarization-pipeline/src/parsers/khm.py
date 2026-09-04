@@ -1,11 +1,11 @@
 """Cambodia: NBC Deposits with Deposit Money Banks (by currency).
 
-페이지:
+Page:
   https://www.nbc.gov.kh/english/economic_research/monetary_and_financial_statistics_data.php
-파일명 패턴 (월별 갱신):
+Filename pattern (updated monthly):
   .../download_files/data/english/17.depositwithdepositmoneybank*.xlsx
 
-시트 'deposit' (In Billion KHR, 가로 시계열):
+Sheet 'deposit' (In Billion KHR, horizontal time series):
   Deposits in Foreign Currency / Total  → FCD
   Grand Total                           → TD
 """
@@ -48,7 +48,7 @@ _HEADERS = {
 
 
 def parse(content: bytes, country_code: str) -> pd.DataFrame:
-    raise NotImplementedError("KHM는 render()로 페이지에서 xlsx를 찾는다")
+    raise NotImplementedError("KHM locates the xlsx from the page via render()")
 
 
 def _empty() -> pd.DataFrame:
