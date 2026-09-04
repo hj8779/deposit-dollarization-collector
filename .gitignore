@@ -48,6 +48,10 @@ logs
 # Planning / working docs (not used at runtime)
 /plans/
 
-# Pipeline run logs and test code (not used at runtime)
+# Dev session logs (not used at runtime)
+/log-*.md
+
+# Pipeline run logs / test results (not test logic itself, which stays tracked)
 dollarization-pipeline/runs/
-dollarization-pipeline/tests/
+dollarization-pipeline/tests/__pycache__/
+dollarization-pipeline/.pytest_cache/
