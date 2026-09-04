@@ -51,6 +51,9 @@ logs
 # Dev session logs (not used at runtime)
 /log-*.md
 
+# Archive/source snapshots (not used at runtime)
+*.zip
+
 # Pipeline run logs / test results (not test logic itself, which stays tracked)
 dollarization-pipeline/runs/
 dollarization-pipeline/tests/__pycache__/
