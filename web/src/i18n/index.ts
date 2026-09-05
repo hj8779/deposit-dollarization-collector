@@ -6,9 +6,9 @@ import en from "./locales/en.json";
 const STORAGE_KEY = "lang";
 
 function getInitialLanguage(): "ko" | "en" {
-  if (typeof window === "undefined") return "ko";
+  if (typeof window === "undefined") return "en";
   const stored = window.localStorage.getItem(STORAGE_KEY);
-  return stored === "en" ? "en" : "ko";
+  return stored === "ko" ? "ko" : "en";
 }
 
 void i18n
@@ -19,7 +19,7 @@ void i18n
       en: { translation: en },
     },
     lng: getInitialLanguage(),
-    fallbackLng: "ko",
+    fallbackLng: "en",
     interpolation: {
       escapeValue: false,
     },
