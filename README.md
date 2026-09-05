@@ -2,7 +2,7 @@
 
 [한국어](#한국어) · [English](#english) · [日本語](#日本語) · [Français](#français)
 
-A monorepo that collects foreign-currency-deposit (FCD) statistics for ~250 countries and territories, stores them in Supabase, and visualizes them on a bilingual web dashboard.
+A monorepo that collects foreign-currency-deposit (FCD) statistics for ~130 countries and territories, stores them in Supabase, and visualizes them on a bilingual web dashboard.
 
 **🔗 Live dashboard: [deposit-dollarization-collector.macrolab.workers.dev](https://deposit-dollarization-collector.macrolab.workers.dev)**
 
