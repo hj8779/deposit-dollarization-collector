@@ -4,6 +4,8 @@
 
 A monorepo that collects foreign-currency-deposit (FCD) statistics for ~250 countries and territories, stores them in Supabase, and visualizes them on a bilingual web dashboard.
 
+**🔗 Live dashboard: [deposit-dollarization-collector.macrolab.workers.dev](https://deposit-dollarization-collector.macrolab.workers.dev)**
+
 - [`dollarization-pipeline/`](dollarization-pipeline) — the Python ETL collector (see its [README](dollarization-pipeline/README.md) / [README.en.md](dollarization-pipeline/README.en.md) and [OPERATIONS.ko.md](dollarization-pipeline/OPERATIONS.ko.md) / [OPERATIONS.en.md](dollarization-pipeline/OPERATIONS.en.md))
 - [`web/`](web) — the React + TypeScript dashboard (see its [README](web/README.md))
 
@@ -12,6 +14,8 @@ A monorepo that collects foreign-currency-deposit (FCD) statistics for ~250 coun
 ## 한국어
 
 국가별 외화예금(Foreign Currency Deposits, FCD) 통계를 자동으로 수집해 Supabase PostgreSQL에 적재하고, 웹 대시보드로 시각화하는 프로젝트입니다.
+
+**🔗 대시보드 바로가기: [deposit-dollarization-collector.macrolab.workers.dev](https://deposit-dollarization-collector.macrolab.workers.dev)**
 
 ### 구성
 
@@ -79,6 +83,8 @@ print(df.head())
 
 A project that automatically collects foreign-currency-deposit (FCD) statistics for roughly 250 countries, loads them into Supabase PostgreSQL, and visualizes them on a web dashboard.
 
+**🔗 Live dashboard: [deposit-dollarization-collector.macrolab.workers.dev](https://deposit-dollarization-collector.macrolab.workers.dev)**
+
 ### Structure
 
 | Directory | Description |
@@ -145,6 +151,8 @@ No license has been declared. Issues and pull requests are welcome.
 
 約250か国・地域の外貨預金(Foreign Currency Deposits, FCD)統計を自動的に収集し、Supabase PostgreSQLに格納した上で、Webダッシュボードで可視化するプロジェクトです。
 
+**🔗 ダッシュボードはこちら: [deposit-dollarization-collector.macrolab.workers.dev](https://deposit-dollarization-collector.macrolab.workers.dev)**
+
 ### 構成
 
 | ディレクトリ | 説明 |
@@ -210,6 +218,8 @@ print(df.head())
 ## Français
 
 Un projet qui collecte automatiquement les statistiques de dépôts en devises étrangères (Foreign Currency Deposits, FCD) pour environ 250 pays, les charge dans Supabase PostgreSQL, et les visualise sur un tableau de bord web.
+
+**🔗 Tableau de bord en ligne : [deposit-dollarization-collector.macrolab.workers.dev](https://deposit-dollarization-collector.macrolab.workers.dev)**
 
 ### Structure
 
