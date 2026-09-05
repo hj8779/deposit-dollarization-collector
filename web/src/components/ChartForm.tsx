@@ -4,6 +4,7 @@ import { Effect } from "effect";
 import { fetchDepositRows } from "../lib/db";
 import { useEffectQuery } from "../lib/useEffectQuery";
 import { toChartPoints, availableIndicators } from "../lib/chartData";
+import { downloadCsv, downloadXlsx } from "../lib/downloadData";
 import {
   getManualInfo,
   isHalfManual,
@@ -131,7 +132,19 @@ export function ChartForm({ countries, selectedCountry, onSelectCountry }: Props
         <div className="panel error">{t("chartForm.errorLoading", { message: error.message })}</div>
       )}
       {selectedCountry && !loading && !error && (
-        <DepositChart points={points} visibleIndicators={visibleIndicators} />
+        <>
+          {points.length > 0 && (
+            <div className="download-buttons">
+              <button type="button" className="btn-small" onClick={() => downloadCsv(points, selectedCountry)}>
+                {t("chartForm.downloadCsv")}
+              </button>
+              <button type="button" className="btn-small" onClick={() => downloadXlsx(points, selectedCountry)}>
+                {t("chartForm.downloadXlsx")}
+              </button>
+            </div>
+          )}
+          <DepositChart points={points} visibleIndicators={visibleIndicators} />
+        </>
       )}
 
       {country && <SourceInfo country={country} />}

@@ -390,6 +390,12 @@
   text-decoration: underline;
 }
 
+.download-buttons {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
 .chart-empty {
   padding: 60px 0;
   text-align: center;

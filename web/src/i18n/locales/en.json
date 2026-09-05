@@ -37,7 +37,9 @@
     "openSource": "Open source",
     "selectCountryEmpty": "Select a country from the table on the left.",
     "loading": "Loading…",
-    "errorLoading": "Failed to load data: {{message}}"
+    "errorLoading": "Failed to load data: {{message}}",
+    "downloadCsv": "Download CSV",
+    "downloadXlsx": "Download Excel"
   },
   "depositChart": {
     "empty": "No data to display for this country."

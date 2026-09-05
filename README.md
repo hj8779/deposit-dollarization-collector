@@ -35,6 +35,40 @@ A monorepo that collects foreign-currency-deposit (FCD) statistics for ~250 coun
 - 수집기 실행 방법은 [OPERATIONS.ko.md](dollarization-pipeline/OPERATIONS.ko.md)를 참고해 주십시오.
 - 대시보드 실행 방법은 [web/README.md](web/README.md)를 참고해 주십시오.
 
+### 코드로 데이터 가져오기
+
+대시보드에서 국가별로 CSV/Excel을 내려받을 수 있고(선택한 국가의 차트 위에 다운로드 버튼), 전체 데이터셋이 필요하다면 Supabase의 REST API(PostgREST)를 직접 호출하면 됩니다. `VITE_SUPABASE_URL`과 `VITE_SUPABASE_ANON_KEY`는 `web/.env`(또는 [web/.env.example](web/.env.example))에서 확인할 수 있으며, 읽기 전용 공개 키라 그대로 사용해도 안전합니다.
+
+```bash
+# curl 예시: 한 국가(KOR)의 전체 지표
+curl "$VITE_SUPABASE_URL/rest/v1/deposit_dollarization?country_code=eq.KOR&select=*&order=period" \
+  -H "apikey: $VITE_SUPABASE_ANON_KEY"
+```
+
+```python
+# Python 예시: pandas DataFrame으로 바로 받기
+import os
+import requests
+import pandas as pd
+
+VITE_SUPABASE_URL = os.environ["VITE_SUPABASE_URL"]
+VITE_SUPABASE_ANON_KEY = os.environ["VITE_SUPABASE_ANON_KEY"]
+
+def fetch_country(country_code: str) -> pd.DataFrame:
+    resp = requests.get(
+        f"{VITE_SUPABASE_URL}/rest/v1/deposit_dollarization",
+        params={"country_code": f"eq.{country_code}", "select": "*", "order": "period"},
+        headers={"apikey": VITE_SUPABASE_ANON_KEY},
+    )
+    resp.raise_for_status()
+    return pd.DataFrame(resp.json())
+
+df = fetch_country("KOR")
+print(df.head())
+```
+
+전체 테이블(약 10만 행 이상)을 한 번에 받고 싶다면 PostgREST 기본 페이지 크기(1,000행) 제한 때문에 `Range` 헤더나 `.range()`(supabase-py 사용 시)로 페이지네이션이 필요합니다. 국가별 요약 정보만 필요하다면 `deposit_dollarization_summary` 뷰를 사용하십시오.
+
 ### 라이선스 및 기여
 
 별도 명시된 라이선스가 없으며, 이슈/PR을 통한 기여를 환영합니다.
@@ -66,6 +100,40 @@ Periods are stored at whichever resolution (monthly/quarterly/annual) is actuall
 
 - See [OPERATIONS.en.md](dollarization-pipeline/OPERATIONS.en.md) for how to run the collector.
 - See [web/README.md](web/README.md) for how to run the dashboard.
+
+### Fetching the data programmatically
+
+The dashboard has CSV/Excel download buttons above the chart for whichever country is selected. For the full dataset, call Supabase's REST API (PostgREST) directly. `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` are in `web/.env` (or [web/.env.example](web/.env.example)) — it's a read-only public key, safe to use as-is.
+
+```bash
+# curl: every indicator for one country (KOR)
+curl "$VITE_SUPABASE_URL/rest/v1/deposit_dollarization?country_code=eq.KOR&select=*&order=period" \
+  -H "apikey: $VITE_SUPABASE_ANON_KEY"
+```
+
+```python
+# Python: straight into a pandas DataFrame
+import os
+import requests
+import pandas as pd
+
+VITE_SUPABASE_URL = os.environ["VITE_SUPABASE_URL"]
+VITE_SUPABASE_ANON_KEY = os.environ["VITE_SUPABASE_ANON_KEY"]
+
+def fetch_country(country_code: str) -> pd.DataFrame:
+    resp = requests.get(
+        f"{VITE_SUPABASE_URL}/rest/v1/deposit_dollarization",
+        params={"country_code": f"eq.{country_code}", "select": "*", "order": "period"},
+        headers={"apikey": VITE_SUPABASE_ANON_KEY},
+    )
+    resp.raise_for_status()
+    return pd.DataFrame(resp.json())
+
+df = fetch_country("KOR")
+print(df.head())
+```
+
+To pull the whole table (100k+ rows) in one go, paginate with the `Range` header (or `.range()` if you use `supabase-py`) since PostgREST caps a single response at 1,000 rows by default. If you only need per-country summaries, query the `deposit_dollarization_summary` view instead.
 
 ### License & contributing
 
@@ -99,6 +167,40 @@ No license has been declared. Issues and pull requests are welcome.
 - 収集パイプラインの実行方法については [OPERATIONS.en.md](dollarization-pipeline/OPERATIONS.en.md) をご参照ください(日本語版は未整備です)。
 - ダッシュボードの実行方法については [web/README.md](web/README.md) をご参照ください。
 
+### プログラムからデータを取得する
+
+ダッシュボードでは、選択した国のチャート上部にあるボタンからCSV/Excelをダウンロードできます。データセット全体が必要な場合は、SupabaseのREST API(PostgREST)を直接呼び出してください。`VITE_SUPABASE_URL` と `VITE_SUPABASE_ANON_KEY` は `web/.env`(または [web/.env.example](web/.env.example))に記載されており、読み取り専用の公開キーですのでそのままご利用いただけます。
+
+```bash
+# curlの例: 1か国(KOR)の全指標を取得
+curl "$VITE_SUPABASE_URL/rest/v1/deposit_dollarization?country_code=eq.KOR&select=*&order=period" \
+  -H "apikey: $VITE_SUPABASE_ANON_KEY"
+```
+
+```python
+# Pythonの例: そのままpandas DataFrameとして取得
+import os
+import requests
+import pandas as pd
+
+VITE_SUPABASE_URL = os.environ["VITE_SUPABASE_URL"]
+VITE_SUPABASE_ANON_KEY = os.environ["VITE_SUPABASE_ANON_KEY"]
+
+def fetch_country(country_code: str) -> pd.DataFrame:
+    resp = requests.get(
+        f"{VITE_SUPABASE_URL}/rest/v1/deposit_dollarization",
+        params={"country_code": f"eq.{country_code}", "select": "*", "order": "period"},
+        headers={"apikey": VITE_SUPABASE_ANON_KEY},
+    )
+    resp.raise_for_status()
+    return pd.DataFrame(resp.json())
+
+df = fetch_country("KOR")
+print(df.head())
+```
+
+テーブル全体(10万行以上)を一度に取得したい場合は、PostgRESTの既定のページサイズ(1,000行)の制限があるため、`Range` ヘッダー(`supabase-py` をお使いの場合は `.range()`)によるページネーションが必要です。国別の要約情報のみで良い場合は、`deposit_dollarization_summary` ビューをご利用ください。
+
 ### ライセンスと貢献について
 
 ライセンスは明示されておりません。Issue・Pull Requestによる貢献を歓迎いたします。
@@ -130,6 +232,40 @@ Les périodes sont stockées à la résolution (mensuelle/trimestrielle/annuelle
 
 - Consultez [OPERATIONS.en.md](dollarization-pipeline/OPERATIONS.en.md) pour savoir comment exécuter le collecteur (une version française n'est pas encore disponible).
 - Consultez [web/README.md](web/README.md) pour savoir comment exécuter le tableau de bord.
+
+### Récupérer les données par programmation
+
+Le tableau de bord propose des boutons de téléchargement CSV/Excel au-dessus du graphique, pour le pays sélectionné. Pour l'ensemble du jeu de données, appelez directement l'API REST de Supabase (PostgREST). `VITE_SUPABASE_URL` et `VITE_SUPABASE_ANON_KEY` se trouvent dans `web/.env` (ou [web/.env.example](web/.env.example)) — c'est une clé publique en lecture seule, utilisable telle quelle.
+
+```bash
+# curl : tous les indicateurs pour un pays (KOR)
+curl "$VITE_SUPABASE_URL/rest/v1/deposit_dollarization?country_code=eq.KOR&select=*&order=period" \
+  -H "apikey: $VITE_SUPABASE_ANON_KEY"
+```
+
+```python
+# Python : directement dans un DataFrame pandas
+import os
+import requests
+import pandas as pd
+
+VITE_SUPABASE_URL = os.environ["VITE_SUPABASE_URL"]
+VITE_SUPABASE_ANON_KEY = os.environ["VITE_SUPABASE_ANON_KEY"]
+
+def fetch_country(country_code: str) -> pd.DataFrame:
+    resp = requests.get(
+        f"{VITE_SUPABASE_URL}/rest/v1/deposit_dollarization",
+        params={"country_code": f"eq.{country_code}", "select": "*", "order": "period"},
+        headers={"apikey": VITE_SUPABASE_ANON_KEY},
+    )
+    resp.raise_for_status()
+    return pd.DataFrame(resp.json())
+
+df = fetch_country("KOR")
+print(df.head())
+```
+
+Pour récupérer la table entière (plus de 100 000 lignes) en une fois, paginez avec l'en-tête `Range` (ou `.range()` avec `supabase-py`), car PostgREST limite une réponse à 1 000 lignes par défaut. Si seuls les résumés par pays vous intéressent, interrogez plutôt la vue `deposit_dollarization_summary`.
 
 ### Licence et contributions
 
